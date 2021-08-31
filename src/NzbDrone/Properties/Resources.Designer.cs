@@ -10,8 +10,8 @@
 
 namespace NzbDrone.Properties {
     using System;
-
-
+    
+    
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -63,10 +63,8 @@ namespace NzbDrone.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.Drawing.Icon Sonarr
-        {
-            get
-            {
+        internal static System.Drawing.Icon Sonarr {
+            get {
                 object obj = ResourceManager.GetObject("Sonarr", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
