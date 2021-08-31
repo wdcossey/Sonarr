@@ -10,6 +10,7 @@
 #define BuildNumber GetEnv('MINORVERSION')
 #define BuildVersion GetEnv('SONARRVERSION')
 #define BranchName GetEnv('BUILD_SOURCEBRANCHNAME')
+#define Framework GetEnv('FRAMEWORK')
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
