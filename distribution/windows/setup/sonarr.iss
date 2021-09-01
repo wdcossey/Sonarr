@@ -38,7 +38,7 @@ DisableReadyPage=True
 CompressionThreads=2
 Compression=lzma2/normal
 AppContact={#ForumsURL}
-VersionInfoVersion={#BaseVersion}.{#BuildNumber}
+VersionInfoVersion={#BuildNumber}
 SetupLogging=yes
 OutputDir=output
 
