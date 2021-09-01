@@ -6,10 +6,8 @@
 #define AppURL "https://sonarr.tv/"
 #define ForumsURL "https://forums.sonarr.tv/"
 #define AppExeName "Sonarr.exe"
-#define BaseVersion GetEnv('MAJORVERSION')
-#define BuildNumber GetEnv('MINORVERSION')
-#define BuildVersion GetEnv('SONARRVERSION')
-#define BranchName GetEnv('BUILD_SOURCEBRANCHNAME')
+#define BuildNumber "3.0"
+#define BranchName GetEnv('BRANCH')
 #define Framework GetEnv('FRAMEWORK')
 #define Runtime GetEnv('RUNTIME')
 
@@ -19,7 +17,7 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{56C1065D-3523-4025-B76D-6F73F67F7F71}
 AppName={#AppName}
-AppVersion={#BaseVersion}
+AppVersion={#BuildNumber}
 AppPublisher={#AppPublisher}
 AppPublisherURL={#AppURL}
 AppSupportURL={#ForumsURL}
