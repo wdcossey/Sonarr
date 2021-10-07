@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import split from 'Utilities/String/split';
 import { kinds } from 'Helpers/Props';
 import FieldSet from 'Components/FieldSet';
 import Button from 'Components/Link/Button';
@@ -128,7 +127,7 @@ function TagDetailsModalContent(props) {
                     >
                       <div>
                         {
-                          split(item.required).map((r) => {
+                          item.required.map((r) => {
                             return (
                               <Label
                                 key={r}
@@ -143,7 +142,24 @@ function TagDetailsModalContent(props) {
 
                       <div>
                         {
-                          split(item.ignored).map((i) => {
+                          item.preferred.map((i) => {
+                            const isPreferred = i.value >= 0;
+
+                            return (
+                              <Label
+                                key={i.key}
+                                kind={isPreferred ? kinds.DEFAULT : kinds.WARNING}
+                              >
+                                {i.key} {isPreferred && '+'}{i.value}
+                              </Label>
+                            );
+                          })
+                        }
+                      </div>
+
+                      <div>
+                        {
+                          item.ignored.map((i) => {
                             return (
                               <Label
                                 key={i}

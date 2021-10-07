@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import split from 'Utilities/String/split';
 import { kinds } from 'Helpers/Props';
 import Card from 'Components/Card';
 import Label from 'Components/Label';
@@ -207,8 +206,8 @@ ReleaseProfile.propTypes = {
 
 ReleaseProfile.defaultProps = {
   enabled: true,
-  required: '',
-  ignored: '',
+  required: [],
+  ignored: [],
   preferred: [],
   indexerId: 0
 };
