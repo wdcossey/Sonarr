@@ -35,6 +35,5 @@ namespace NzbDrone.Core.Datastore.Converters
 
             return Json.Deserialize(stringValue, impType);
         }
-
     }
 }

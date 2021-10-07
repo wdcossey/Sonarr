@@ -23,7 +23,7 @@ namespace NzbDrone.Core.Datastore.Migration
             Execute.WithConnection(ConvertQualityProfiles);
             Execute.WithConnection(ConvertQualityModels);
         }
-        
+
         private void ConvertQualityProfiles(IDbConnection conn, IDbTransaction tran)
         {
             var qualityProfileItemConverter = new EmbeddedDocumentConverter(new QualityIntConverter());

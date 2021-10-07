@@ -20,7 +20,7 @@ namespace NzbDrone.SysTray
         private readonly IProcessProvider _processProvider;
 
         private readonly NotifyIcon _trayIcon = new NotifyIcon();
-        private readonly ContextMenu _trayMenu = new ContextMenu();
+        private readonly ContextMenuStrip _trayMenu = new ContextMenuStrip();
 
         public SystemTrayApp(IBrowserService browserService, IRuntimeInfo runtimeInfo, IProcessProvider processProvider)
         {
@@ -34,14 +34,14 @@ namespace NzbDrone.SysTray
             Application.ThreadException += OnThreadException;
             Application.ApplicationExit += OnApplicationExit;
 
-            _trayMenu.MenuItems.Add("Launch Browser", LaunchBrowser);
-            _trayMenu.MenuItems.Add("-");
-            _trayMenu.MenuItems.Add("Exit", OnExit);
+            _trayMenu.Items.Add("Launch Browser", null, LaunchBrowser);
+            _trayMenu.Items.Add("-");
+            _trayMenu.Items.Add("Exit", null, OnExit);
 
             _trayIcon.Text = string.Format("Sonarr - {0}", BuildInfo.Version);
             _trayIcon.Icon = Properties.Resources.NzbDroneIcon;
 
-            _trayIcon.ContextMenu = _trayMenu;
+            _trayIcon.ContextMenuStrip = _trayMenu;
             _trayIcon.Visible = true;
             _trayIcon.DoubleClick += LaunchBrowser;
 
@@ -85,13 +85,13 @@ namespace NzbDrone.SysTray
             }
         }
 
-        private void OnExit(object sender, EventArgs e)
+        private void OnExit(object? sender, EventArgs e)
         {
             LogManager.Configuration = null;
             Environment.Exit(0);
         }
 
-        private void LaunchBrowser(object sender, EventArgs e)
+        private void LaunchBrowser(object? sender, EventArgs e)
         {
             try
             {
@@ -103,7 +103,7 @@ namespace NzbDrone.SysTray
             }
         }
 
-        private void OnApplicationExit(object sender, EventArgs e)
+        private void OnApplicationExit(object? sender, EventArgs e)
         {
             if (_runtimeInfo.RestartPending)
             {

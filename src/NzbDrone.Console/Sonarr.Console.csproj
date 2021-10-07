@@ -1,11 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net462</TargetFramework>
-    <Platforms>x86</Platforms>
+    <TargetFramework>net5.0</TargetFramework>
+    <Platforms>x86;AnyCPU</Platforms>
 
     <ApplicationIcon>..\NzbDrone.Host\Sonarr.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <LangVersion>10</LangVersion>
+    <Nullable>disable</Nullable>
+    <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\NzbDrone.Host\Sonarr.Host.csproj" />

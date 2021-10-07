@@ -2,18 +2,20 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using NLog;
 using NzbDrone.Common;
 using NzbDrone.Common.EnsureThat;
 using NzbDrone.Common.Messaging;
 using NzbDrone.Common.TPL;
+using IServiceProvider = System.IServiceProvider;
 
 namespace NzbDrone.Core.Messaging.Events
 {
     public class EventAggregator : IEventAggregator
     {
         private readonly Logger _logger;
-        private readonly IServiceFactory _serviceFactory;
+        private readonly IServiceProvider _serviceProvider;
         private readonly TaskFactory _taskFactory;
         private readonly Dictionary<string, object> _eventSubscribers;
 
@@ -23,24 +25,24 @@ namespace NzbDrone.Core.Messaging.Events
             public IHandleAsync<TEvent>[] _asyncHandlers;
             public IHandleAsync<IEvent>[] _globalHandlers;
 
-            public EventSubscribers(IServiceFactory serviceFactory)
+            public EventSubscribers(IServiceProvider serviceProvider)
             {
-                _syncHandlers = serviceFactory.BuildAll<IHandle<TEvent>>()
+                _syncHandlers = serviceProvider.GetServices<IHandle<TEvent>>()
                                               .OrderBy(GetEventHandleOrder)
                                               .ToArray();
 
-                _globalHandlers = serviceFactory.BuildAll<IHandleAsync<IEvent>>()
+                _globalHandlers = serviceProvider.GetServices<IHandleAsync<IEvent>>()
                                               .ToArray();
 
-                _asyncHandlers = serviceFactory.BuildAll<IHandleAsync<TEvent>>()
+                _asyncHandlers = serviceProvider.GetServices<IHandleAsync<TEvent>>()
                                                .ToArray();
             }
         }
 
-        public EventAggregator(Logger logger, IServiceFactory serviceFactory)
+        public EventAggregator(Logger logger, IServiceProvider serviceProvider)
         {
             _logger = logger;
-            _serviceFactory = serviceFactory;
+            _serviceProvider = serviceProvider;
             _taskFactory = new TaskFactory();
             _eventSubscribers = new Dictionary<string, object>();
         }
@@ -76,7 +78,7 @@ namespace NzbDrone.Core.Messaging.Events
                 object target;
                 if (!_eventSubscribers.TryGetValue(eventName, out target))
                 {
-                    _eventSubscribers[eventName] = target = new EventSubscribers<TEvent>(_serviceFactory);
+                    _eventSubscribers[eventName] = target = new EventSubscribers<TEvent>(_serviceProvider);
                 }
 
                 subscribers = target as EventSubscribers<TEvent>;

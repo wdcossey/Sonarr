@@ -1,9 +1,12 @@
-<Project Sdk="Microsoft.NET.Sdk">  
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net462</TargetFramework>
-    <Platforms>x86</Platforms>
-  </PropertyGroup>  
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Platforms>x86;AnyCPU</Platforms>
+    <LangVersion>10</LangVersion>
+    <Nullable>disable</Nullable>
+    <Configurations>Debug;Release</Configurations>
+  </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Lib.Harmony" Version="2.0.1" />
+    <PackageReference Include="Lib.Harmony" Version="2.1.1" />
   </ItemGroup>
 </Project>

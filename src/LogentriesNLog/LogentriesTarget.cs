@@ -1,6 +1,6 @@
 ﻿using System;
+using fastJSON;
 using LogentriesCore;
-using LogentriesNLog.fastJSON;
 using NLog;
 using NLog.Targets;
 
@@ -122,7 +122,7 @@ namespace LogentriesNLog
                 log.ExceptionType = logEvent.Exception.GetType().ToString();
             }
 
-            logentriesAsync.AddLine(JSON.Instance.ToJSON(log));
+            logentriesAsync.AddLine(JSON.ToJSON(log));
         }
 
         protected override void CloseTarget()

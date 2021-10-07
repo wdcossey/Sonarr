@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using NzbDrone.Common.EnvironmentInfo;
@@ -22,9 +23,7 @@ namespace NzbDrone.Common.Composition
             assemblies.Add("Sonarr.Common");
 
             foreach (var assembly in assemblies)
-            {
-                _loadedTypes.AddRange(Assembly.Load(assembly).GetExportedTypes());
-            }
+                _loadedTypes.AddRange(Assembly.Load(new AssemblyName(assembly)).GetExportedTypes());
 
             Container = new Container(new TinyIoCContainer(), _loadedTypes);
             AutoRegisterInterfaces();

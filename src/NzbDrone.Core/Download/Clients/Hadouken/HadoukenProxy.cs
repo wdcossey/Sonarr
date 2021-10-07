@@ -12,7 +12,7 @@ namespace NzbDrone.Core.Download.Clients.Hadouken
     {
         HadoukenSystemInfo GetSystemInfo(HadoukenSettings settings);
         HadoukenTorrent[] GetTorrents(HadoukenSettings settings);
-        IDictionary<string, object> GetConfig(HadoukenSettings settings);
+        IReadOnlyDictionary<string, object> GetConfig(HadoukenSettings settings);
         string AddTorrentFile(HadoukenSettings settings, byte[] fileContent);
         void AddTorrentUri(HadoukenSettings settings, string torrentUrl);
         void RemoveTorrent(HadoukenSettings settings, string downloadId);
@@ -38,13 +38,13 @@ namespace NzbDrone.Core.Download.Clients.Hadouken
         public HadoukenTorrent[] GetTorrents(HadoukenSettings settings)
         {
             var result = ProcessRequest<HadoukenTorrentResponse>(settings, "webui.list");
-            
+
             return GetTorrents(result.Torrents);
         }
 
-        public IDictionary<string, object> GetConfig(HadoukenSettings settings)
+        public IReadOnlyDictionary<string, object> GetConfig(HadoukenSettings settings)
         {
-            return ProcessRequest<IDictionary<string, object>>(settings, "webui.getSettings");
+            return ProcessRequest<IReadOnlyDictionary<string, object>>(settings, "webui.getSettings");
         }
 
         public string AddTorrentFile(HadoukenSettings settings, byte[] fileContent)

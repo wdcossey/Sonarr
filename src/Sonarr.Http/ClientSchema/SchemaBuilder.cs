@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 using NzbDrone.Common.EnsureThat;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Reflection;
@@ -182,34 +182,44 @@ namespace Sonarr.Http.ClientSchema
 
         private static Func<object, object> GetValueConverter(Type propertyType)
         {
+            if (propertyType == typeof(string))
+            {
+                return fieldValue => (fieldValue as JsonElement?)?.GetString();
+            }
+
+            if (propertyType == typeof(bool))
+            {
+                return fieldValue => (fieldValue as JsonElement?)?.GetBoolean();
+            }
+
             if (propertyType == typeof(int))
             {
-                return fieldValue => fieldValue?.ToString().ParseInt32() ?? 0;
+                return fieldValue => (fieldValue as JsonElement?)?.GetInt32() ?? 0; //fieldValue?.ToString().ParseInt32() ?? 0;
             }
 
             else if (propertyType == typeof(long))
             {
-                return fieldValue => fieldValue?.ToString().ParseInt64() ?? 0;
+                return fieldValue => (fieldValue as JsonElement?)?.GetInt64() ?? 0L; //fieldValue?.ToString().ParseInt64() ?? 0;
             }
 
             else if (propertyType == typeof(double))
             {
-                return fieldValue => fieldValue?.ToString().ParseDouble() ?? 0.0;
+                return fieldValue => (fieldValue as JsonElement?)?.GetDouble() ?? 0d; //fieldValue?.ToString().ParseDouble() ?? 0.0;
             }
 
             else if (propertyType == typeof(int?))
             {
-                return fieldValue => fieldValue?.ToString().ParseInt32();
+                return fieldValue => (fieldValue as JsonElement?)?.GetInt32(); //fieldValue?.ToString().ParseInt32();
             }
 
             else if (propertyType == typeof(Int64?))
             {
-                return fieldValue => fieldValue?.ToString().ParseInt64();
+                return fieldValue => (fieldValue as JsonElement?)?.GetInt64(); //fieldValue?.ToString().ParseInt64();
             }
 
             else if (propertyType == typeof(double?))
             {
-                return fieldValue => fieldValue?.ToString().ParseDouble();
+                return fieldValue => (fieldValue as JsonElement?)?.GetDouble(); //fieldValue?.ToString().ParseDouble();
             }
 
             else if (propertyType == typeof(IEnumerable<int>))
@@ -220,9 +230,9 @@ namespace Sonarr.Http.ClientSchema
                     {
                         return Enumerable.Empty<int>();
                     }
-                    else if (fieldValue.GetType() == typeof(JArray))
+                    else if (fieldValue is JsonElement { ValueKind: JsonValueKind.Array } jsonElement)
                     {
-                        return ((JArray)fieldValue).Select(s => s.Value<int>());
+                        return jsonElement.EnumerateArray().Select(s => s.GetInt32());
                     }
                     else
                     {
@@ -239,9 +249,9 @@ namespace Sonarr.Http.ClientSchema
                     {
                         return Enumerable.Empty<string>();
                     }
-                    else if (fieldValue.GetType() == typeof(JArray))
+                    else if (fieldValue is JsonElement { ValueKind: JsonValueKind.Array } jsonElement)
                     {
-                        return ((JArray)fieldValue).Select(s => s.Value<string>());
+                        return jsonElement.EnumerateArray().Select(s => s.GetString());
                     }
                     else
                     {

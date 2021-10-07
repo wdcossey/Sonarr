@@ -1,8 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentValidation.Results;
 using NLog;
-using NzbDrone.Common.Composition;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.ThingiProvider;
 
@@ -21,10 +21,10 @@ namespace NzbDrone.Core.ImportLists
         public ImportListFactory(IImportListStatusService importListStatusService,
                               IImportListRepository providerRepository,
                               IEnumerable<IImportList> providers,
-                              IContainer container,
+                              IServiceProvider serviceProvider,
                               IEventAggregator eventAggregator,
                               Logger logger)
-            : base(providerRepository, providers, container, eventAggregator, logger)
+            : base(providerRepository, providers, serviceProvider, eventAggregator, logger)
         {
             _importListStatusService = importListStatusService;
             _logger = logger;

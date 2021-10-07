@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using Microsoft.Win32;
 
 namespace NzbDrone.Common.EnvironmentInfo
 {
@@ -95,7 +94,8 @@ namespace NzbDrone.Common.EnvironmentInfo
         {
             try
             {
-                const string subkey = @"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\";
+                return System.Environment.Version;
+                /*const string subkey = @"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\";
                 using (var ndpKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32).OpenSubKey(subkey))
                 {
                     if (ndpKey == null)
@@ -145,7 +145,7 @@ namespace NzbDrone.Common.EnvironmentInfo
                     {
                         return new Version(4, 5);
                     }
-                }
+                }*/
             }
             catch (Exception ex)
             {

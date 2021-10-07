@@ -81,9 +81,8 @@ namespace Sonarr.Http.Extensions.Pipelines
 
         private static bool ContentLengthIsTooSmall(Response response)
         {
-            var contentLength = response.Headers.GetValueOrDefault("Content-Length");
-
-            if (contentLength != null && long.Parse(contentLength) < 1024)
+            if (response.Headers.TryGetValue("Content-Length", out var contentLength)
+                && !string.IsNullOrWhiteSpace(contentLength) && long.Parse(contentLength) < 1024)
             {
                 return true;
             }
@@ -93,9 +92,8 @@ namespace Sonarr.Http.Extensions.Pipelines
 
         private static bool AlreadyGzipEncoded(Response response)
         {
-            var contentEncoding = response.Headers.GetValueOrDefault("Content-Encoding");
-
-            if (contentEncoding == "gzip")
+            if (response.Headers.TryGetValue("Content-Length", out var contentEncoding)
+                && !string.IsNullOrWhiteSpace(contentEncoding) && contentEncoding == "gzip" )
             {
                 return true;
             }

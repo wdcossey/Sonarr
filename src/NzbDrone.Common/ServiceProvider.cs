@@ -1,3 +1,84 @@
+
+//TODO: Remove/Fix?
+namespace NzbDrone.Common
+{
+    public interface IServiceProvider
+    {
+        bool ServiceExist(string name);
+        bool IsServiceRunning(string name);
+        void Install(string serviceName);
+        void Uninstall(string serviceName);
+        void Run(dynamic service);
+        dynamic GetService(string serviceName);
+        void Stop(string serviceName);
+        void Start(string serviceName);
+        dynamic GetStatus(string serviceName);
+        void Restart(string serviceName);
+        void SetPermissions(string serviceName);
+    }
+
+    //TODO: Windows Services not implemented
+    public class ServiceProvider : IServiceProvider
+    {
+        public const string SERVICE_NAME = "Sonarr";
+        public bool ServiceExist(string name)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public bool IsServiceRunning(string name)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void Install(string serviceName)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void Uninstall(string serviceName)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void Run(dynamic service)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public dynamic GetService(string serviceName)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void Stop(string serviceName)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void Start(string serviceName)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public dynamic GetStatus(string serviceName)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void Restart(string serviceName)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void SetPermissions(string serviceName)
+        {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+
+/*
 using System;
 using System.Collections.Specialized;
 using System.Configuration.Install;
@@ -229,3 +310,4 @@ namespace NzbDrone.Common
         }
     }
 }
+*/

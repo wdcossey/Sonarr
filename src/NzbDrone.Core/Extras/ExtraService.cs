@@ -38,7 +38,7 @@ namespace NzbDrone.Core.Extras
                             IEpisodeService episodeService,
                             IDiskProvider diskProvider,
                             IConfigService configService,
-                            List<IManageExtraFiles> extraFileManagers,
+                            IEnumerable<IManageExtraFiles> extraFileManagers,
                             Logger logger)
         {
             _mediaFileService = mediaFileService;
@@ -52,7 +52,7 @@ namespace NzbDrone.Core.Extras
         public void ImportEpisode(LocalEpisode localEpisode, EpisodeFile episodeFile, bool isReadOnly)
         {
             ImportExtraFiles(localEpisode, episodeFile, isReadOnly);
-            
+
             CreateAfterEpisodeImport(localEpisode.Series, episodeFile);
         }
 

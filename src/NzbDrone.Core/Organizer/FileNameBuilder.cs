@@ -192,14 +192,14 @@ namespace NzbDrone.Core.Organizer
         public string BuildFilePath(List<Episode> episodes, Series series, EpisodeFile episodeFile, string extension, NamingConfig namingConfig = null, PreferredWordMatchResults preferredWords = null)
         {
             Ensure.That(extension, () => extension).IsNotNullOrWhiteSpace();
-            
+
             var seasonPath = BuildSeasonPath(series, episodes.First().SeasonNumber);
             var remainingPathLength = LongPathSupport.MaxFilePathLength - seasonPath.GetByteCount() - 1;
             var fileName = BuildFileName(episodes, series, episodeFile, extension, remainingPathLength, namingConfig, preferredWords);
 
             return Path.Combine(seasonPath, fileName);
         }
-        
+
         public string BuildSeasonPath(Series series, int seasonNumber)
         {
             var path = series.Path;
@@ -603,7 +603,7 @@ namespace NzbDrone.Core.Organizer
         }
 
         private const string MediaInfoVideoDynamicRangeToken = "{MediaInfo VideoDynamicRange}";
-        private static readonly IDictionary<string, int> MinimumMediaInfoSchemaRevisions =
+        private static readonly IReadOnlyDictionary<string, int> MinimumMediaInfoSchemaRevisions =
             new Dictionary<string, int>(FileNameBuilderTokenEqualityComparer.Instance)
         {
             {MediaInfoVideoDynamicRangeToken, 5}
@@ -681,7 +681,7 @@ namespace NzbDrone.Core.Organizer
                 }
 
                 if (preferredWords.ByReleaseProfile.TryGetValue(profileName, out var profilePreferredWords))
-                { 
+                {
                     return string.Join(" ", profilePreferredWords);
                 }
 
@@ -702,7 +702,7 @@ namespace NzbDrone.Core.Organizer
             for (int i = 0; i < tokens.Count; i++)
             {
                 if (tokens[i] == "Swedis")
-                { 
+                {
                     // Probably typo in mediainfo (should be 'Swedish')
                     tokens[i] = "SV";
                     continue;
@@ -728,7 +728,7 @@ namespace NzbDrone.Core.Organizer
             }
 
             tokens = tokens.Distinct().ToList();
-            
+
             var filteredTokens = tokens;
 
             // Exclude or filter
@@ -774,7 +774,7 @@ namespace NzbDrone.Core.Organizer
             {
                 return;
             }
-           
+
             var schemaRevision = episodeFile.MediaInfo != null ? episodeFile.MediaInfo.SchemaRevision : 0;
             var matches = TitleRegex.Matches(pattern);
 
@@ -829,7 +829,7 @@ namespace NzbDrone.Core.Organizer
                 // Preserve original token if handler returned null
                 return match.Value;
             }
-            
+
             replacementText = replacementText.Trim();
 
             if (tokenMatch.Token.All(t => !char.IsLetter(t) || char.IsLower(t)))

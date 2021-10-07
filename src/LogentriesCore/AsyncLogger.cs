@@ -8,29 +8,32 @@ using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using Microsoft.Extensions.Configuration;
 
 namespace LogentriesCore
 {
     public class AsyncLogger
     {
+        private readonly IConfiguration _configuration;
+
         #region Constants
 
         // Current version number.
         protected const String Version = "2.6.0";
 
-        // Size of the internal event queue. 
+        // Size of the internal event queue.
         protected const int QueueSize = 32768;
 
-        // Minimal delay between attempts to reconnect in milliseconds. 
+        // Minimal delay between attempts to reconnect in milliseconds.
         protected const int MinDelay = 100;
 
-        // Maximal delay between attempts to reconnect in milliseconds. 
+        // Maximal delay between attempts to reconnect in milliseconds.
         protected const int MaxDelay = 10000;
 
-        // Appender signature - used for debugging messages. 
+        // Appender signature - used for debugging messages.
         protected const String LeSignature = "LE: ";
 
-        // Legacy Logentries configuration names. 
+        // Legacy Logentries configuration names.
         protected const String LegacyConfigTokenName = "LOGENTRIES_TOKEN";
         protected const String LegacyConfigAccountKeyName = "LOGENTRIES_ACCOUNT_KEY";
         protected const String LegacyConfigLocationName = "LOGENTRIES_LOCATION";
@@ -40,16 +43,16 @@ namespace LogentriesCore
         protected const String ConfigAccountKeyName = "Logentries.AccountKey";
         protected const String ConfigLocationName = "Logentries.Location";
 
-        // Error message displayed when invalid token is detected. 
+        // Error message displayed when invalid token is detected.
         protected const String InvalidTokenMessage = "\n\nIt appears your LOGENTRIES_TOKEN value is invalid or missing.\n\n";
 
-        // Error message displayed when invalid account_key or location parameters are detected. 
+        // Error message displayed when invalid account_key or location parameters are detected.
         protected const String InvalidHttpPutCredentialsMessage = "\n\nIt appears your LOGENTRIES_ACCOUNT_KEY or LOGENTRIES_LOCATION values are invalid or missing.\n\n";
 
-        // Error message deisplayed when queue overflow occurs. 
+        // Error message deisplayed when queue overflow occurs.
         protected const String QueueOverflowMessage = "\n\nLogentries buffer queue overflow. Message dropped.\n\n";
 
-        // Newline char to trim from message for formatting. 
+        // Newline char to trim from message for formatting.
         protected static char[] TrimChars = { '\r', '\n' };
 
         /** Non-Unix and Unix Newline */
@@ -69,10 +72,10 @@ namespace LogentriesCore
 
         #region Singletons
 
-        // UTF-8 output character set. 
+        // UTF-8 output character set.
         protected static readonly UTF8Encoding UTF8 = new UTF8Encoding();
 
-        // ASCII character set used by HTTP. 
+        // ASCII character set used by HTTP.
         protected static readonly ASCIIEncoding ASCII = new ASCIIEncoding();
 
         //static list of all the queues the le appender might be managing.
@@ -110,6 +113,13 @@ namespace LogentriesCore
             WorkerThread = new Thread(Run);
             WorkerThread.Name = "Logentries Log4net Appender";
             WorkerThread.IsBackground = true;
+        }
+
+        //TODO: Fix IConfiguration implementation
+        public AsyncLogger(IConfiguration configuration)
+            :this()
+        {
+            _configuration = configuration;
         }
 
         #region Configuration properties
@@ -319,7 +329,7 @@ namespace LogentriesCore
                         }
                     }
                 }
-                            
+
                 if (m_LogID != String.Empty)
                 {
                     logMessagePrefix = m_LogID + " ";
@@ -348,7 +358,7 @@ namespace LogentriesCore
                     // If m_UseDataHub == true (logs are sent to DataHub instance) then m_Token is not
                     // appended to the message.
                     string finalLine = ((!m_UseHttpPut && !m_UseDataHub) ? this.m_Token + line : line) + '\n';
-                    
+
                     // Add prefixes: LogID and HostName if they are defined.
                     if (!isPrefixEmpty)
                     {
@@ -391,10 +401,10 @@ namespace LogentriesCore
                 if (LeClient == null)
                 {
                     // Create LeClient instance providing all needed parameters. If DataHub-related properties
-                    // have not been overridden by log4net or NLog configurators, then DataHub is not used, 
+                    // have not been overridden by log4net or NLog configurators, then DataHub is not used,
                     // because m_UseDataHub == false by default.
                     LeClient = new LeClient(m_UseHttpPut, m_UseSsl, m_UseDataHub, m_DataHubAddr, m_DataHubPort);
-                }                    
+                }
 
                 LeClient.Connect();
 
@@ -471,7 +481,7 @@ namespace LogentriesCore
             string value;
 
 
-            value = ConfigurationManager.AppSettings[name];
+            value = _configuration[name];
 
             if (IsNullOrWhiteSpace(value))
             {
@@ -489,16 +499,16 @@ namespace LogentriesCore
 
         /*
          * Use CloudConfigurationManager with .NET4.0 and fallback to System.Configuration for previous frameworks.
-         * 
+         *
          * NOTE: This is not entirely clear with regards to the above comment, but this block of code uses a compiler directive NET4_0
          *       which is not set by default anywhere, so most uses of this code will default back to the "pre-.Net4.0" code branch, even
          *       if you are using .Net4.0 or .Net4.5.
-         *       
+         *
          *       The second issue is that there are two appsetting keys for each setting - the "legacy" key, such as "LOGENTRIES_TOKEN"
          *       and the "non-legacy" key, such as "Logentries.Token".  Again, I'm not sure of the reasons behind this, so the code below checks
          *       both the legacy and non-legacy keys, defaulting to the legacy keys if they are found.
-         *       
-         *       It probably should be investigated whether the fallback to ConfigurationManager is needed at all, as CloudConfigurationManager 
+         *
+         *       It probably should be investigated whether the fallback to ConfigurationManager is needed at all, as CloudConfigurationManager
          *       will retrieve settings from appSettings in a non-Azure environment.
          */
         protected virtual bool LoadCredentials()
@@ -523,12 +533,12 @@ namespace LogentriesCore
             if (m_AccountKey != "" && GetIsValidGuid(m_AccountKey) && m_Location != "")
                 return true;
 
-            var configAccountKey = ConfigurationManager.AppSettings[LegacyConfigAccountKeyName] ?? ConfigurationManager.AppSettings[ConfigAccountKeyName];
+            var configAccountKey = _configuration[LegacyConfigAccountKeyName] ?? _configuration[ConfigAccountKeyName];
             if (!String.IsNullOrEmpty(configAccountKey) && GetIsValidGuid(configAccountKey))
             {
                 m_AccountKey = configAccountKey;
 
-                var configLocation = ConfigurationManager.AppSettings[LegacyConfigLocationName] ?? ConfigurationManager.AppSettings[ConfigLocationName];
+                var configLocation = _configuration[LegacyConfigLocationName] ?? _configuration[ConfigLocationName];
                 if (!String.IsNullOrEmpty(configLocation))
                 {
                     m_Location = configLocation;

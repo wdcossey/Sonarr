@@ -17,7 +17,7 @@ namespace NzbDrone.Update
         {
             var assemblies = new List<string>
                              {
-                                 "Sonarr.Update"
+                                 "Sonarr.Update.dll"
                              };
 
             return new UpdateContainerBuilder(startupContext, assemblies).Container;

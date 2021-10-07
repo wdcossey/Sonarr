@@ -9,7 +9,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading;
+using Microsoft.Extensions.DependencyInjection;
 using NzbDrone.Core.Exceptions;
+using IServiceProvider = System.IServiceProvider;
 
 namespace NzbDrone.Core.Messaging.Commands
 {
@@ -21,7 +23,7 @@ namespace NzbDrone.Core.Messaging.Commands
         IEnumerable<CommandModel> Queue(CancellationToken cancellationToken);
         List<CommandModel> All();
         CommandModel Get(int id);
-        List<CommandModel> GetStarted(); 
+        List<CommandModel> GetStarted();
         void SetMessage(CommandModel command, string message);
         void Start(CommandModel command);
         void Complete(CommandModel command, string message);
@@ -34,17 +36,18 @@ namespace NzbDrone.Core.Messaging.Commands
     public class CommandQueueManager : IManageCommandQueue, IHandle<ApplicationStartedEvent>
     {
         private readonly ICommandRepository _repo;
-        private readonly IServiceFactory _serviceFactory;
+        private readonly IServiceProvider _serviceProvider;
         private readonly Logger _logger;
 
         private readonly CommandQueue _commandQueue;
 
-        public CommandQueueManager(ICommandRepository repo, 
-                                   IServiceFactory serviceFactory,
-                                   Logger logger)
+        public CommandQueueManager(
+            ICommandRepository repo,
+            IServiceProvider serviceProvider,
+            Logger logger)
         {
             _repo = repo;
-            _serviceFactory = serviceFactory;
+            _serviceProvider = serviceProvider;
             _logger = logger;
 
             _commandQueue = new CommandQueue();
@@ -190,7 +193,7 @@ namespace NzbDrone.Core.Messaging.Commands
         public void Fail(CommandModel command, string message, Exception e)
         {
             command.Exception = e.ToString();
-            
+
             Update(command, CommandStatus.Failed, message);
 
             _commandQueue.PulseAllConsumers();
@@ -215,7 +218,7 @@ namespace NzbDrone.Core.Messaging.Commands
         public void CleanCommands()
         {
             _logger.Trace("Cleaning up old commands");
-            
+
             var commands = _commandQueue.All()
                                         .Where(c => c.EndedAt < DateTime.UtcNow.AddMinutes(-5))
                                         .ToList();
@@ -229,10 +232,11 @@ namespace NzbDrone.Core.Messaging.Commands
         {
             commandName = commandName.Split('.').Last();
 
-            var commandType = _serviceFactory.GetImplementations(typeof(Command))
+            //TODO: Old implementation got the `Type` not an instance
+            var commandType = _serviceProvider.GetServices<Command>()
                                              .Single(c => c.Name.Equals(commandName, StringComparison.InvariantCultureIgnoreCase));
 
-            return Json.Deserialize("{}", commandType);
+            return Json.Deserialize("{}", commandType.GetType());
         }
 
         private void Update(CommandModel command, CommandStatus status, string message)

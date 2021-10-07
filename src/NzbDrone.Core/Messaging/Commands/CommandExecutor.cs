@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Threading;
+using Microsoft.Extensions.DependencyInjection;
 using NLog;
-using NzbDrone.Common;
 using NzbDrone.Core.Lifecycle;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.ProgressMessaging;
+using IServiceProvider = System.IServiceProvider;
 
 namespace NzbDrone.Core.Messaging.Commands
 {
@@ -12,20 +13,20 @@ namespace NzbDrone.Core.Messaging.Commands
                                    IHandle<ApplicationShutdownRequested>
     {
         private readonly Logger _logger;
-        private readonly IServiceFactory _serviceFactory;
+        private readonly IServiceProvider _serviceProvider;
         private readonly IManageCommandQueue _commandQueueManager;
         private readonly IEventAggregator _eventAggregator;
 
         private static CancellationTokenSource _cancellationTokenSource;
         private const int THREAD_LIMIT = 3;
 
-        public CommandExecutor(IServiceFactory serviceFactory,
+        public CommandExecutor(IServiceProvider serviceProvider,
                                IManageCommandQueue commandQueueManager,
                                IEventAggregator eventAggregator,
                                Logger logger)
         {
             _logger = logger;
-            _serviceFactory = serviceFactory;
+            _serviceProvider = serviceProvider;
             _commandQueueManager = commandQueueManager;
             _eventAggregator = eventAggregator;
         }
@@ -67,7 +68,7 @@ namespace NzbDrone.Core.Messaging.Commands
 
             try
             {
-                handler = (IExecute<TCommand>)_serviceFactory.Build(typeof(IExecute<TCommand>));
+                handler = (IExecute<TCommand>)_serviceProvider.GetRequiredService(typeof(IExecute<TCommand>));
 
                 _logger.Trace("{0} -> {1}", command.GetType().Name, handler.GetType().Name);
 

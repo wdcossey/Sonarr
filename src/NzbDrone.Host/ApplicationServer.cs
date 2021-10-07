@@ -1,5 +1,5 @@
 using System;
-using System.ServiceProcess;
+//using System.ServiceProcess;
 using NLog;
 using NzbDrone.Common.Composition;
 using NzbDrone.Common.EnvironmentInfo;
@@ -7,17 +7,17 @@ using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Lifecycle;
 using NzbDrone.Core.Messaging.Events;
-using NzbDrone.Host.Owin;
+using NzbDrone.Host.WebHost;
 
 namespace NzbDrone.Host
 {
     public interface INzbDroneServiceFactory
     {
-        ServiceBase Build();
+        //ServiceBase Build();
         void Start();
     }
 
-    public class NzbDroneServiceFactory : ServiceBase, INzbDroneServiceFactory, IHandle<ApplicationShutdownRequested>
+    public class NzbDroneServiceFactory : /*ServiceBase, */INzbDroneServiceFactory, IHandle<ApplicationShutdownRequested>
     {
         private readonly IConfigFileProvider _configFileProvider;
         private readonly IRuntimeInfo _runtimeInfo;
@@ -44,10 +44,10 @@ namespace NzbDrone.Host
             _logger = logger;
         }
 
-        protected override void OnStart(string[] args)
+        /*protected override void OnStart(string[] args)
         {
             Start();
-        }
+        }*/
 
         public void Start()
         {
@@ -77,15 +77,15 @@ namespace NzbDrone.Host
             _container.Resolve<IEventAggregator>().PublishEvent(new ApplicationStartedEvent());
         }
 
-        protected override void OnStop()
+        /*protected override void OnStop()
         {
             Shutdown();
-        }
+        }*/
 
-        public ServiceBase Build()
+        /*public ServiceBase Build()
         {
             return this;
-        }
+        }*/
 
         private void Shutdown()
         {

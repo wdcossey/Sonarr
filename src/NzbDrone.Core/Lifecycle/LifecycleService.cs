@@ -1,4 +1,5 @@
-﻿using NLog;
+﻿using System;
+using NLog;
 using NzbDrone.Common;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Core.Lifecycle.Commands;
@@ -40,6 +41,7 @@ namespace NzbDrone.Core.Lifecycle
 
             if (_runtimeInfo.IsWindowsService)
             {
+                throw new NotImplementedException("_serviceProvider.Stop()");
                 _serviceProvider.Stop(ServiceProvider.SERVICE_NAME);
             }
         }
@@ -52,6 +54,7 @@ namespace NzbDrone.Core.Lifecycle
 
             if (_runtimeInfo.IsWindowsService)
             {
+                throw new NotImplementedException("_serviceProvider.Restart()");
                 _serviceProvider.Restart(ServiceProvider.SERVICE_NAME);
             }
         }

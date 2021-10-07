@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿//TODO: Fix `StackFrameHelper` IoC (do we even need Mono?)
+/*
+using System.Diagnostics;
 using NLog;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
@@ -45,3 +47,4 @@ namespace NzbDrone.Core.HealthCheck.Checks
         }
     }
 }
+*/

@@ -1,8 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net462</TargetFramework>
-    <Platforms>x86</Platforms>
-    
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Platforms>x86;AnyCPU</Platforms>
+
     <Version>9.0.21022</Version>
+    <LangVersion>10</LangVersion>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 </Project>

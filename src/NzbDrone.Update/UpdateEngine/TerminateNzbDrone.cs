@@ -3,7 +3,7 @@ using NLog;
 using NzbDrone.Common;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Processes;
-using IServiceProvider = NzbDrone.Common.IServiceProvider;
+//using IServiceProvider = NzbDrone.Common.IServiceProvider;
 
 namespace NzbDrone.Update.UpdateEngine
 {
@@ -14,13 +14,13 @@ namespace NzbDrone.Update.UpdateEngine
 
     public class TerminateNzbDrone : ITerminateNzbDrone
     {
-        private readonly IServiceProvider _serviceProvider;
+        //private readonly IServiceProvider _serviceProvider;
         private readonly IProcessProvider _processProvider;
         private readonly Logger _logger;
 
-        public TerminateNzbDrone(IServiceProvider serviceProvider, IProcessProvider processProvider, Logger logger)
+        public TerminateNzbDrone(/*IServiceProvider serviceProvider,*/ IProcessProvider processProvider, Logger logger)
         {
-            _serviceProvider = serviceProvider;
+            //_serviceProvider = serviceProvider;
             _processProvider = processProvider;
             _logger = logger;
         }
@@ -31,7 +31,7 @@ namespace NzbDrone.Update.UpdateEngine
             {
                 _logger.Info("Stopping all running services");
 
-                if (_serviceProvider.ServiceExist(ServiceProvider.SERVICE_NAME)
+                /*if (_serviceProvider.ServiceExist(ServiceProvider.SERVICE_NAME)
                     && _serviceProvider.IsServiceRunning(ServiceProvider.SERVICE_NAME))
                 {
                     try
@@ -43,7 +43,7 @@ namespace NzbDrone.Update.UpdateEngine
                     {
                         _logger.Error(e, "couldn't stop service");
                     }
-                }
+                }*/
 
                 _logger.Info("Killing all running processes");
 

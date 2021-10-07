@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using Sonarr.Http.REST;
 using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.Tv;
@@ -119,14 +120,14 @@ namespace NzbDrone.Api.Series
                 Network = model.Network,
                 AirTime = model.AirTime,
                 Images = model.Images,
-                
+
                 Seasons = model.Seasons.ToResource(includeSeasonImages),
                 Year = model.Year,
-                
+
                 Path = model.Path,
                 ProfileId = model.QualityProfileId,
                 LanguageProfileId = model.LanguageProfileId,
-                
+
                 SeasonFolder = model.SeasonFolder,
                 Monitored = model.Monitored,
 

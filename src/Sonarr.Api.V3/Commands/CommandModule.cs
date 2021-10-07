@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using NzbDrone.Common;
+using Microsoft.Extensions.DependencyInjection;
 using NzbDrone.Common.TPL;
 using NzbDrone.Core.Datastore.Events;
 using NzbDrone.Core.Messaging.Commands;
@@ -11,23 +11,24 @@ using NzbDrone.SignalR;
 using Sonarr.Http;
 using Sonarr.Http.Extensions;
 using Sonarr.Http.Validation;
+using IServiceProvider = System.IServiceProvider;
 
 namespace Sonarr.Api.V3.Commands
 {
     public class CommandModule : SonarrRestModuleWithSignalR<CommandResource, CommandModel>, IHandle<CommandUpdatedEvent>
     {
         private readonly IManageCommandQueue _commandQueueManager;
-        private readonly IServiceFactory _serviceFactory;
+        private readonly IServiceProvider _serviceProvider;
         private readonly Debouncer _debouncer;
         private readonly Dictionary<int, CommandResource> _pendingUpdates;
 
         public CommandModule(IManageCommandQueue commandQueueManager,
                              IBroadcastSignalRMessage signalRBroadcaster,
-                             IServiceFactory serviceFactory)
+                             IServiceProvider serviceProvider)
             : base(signalRBroadcaster)
         {
             _commandQueueManager = commandQueueManager;
-            _serviceFactory = serviceFactory;
+            _serviceProvider = serviceProvider;
 
             _debouncer = new Debouncer(SendUpdates, TimeSpan.FromSeconds(0.1));
             _pendingUpdates = new Dictionary<int, CommandResource>();
@@ -47,12 +48,13 @@ namespace Sonarr.Api.V3.Commands
 
         private int StartCommand(CommandResource commandResource)
         {
+            //TODO: Old implementation got the `Type` not an instance
             var commandType =
-                _serviceFactory.GetImplementations(typeof (Command))
+                _serviceProvider.GetServices<Command>()
                                .Single(c => c.Name.Replace("Command", "")
                                              .Equals(commandResource.Name, StringComparison.InvariantCultureIgnoreCase));
 
-            dynamic command = Request.Body.FromJson(commandType);
+            dynamic command = Request.Body.FromJson(commandType.GetType());
             command.Trigger = CommandTrigger.Manual;
             command.SuppressMessages = !command.SendUpdatesToClient;
             command.SendUpdatesToClient = true;

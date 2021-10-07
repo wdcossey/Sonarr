@@ -35,7 +35,7 @@ namespace NzbDrone.Core.Blocklisting
         public bool Blocklisted(int seriesId, ReleaseInfo release)
         {
             var blocklistedByTitle = _blocklistRepository.BlocklistedByTitle(seriesId, release.Title);
-            
+
             if (release.DownloadProtocol == DownloadProtocol.Torrent)
             {
                 var torrentInfo = release as TorrentInfo;

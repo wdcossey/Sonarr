@@ -1,17 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net462</TargetFramework>
-    <Platforms>x86</Platforms>
-    
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <Platforms>x86;AnyCPU</Platforms>
+
     <ApplicationIcon>..\NzbDrone.Host\Sonarr.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <LangVersion>10</LangVersion>
+    <Nullable>disable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\NzbDrone.Host\Sonarr.Host.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
@@ -25,5 +26,8 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="EmbedIO" Version="3.4.3" />
   </ItemGroup>
 </Project>

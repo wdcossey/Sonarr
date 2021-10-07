@@ -1,17 +1,29 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net462</TargetFramework>
-    <Platforms>x86</Platforms>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Platforms>x86;AnyCPU</Platforms>
+    <LangVersion>10</LangVersion>
+    <Nullable>disable</Nullable>
+    <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNet.SignalR.SelfHost" Version="2.4.0" />
+    <!--<PackageReference Include="Microsoft.AspNet.SignalR.SelfHost" Version="2.4.0" />
     <PackageReference Include="Microsoft.AspNet.SignalR.SystemWeb" Version="2.4.0" />
     <PackageReference Include="Microsoft.Owin.Host.SystemWeb" Version="3.1.0" />
     <PackageReference Include="Microsoft.Owin.Security" Version="3.1.0" />
-    <PackageReference Include="Microsoft.Owin.SelfHost" Version="3.1.0" />
+    <PackageReference Include="Microsoft.Owin.SelfHost" Version="3.1.0" />-->
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NzbDrone.Core\Sonarr.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="NoOpPerformanceCounter.cs" />
+    <Compile Remove="NzbDronePersistentConnection.cs" />
+    <Compile Remove="SignalRContractResolver.cs" />
+    <Compile Remove="SignalrDependencyResolver.cs" />
+    <Compile Remove="SignalRJsonSerializer.cs" />
+    <Compile Remove="SonarrPerformanceCounterManager.cs" />
   </ItemGroup>
 </Project>

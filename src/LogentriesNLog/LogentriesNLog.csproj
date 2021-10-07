@@ -1,16 +1,29 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net462</TargetFramework>
-    <Platforms>x86</Platforms>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Platforms>x86;AnyCPU</Platforms>
 
     <AssemblyVersion>2.4.0.0</AssemblyVersion>
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
     <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+    <LangVersion>10</LangVersion>
+    <Nullable>disable</Nullable>
+    <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="fastJSON" Version="2.4.0.4" />
     <PackageReference Include="NLog" Version="4.6.6" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LogentriesCore\LogentriesCore.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="fastJSON\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Remove="fastJSON\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="fastJSON\**" />
   </ItemGroup>
 </Project>

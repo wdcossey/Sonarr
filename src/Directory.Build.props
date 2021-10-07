@@ -11,6 +11,9 @@
     <SonarrOutputType Condition="'$(MSBuildProjectName)'=='Sonarr'">Exe</SonarrOutputType>
     <SonarrOutputType Condition="'$(MSBuildProjectName)'=='Sonarr.Console'">Exe</SonarrOutputType>
     <SonarrOutputType Condition="'$(MSBuildProjectName)'=='Sonarr.Update'">Update</SonarrOutputType>
+    <SonarrOutputType Condition="'$(MSBuildProjectName)'=='Sonarr.Blazor.Server'">Exe</SonarrOutputType>
+    <SonarrOutputType Condition="'$(MSBuildProjectName)'=='Sonarr.Blazor.Client'">Exe</SonarrOutputType>
+    <SonarrOutputType Condition="'$(MSBuildProjectName)'=='Sonarr.Blazor.Shared'">Exe</SonarrOutputType>
 
     <!-- Specifies whether it's one of our own libraries -->
     <SonarrProject>false</SonarrProject>
@@ -40,7 +43,7 @@
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
-  
+
   <!-- Test projects need bindingRedirects -->
   <PropertyGroup Condition="'$(SonarrOutputType)'=='Test'">
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -52,7 +55,7 @@
     <Product>Sonarr</Product>
     <Company>sonarr.tv</Company>
     <Copyright>Copyright 2010-$([System.DateTime]::Now.ToString('yyyy')) sonarr.tv (GNU General Public v3)</Copyright>
-    
+
     <!-- Should be replaced by CI -->
     <AssemblyVersion>10.0.0.*</AssemblyVersion>
     <AssemblyConfiguration>$(Configuration)-dev</AssemblyConfiguration>
@@ -60,7 +63,7 @@
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
     <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    
+
     <Deterministic Condition="$(AssemblyVersion.EndsWith('*'))">False</Deterministic>
   </PropertyGroup>
   <!-- Set the AssemblyConfiguration attribute for projects -->

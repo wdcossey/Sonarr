@@ -2,8 +2,8 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using System.Security.Principal;
-using System.ServiceProcess;
+//using System.Security.Principal;
+//using System.ServiceProcess;
 using NLog;
 using NzbDrone.Common.Processes;
 
@@ -18,10 +18,11 @@ namespace NzbDrone.Common.EnvironmentInfo
         {
             _logger = logger;
 
-            IsWindowsService = !IsUserInteractive &&
-                               OsInfo.IsWindows &&
-                               serviceProvider.ServiceExist(ServiceProvider.SERVICE_NAME) &&
-                               serviceProvider.GetStatus(ServiceProvider.SERVICE_NAME) == ServiceControllerStatus.StartPending;
+            //TODO: Fix me!
+            IsWindowsService = false;//!IsUserInteractive &&
+                               //OsInfo.IsWindows &&
+                               //serviceProvider.ServiceExist(ServiceProvider.SERVICE_NAME) &&
+                               //serviceProvider.GetStatus(ServiceProvider.SERVICE_NAME) == ServiceControllerStatus.StartPending;
 
             //Guarded to avoid issues when running in a non-managed process
             var entry = Assembly.GetEntryAssembly();
@@ -42,7 +43,7 @@ namespace NzbDrone.Common.EnvironmentInfo
 
             // An official build running outside of the testing environment. (Analytics configurable)
             IsProduction = !IsTesting && officialBuild;
-            
+
             // An unofficial build running outside of the testing environment. (Analytics enabled)
             IsDevelopment = !IsTesting && !officialBuild && !InternalIsDebug();
         }
@@ -65,8 +66,10 @@ namespace NzbDrone.Common.EnvironmentInfo
             {
                 try
                 {
-                    var principal = new WindowsPrincipal(WindowsIdentity.GetCurrent());
-                    return principal.IsInRole(WindowsBuiltInRole.Administrator);
+                    //TODO: Fix me!
+                    return true;
+                    //var principal = new WindowsPrincipal(WindowsIdentity.GetCurrent());
+                    //return principal.IsInRole(WindowsBuiltInRole.Administrator);
                 }
                 catch (Exception ex)
                 {
