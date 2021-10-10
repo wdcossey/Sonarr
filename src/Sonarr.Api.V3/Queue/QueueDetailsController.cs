@@ -23,48 +23,38 @@ namespace Sonarr.Api.V3.Queue
         {
             _queueService = queueService;
             _pendingReleaseService = pendingReleaseService;
-            //GetResourceAll = GetQueue;
         }
 
         [HttpGet]
         //[HttpGet("{includeSeries:bool?}/{includeEpisode:bool?}")]
-        public List<QueueResource> GetQueue([FromQuery] int? seriesId = null, [FromQuery] string? episodeIds = null, [FromQuery] bool? includeSeries = false, [FromQuery] bool? includeEpisode = true)
+        public IActionResult GetQueue(
+            [FromQuery] int? seriesId = null,
+            [FromQuery] IList<int> episodeIds = null,
+            [FromQuery] bool includeSeries = false,
+            [FromQuery] bool includeEpisode = true)
         {
-            //var includeSeries = Request.GetBooleanQueryParameter("includeSeries");
-            //var includeEpisode = Request.GetBooleanQueryParameter("includeEpisode", true);
             var queue = _queueService.GetQueue();
             var pending = _pendingReleaseService.GetPendingQueue();
             var fullQueue = queue.Concat(pending);
 
-            //var seriesIdQuery = Request.Query.SeriesId;
-            //var episodeIdsQuery = Request.Query.EpisodeIds;
-
             if (seriesId.HasValue)
-            {
-                return fullQueue.Where(q => q.Series?.Id == (int)seriesId).ToResource(includeSeries ?? false, includeEpisode ?? true);
-            }
+                return Ok(fullQueue.Where(q => q.Series?.Id == (int)seriesId).ToResource(includeSeries, includeEpisode));
 
-            if (!string.IsNullOrWhiteSpace(episodeIds))
-            {
-                //string episodeIdsValue = episodeIdsQuery.Value.ToString();
+            if (episodeIds?.Any() == true)
+                return Ok(fullQueue.Where(q => q.Episode != null && episodeIds.Contains(q.Episode.Id)).ToResource(includeSeries, includeEpisode));
 
-                var episodeIdsList = episodeIds.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                                                .Select(e => Convert.ToInt32(e))
-                                                .ToList();
-
-                return fullQueue.Where(q => q.Episode != null && episodeIdsList.Contains(q.Episode.Id)).ToResource(includeSeries ?? false, includeEpisode ?? true);
-            }
-
-            return fullQueue.ToResource(includeSeries ?? false, includeEpisode ?? true);
+            return Ok(fullQueue.ToResource(includeSeries, includeEpisode));
         }
 
         public void Handle(QueueUpdatedEvent message)
         {
+            //TODO: SignalR
             //BroadcastResourceChange(ModelAction.Sync);
         }
 
         public void Handle(PendingReleasesUpdatedEvent message)
         {
+            //TODO: SignalR
             //BroadcastResourceChange(ModelAction.Sync);
         }
     }

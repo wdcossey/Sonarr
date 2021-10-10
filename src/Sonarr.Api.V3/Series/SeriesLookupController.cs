@@ -10,7 +10,7 @@ using Sonarr.Api.V3.Series;
 namespace Sonarr.Api.V3.Series
 {
     [ApiController]
-    [Route("/api/v3/series/lookup")]
+    [SonarrV3Route("series/lookup")]
     public class SeriesLookupController : ControllerBase //SonarrRestModule<SeriesResource>
     {
         private readonly ISearchForNewSeries _searchProxy;
@@ -30,10 +30,10 @@ namespace Sonarr.Api.V3.Series
         }
 
         [HttpGet]
-        public IEnumerable<SeriesResource> Search([FromQuery] string term)
+        public IActionResult Search([FromQuery] string term)
         {
             var tvDbResults = _searchProxy.SearchForNewSeries(term);
-            return MapToResource(tvDbResults);
+            return Ok(MapToResource(tvDbResults));
         }
 
         private IEnumerable<SeriesResource> MapToResource(IEnumerable<NzbDrone.Core.Tv.Series> series)

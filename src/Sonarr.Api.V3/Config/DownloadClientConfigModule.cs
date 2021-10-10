@@ -1,4 +1,4 @@
-﻿using NzbDrone.Core.Configuration;
+﻿/*using NzbDrone.Core.Configuration;
 
 namespace Sonarr.Api.V3.Config
 {
@@ -14,4 +14,4 @@ namespace Sonarr.Api.V3.Config
             return DownloadClientConfigResourceMapper.ToResource(model);
         }
     }
-}
+}*/

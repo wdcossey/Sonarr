@@ -1,4 +1,4 @@
-﻿/*using System;
+﻿using System;
 using System.Linq;
 using System.Collections.Generic;
 using NzbDrone.Common.Composition;
@@ -42,4 +42,4 @@ namespace NzbDrone.Common
             return _container.GetImplementations(contract);
         }
     }
-}*/
+}

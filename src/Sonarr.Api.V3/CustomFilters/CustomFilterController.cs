@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.CustomFilters;
 
 namespace Sonarr.Api.V3.CustomFilters
 {
     [ApiController]
-    [Route("/api/v3/customFilter")]
-    public class CustomFilterController : ControllerBase
+    [SonarrV3Route("customFilter")]
+    public class CustomFilterController : SonarrControllerBase<CustomFilterResource>
     {
         private readonly ICustomFilterService _customFilterService;
 
@@ -21,33 +22,31 @@ namespace Sonarr.Api.V3.CustomFilters
             DeleteResource = DeleteCustomResource;*/
         }
 
-        [HttpGet("{id:int}")]
-        public CustomFilterResource GetCustomFilter(int id)
-        {
-            return _customFilterService.Get(id).ToResource();
-        }
+        protected override Task<IList<CustomFilterResource>> GetAllResourcesAsync()
+            => Task.FromResult<IList<CustomFilterResource>>(_customFilterService.All().ToResource());
 
-        [HttpGet]
-        public List<CustomFilterResource> GetCustomFilters()
-        {
-            return _customFilterService.All().ToResource();
-        }
+        protected override Task<CustomFilterResource> GetResourceByIdAsync(int id)
+            => Task.FromResult(_customFilterService.Get(id).ToResource());
 
-        private int AddCustomFilter(CustomFilterResource resource)
-        {
-            var customFilter = _customFilterService.Add(resource.ToModel());
-
-            return customFilter.Id;
-        }
-
-        private void UpdateCustomFilter(CustomFilterResource resource)
-        {
-            _customFilterService.Update(resource.ToModel());
-        }
-
-        private void DeleteCustomResource(int id)
+        protected override Task DeleteResourceByIdAsync(int id)
         {
             _customFilterService.Delete(id);
+            return Task.CompletedTask;
         }
+
+        protected override Task<CustomFilterResource> UpdateResourceAsync(CustomFilterResource resource)
+        {
+            var result = _customFilterService.Update(resource.ToModel());
+            return Task.FromResult(GetCustomFilter(result.Id));
+        }
+
+        protected override Task<CustomFilterResource> CreateResourceAsync(CustomFilterResource resource)
+        {
+            var customFilter = _customFilterService.Add(resource.ToModel());
+            return Task.FromResult(GetCustomFilter(customFilter.Id));
+        }
+
+        private CustomFilterResource GetCustomFilter(int id)
+            => _customFilterService.Get(id).ToResource();
     }
 }

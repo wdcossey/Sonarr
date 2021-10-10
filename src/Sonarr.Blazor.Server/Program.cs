@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.EnvironmentInfo;
+using NzbDrone.Common.Instrumentation;
 
 namespace Sonarr.Blazor.Server
 {
@@ -18,16 +19,30 @@ namespace Sonarr.Blazor.Server
             CreateHostBuilder(args).Build().Run();
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host
+        public static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            var startupArgs = new StartupContext(args);
+            try
+            {
+                NzbDroneLogger.Register(startupArgs, false, true);
+            }
+            catch (Exception ex)
+            {
+                System.Console.WriteLine("NLog Exception: " + ex.ToString());
+                throw;
+            }
+
+            return Host
                 .CreateDefaultBuilder(args)
-                //.UseContentRoot(AppDomain.CurrentDomain.BaseDirectory)
+                .UseContentRoot(AppDomain.CurrentDomain.BaseDirectory)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder
                         .UseStartup<Startup>()
-                        .ConfigureServices(services => services.AddSingleton<IStartupContext>(provider => new StartupContext(args)))
+                        .ConfigureServices(services =>
+                            services.AddSingleton<IStartupContext>(provider => new StartupContext(args)))
                         .UseDefaultServiceProvider(options => options.ValidateOnBuild = false);
                 });
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+﻿/*using FluentValidation;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Validation;
@@ -22,4 +22,4 @@ namespace Sonarr.Api.V3.Config
             return MediaManagementConfigResourceMapper.ToResource(model);
         }
     }
-}
+}*/

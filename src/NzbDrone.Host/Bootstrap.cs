@@ -35,6 +35,7 @@ namespace NzbDrone.Host
                 _container.Resolve<InitializeLogger>().Initialize();
                 _container.Resolve<IAppFolderFactory>().Register();
                 _container.Resolve<IProvidePidFile>().Write();
+                _container.Register<IServiceProvider>(new SonarrServiceProvider(_container));
 
                 var appMode = GetApplicationMode(startupContext);
 
@@ -156,6 +157,22 @@ namespace NzbDrone.Host
                         return false;
                     }
             }
+        }
+    }
+
+    //TODO: Temp workaround for TinyIoC to `Microsoft.Extensions.DependencyInjection` conversion
+    public class SonarrServiceProvider : IServiceProvider
+    {
+        private readonly Common.Composition.IContainer _container;
+
+        public SonarrServiceProvider(Common.Composition.IContainer container)
+        {
+            _container = container;
+        }
+
+        public object? GetService(Type serviceType)
+        {
+            return _container.Resolve(serviceType);
         }
     }
 }

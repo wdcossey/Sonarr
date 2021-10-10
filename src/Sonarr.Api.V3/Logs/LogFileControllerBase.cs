@@ -3,24 +3,22 @@ using System.IO;
 using System.Linq;
 using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.StaticFiles;
 using NzbDrone.Common.Disk;
 using NzbDrone.Core.Configuration;
 
-namespace Sonarr.Blazor.Server.Controllers.v3.Logs
+namespace Sonarr.Api.V3.Logs
 {
-    [ApiController]
-    //[Route("/api/v3/log/file")]
-    public abstract class LogFileControllerBase : ControllerBase // SonarrRestModule<LogFileResource>
+    public abstract class LogFileControllerBase : ControllerBase
     {
         protected const string LOGFILE_ROUTE = @"/(?<filename>[-.a-zA-Z0-9]+?\.txt)";
 
         private readonly IDiskProvider _diskProvider;
         private readonly IConfigFileProvider _configFileProvider;
 
-        public LogFileControllerBase(IDiskProvider diskProvider,
-                                 IConfigFileProvider configFileProvider/*,
-                                 string route*/)
+        public LogFileControllerBase(
+                IDiskProvider diskProvider,
+                IConfigFileProvider configFileProvider)
             //: base("log/file" + route)
         {
             _diskProvider = diskProvider;
@@ -31,12 +29,16 @@ namespace Sonarr.Blazor.Server.Controllers.v3.Logs
         }
 
         [HttpGet]
-        public List<LogFileResource> GetLogFilesResponse()
+        public IActionResult GetLogFilesResponse()
         {
             var result = new List<LogFileResource>();
 
             var files = GetLogFiles().ToList();
 
+            /*
+             "contentsUrl": "/api/v3/log/file/sonarr.txt",
+        "downloadUrl": ,
+             */
             for (int i = 0; i < files.Count; i++)
             {
                 var file = files[i];
@@ -47,26 +49,32 @@ namespace Sonarr.Blazor.Server.Controllers.v3.Logs
                     Id = i + 1,
                     Filename = filename,
                     LastWriteTime = _diskProvider.FileGetLastWrite(file),
-                    ContentsUrl = string.Format("{0}/{0}/{1}", _configFileProvider.UrlBase, this.Request.Path /*Resource*/, filename), //TODO: Fix me!
-                    DownloadUrl = string.Format("{0}/{1}/{2}", _configFileProvider.UrlBase, DownloadUrlRoot, filename)
+                    ContentsUrl = $"{_configFileProvider.UrlBase}/api/v3/{"Resource"}/{filename}",  //"/api/v3/log/file/sonarr.txt"
+                    DownloadUrl = $"{_configFileProvider.UrlBase}/{DownloadUrlRoot}/{filename}"     //"/logfile/sonarr.txt"
                 });
             }
 
-            return result.OrderByDescending(l => l.LastWriteTime).ToList();
+            return Ok(result.OrderByDescending(l => l.LastWriteTime).ToList());
         }
 
-        [HttpGet("{filename:required:regex([[-.a-zA-Z0-9]]+?\\.txt)}")]
-        public IActionResult GetLogFileResponse([FromQuery] string filename)
+        [Route("{filename:regex([[-.a-zA-Z0-9]]+?\\.txt)}")]
+        public IActionResult GetLogFileResponse(string filename)
         {
             var filePath = GetLogFilePath(filename);
 
             if (!_diskProvider.FileExists(filePath))
                 return NotFound();
 
-            return new PhysicalFileResult(filePath, MediaTypeNames.Text.Plain); //new TextResponse(data);
+            var provider = new FileExtensionContentTypeProvider();
+
+            if(!provider.TryGetContentType(filePath, out var contentType))
+                contentType = MediaTypeNames.Application.Octet;
+
+            return PhysicalFile(filePath, contentType);
         }
 
         protected abstract IEnumerable<string> GetLogFiles();
+
         protected abstract string GetLogFilePath(string filename);
 
         protected abstract string DownloadUrlRoot { get; }

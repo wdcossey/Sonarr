@@ -1,12 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.RemotePathMappings;
 using NzbDrone.Core.Validation.Paths;
+using Sonarr.Api.V3;
 using Sonarr.Api.V3.RemotePathMappings;
 
 namespace NzbDrone.Api.V3.RemotePathMappings
 {
     [ApiController]
-    [Route("/api/v3/remotepathmapping")]
+    [SonarrV3Route("remotepathmapping")]
     public class RemotePathMappingController : ControllerBase//SonarrRestModule<RemotePathMappingResource>
     {
         private readonly IRemotePathMappingService _remotePathMappingService;
@@ -39,14 +40,15 @@ namespace NzbDrone.Api.V3.RemotePathMappings
         }
 
         [HttpGet("{id:int}")]
-        public RemotePathMappingResource GetMappingById(int id)
-            => _remotePathMappingService.Get(id).ToResource();
+        public IActionResult GetMappingById(int id)
+            => Ok(_remotePathMappingService.Get(id).ToResource());
 
         [HttpPost]
         public IActionResult CreateMapping([FromBody] RemotePathMappingResource resource)
         {
             var model = resource.ToModel();
-            return Ok(_remotePathMappingService.Add(model).Id);
+            var remotePathMapping = _remotePathMappingService.Add(model);
+            return Created($"{Request.Path}/{remotePathMapping.Id}", remotePathMapping.ToResource());
         }
 
         [HttpGet]
@@ -54,14 +56,18 @@ namespace NzbDrone.Api.V3.RemotePathMappings
             => Ok(_remotePathMappingService.All().ToResource());
 
         [HttpDelete("{id:int}")]
-        public void DeleteMapping(int id)
-            => _remotePathMappingService.Remove(id);
+        public IActionResult DeleteMapping(int id)
+        {
+            _remotePathMappingService.Remove(id);
+            return Ok(new object());
+        }
 
         [HttpPut]
-        public void UpdateMapping([FromBody] RemotePathMappingResource resource)
+        [HttpPut("{id:int?}")]
+        public IActionResult UpdateMapping(int? id, [FromBody] RemotePathMappingResource resource)
         {
-            var mapping = resource.ToModel();
-            _remotePathMappingService.Update(mapping);
+            var mapping = _remotePathMappingService.Update(resource.ToModel());
+            return Accepted(mapping.ToResource());
         }
     }
 }

@@ -33,6 +33,11 @@
     <Compile Remove="Controllers\v3\System\**" />
     <Compile Remove="Controllers\v3\Update\**" />
     <Compile Remove="Controllers\MediaCovers\**" />
+    <Compile Remove="Controllers\v3\Logs\LogFileController.cs" />
+    <Compile Remove="Controllers\v3\Logs\LogFileControllerBase.cs" />
+    <Compile Remove="Controllers\v3\Logs\UpdateLogFileController.cs" />
+    <Compile Remove="Controllers\v3\Logs\**" />
+    <Compile Remove="Controllers\v3\Tags\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -49,6 +54,8 @@
     <EmbeddedResource Remove="Controllers\v3\System\**" />
     <EmbeddedResource Remove="Controllers\v3\Update\**" />
     <EmbeddedResource Remove="Controllers\MediaCovers\**" />
+    <EmbeddedResource Remove="Controllers\v3\Logs\**" />
+    <EmbeddedResource Remove="Controllers\v3\Tags\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -65,6 +72,8 @@
     <None Remove="Controllers\v3\System\**" />
     <None Remove="Controllers\v3\Update\**" />
     <None Remove="Controllers\MediaCovers\**" />
+    <None Remove="Controllers\v3\Logs\**" />
+    <None Remove="Controllers\v3\Tags\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -81,6 +90,8 @@
     <Content Remove="Controllers\v3\System\**" />
     <Content Remove="Controllers\v3\Update\**" />
     <Content Remove="Controllers\MediaCovers\**" />
+    <Content Remove="Controllers\v3\Logs\**" />
+    <Content Remove="Controllers\v3\Tags\**" />
   </ItemGroup>
 
 

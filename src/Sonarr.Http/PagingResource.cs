@@ -3,7 +3,7 @@ using NzbDrone.Core.Datastore;
 
 namespace Sonarr.Http
 {
-    public class PagingResource<TResource>
+    public abstract class PagingResource
     {
         public int Page { get; set; }
         public int PageSize { get; set; }
@@ -11,6 +11,10 @@ namespace Sonarr.Http
         public SortDirection SortDirection { get; set; }
         public List<PagingResourceFilter> Filters { get; set; }
         public int TotalRecords { get; set; }
+    }
+
+    public class PagingResource<TResource> : PagingResource
+    {
         public List<TResource> Records { get; set; }
     }
 

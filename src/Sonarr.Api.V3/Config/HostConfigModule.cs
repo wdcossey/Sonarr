@@ -1,3 +1,4 @@
+/*
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -91,3 +92,4 @@ namespace Sonarr.Api.V3.Config
         }
     }
 }
+*/

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using FluentValidation;
@@ -61,7 +62,7 @@ namespace NzbDrone.Core.Indexers.Newznab
         {
             ApiPath = "/api";
             Categories = new[] { 5030, 5040 };
-            AnimeCategories = Enumerable.Empty<int>();
+            AnimeCategories = Array.Empty<int>();
         }
 
         [FieldDefinition(0, Label = "URL")]
@@ -77,7 +78,7 @@ namespace NzbDrone.Core.Indexers.Newznab
         public IEnumerable<int> Categories { get; set; }
 
         [FieldDefinition(4, Label = "Anime Categories", Type = FieldType.Select, SelectOptionsProviderAction = "newznabCategories", HelpText = "Drop down list, leave blank to disable anime")]
-        public IEnumerable<int> AnimeCategories { get; set; }
+        public IList<int> AnimeCategories { get; set; }
 
         [FieldDefinition(5, Label = "Additional Parameters", HelpText = "Additional Newznab parameters", Advanced = true)]
         public string AdditionalParameters { get; set; }

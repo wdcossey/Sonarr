@@ -76,9 +76,7 @@ namespace NzbDrone.Host.WebHost.Logs
             };
 
             if (pageSpec.SortKey == "id")
-            {
                 result.SortKey = "time";
-            }
 
             return result;
 

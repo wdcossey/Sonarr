@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mime;
+using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
@@ -11,7 +13,7 @@ using Sonarr.Api.V3.Series;
 namespace Sonarr.Api.V3.Series
 {
     [ApiController]
-    [Route("/api/v3/series/editor")]
+    [SonarrV3Route("series/editor")]
     public class SeriesEditorController : ControllerBase // SonarrV3Module
     {
 
@@ -105,16 +107,20 @@ namespace Sonarr.Api.V3.Series
         }
 
         [HttpDelete]
-        public object DeleteSeries([FromBody] SeriesEditorResource resource)
+        public IActionResult DeleteSeries([FromBody] SeriesEditorResource resource)
         {
-            //var resource = Request.Body.FromJson<SeriesEditorResource>();
-
             foreach (var seriesId in resource.SeriesIds)
-            {
                 _seriesService.DeleteSeries(seriesId, resource.DeleteFiles, resource.AddImportListExclusion);
-            }
+            return Ok(new object());
+        }
 
-            return new object();
+        [HttpDelete]
+        [Consumes("application/x-www-form-urlencoded")]
+        public IActionResult DeleteSeriesFromForm() //TODO: This should be json from the Body?
+        {
+            var resource = JsonSerializer.Deserialize<SeriesEditorResource>(Request.Form.FirstOrDefault().Key,
+                new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            return DeleteSeries(resource);
         }
     }
 }

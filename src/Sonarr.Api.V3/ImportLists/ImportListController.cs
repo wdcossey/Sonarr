@@ -1,0 +1,36 @@
+using Microsoft.AspNetCore.Mvc;
+using NzbDrone.Core.ImportLists;
+using NzbDrone.Core.Validation;
+using NzbDrone.Core.Validation.Paths;
+
+namespace Sonarr.Api.V3.ImportLists
+{
+    [ApiController]
+    [SonarrV3Route("importlist")]
+    public class ImportListController : ProviderControllerBase<ImportListResource, IImportList, ImportListDefinition>
+    {
+        public static readonly ImportListResourceMapper ResourceMapper = new ImportListResourceMapper();
+
+        public ImportListController(ImportListFactory importListFactory,
+                                ProfileExistsValidator profileExistsValidator,
+                                LanguageProfileExistsValidator languageProfileExistsValidator
+            )
+            : base(importListFactory, ResourceMapper)
+        {
+            /*Http.Validation.RuleBuilderExtensions.ValidId(SharedValidator.RuleFor(s => s.QualityProfileId));
+            Http.Validation.RuleBuilderExtensions.ValidId(SharedValidator.RuleFor(s => s.LanguageProfileId));
+
+            SharedValidator.RuleFor(c => c.RootFolderPath).IsValidPath();
+            SharedValidator.RuleFor(c => c.QualityProfileId).SetValidator(profileExistsValidator);
+            SharedValidator.RuleFor(c => c.LanguageProfileId).SetValidator(languageProfileExistsValidator);*/
+        }
+
+        protected override void Validate(ImportListDefinition definition, bool includeWarnings)
+        {
+            if (!definition.Enable)
+                return;
+
+            base.Validate(definition, includeWarnings);
+        }
+    }
+}

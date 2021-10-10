@@ -1,14 +1,12 @@
 ﻿using System;
 using System.IO;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Linq;
 using System.Net.Mime;
+using System.Net.WebSockets;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -16,41 +14,8 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
-using NzbDrone.Common;
-using NzbDrone.Common.Cache;
-using NzbDrone.Common.Composition;
-using NzbDrone.Common.Disk;
-using NzbDrone.Common.EnvironmentInfo;
-using NzbDrone.Common.Instrumentation;
-using NzbDrone.Common.Processes;
-using NzbDrone.Core.Analytics;
-using NzbDrone.Core.Authentication;
-using NzbDrone.Core.Configuration;
-using NzbDrone.Core.CustomFilters;
-using NzbDrone.Core.DataAugmentation.Scene;
-using NzbDrone.Core.Datastore;
-using NzbDrone.Core.DiskSpace;
-using NzbDrone.Core.Download;
-using NzbDrone.Core.Download.Pending;
-using NzbDrone.Core.HealthCheck;
-using NzbDrone.Core.ImportLists;
-using NzbDrone.Core.Instrumentation;
-using NzbDrone.Core.Lifecycle;
-using NzbDrone.Core.MediaCover;
-using NzbDrone.Core.Messaging.Commands;
-using NzbDrone.Core.Messaging.Events;
-using NzbDrone.Core.MetadataSource;
-using NzbDrone.Core.Organizer;
-using NzbDrone.Core.Profiles.Languages;
-using NzbDrone.Core.Profiles.Qualities;
-using NzbDrone.Core.Queue;
-using NzbDrone.Core.RemotePathMappings;
-using NzbDrone.Core.RootFolders;
-using NzbDrone.Core.SeriesStats;
-using NzbDrone.Core.Tags;
-using NzbDrone.Core.Tv;
-using NzbDrone.Core.Update;
-using NzbDrone.Core.Update.History;
+using Nancy;
+using Sonarr.Blazor.Server.Hubs;
 
 namespace Sonarr.Blazor.Server
 {
@@ -85,6 +50,8 @@ namespace Sonarr.Blazor.Server
                     options.JsonSerializerOptions.IgnoreNullValues = true;
                     //options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault;
                 });
+
+            services.AddSignalR();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -102,6 +69,7 @@ namespace Sonarr.Blazor.Server
                 app.UseHsts();
             }
 
+            //app.UseWebSockets();
             app.UseSonarr();
 
             app.UseHttpsRedirection();
@@ -111,16 +79,45 @@ namespace Sonarr.Blazor.Server
             app.UseStaticFiles(new StaticFileOptions
             {
                 FileProvider = new PhysicalFileProvider(
-                    Path.Combine(AppDomain.CurrentDomain.BaseDirectory.TrimEnd(Path.PathSeparator), "UI")),
+                    Path.Combine(AppDomain.CurrentDomain.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar), "UI")),
                 RequestPath = ""
             });
 
+
             app.UseRouting();
+
+            /*app.Use(async (context, next) =>
+            {
+                if (context.Request.Path == "/signalr/negotiate")
+                {
+                    if (context.WebSockets.IsWebSocketRequest)
+                    {
+                        using (WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync())
+                        {
+                            //await Echo(context, webSocket);
+                        }
+                    }
+                    else
+                    {
+                        //
+                        context.Response.ContentType = MediaTypeNames.Application.Json;
+                        await context.Response.WriteAsync(
+                            "{\"Url\":\"/signalr\",\"ConnectionToken\":\"AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAr8gpH6UcEk6IKdqp5Unh8gAAAAACAAAAAAAQZgAAAAEAACAAAADC/ufNckUv84DJFUlYRquB+BsuUNhFefuGRFt/3knHWAAAAAAOgAAAAAIAACAAAACgIL69hHBlajFcQB+dHhcU+fk+sbl9b0XYlamrSsMd+DAAAABdn+rvqWOAsNrazV3XoPKoUgZJctwWW6Hun0ICix4lPNSnVDxmglYsOgIsq2/LbBxAAAAAFlHl48zQUChCr+AjY+kxIbcEN410xworVQjvem2i1A3Wjq10R+w5TjP8mGX6kXllLa5dkg45xCVHcJZt8+fAiw==\",\"ConnectionId\":\"d2b62fe8-b9bb-47db-af03-990256176e69\",\"KeepAliveTimeout\":60.0,\"DisconnectTimeout\":180.0,\"ConnectionTimeout\":110.0,\"TryWebSockets\":true,\"ProtocolVersion\":\"2.0\",\"TransportConnectTimeout\":5.0,\"LongPollDelay\":0.0}", Encoding.UTF8);
+
+                        context.Response.StatusCode = (int) HttpStatusCode.OK;
+                    }
+                }
+                else
+                {
+                    await next();
+                }
+
+            });*/
 
             app.UseEndpoints(endpoints =>
             {
-
-                endpoints.MapGet("/api/v3/importlist", TempImportListDelegate);
+                endpoints.MapHub<SonarrHub>("/signalr");
+                //endpoints.MapGet("/api/v3/importlist", TempImportListDelegate);
                 endpoints.MapControllerRoute(name: "initialize", pattern: "{controller=Initialize}/initialize.js");
 
                 endpoints.MapRazorPages();

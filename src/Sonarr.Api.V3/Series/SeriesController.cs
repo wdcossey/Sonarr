@@ -15,7 +15,7 @@ using NzbDrone.Core.Validation.Paths;
 namespace Sonarr.Api.V3.Series
 {
     [ApiController]
-    [Route("/api/v3/series")]
+    [SonarrV3Route("series")]
     public class SeriesController : ControllerBase
     {
         private readonly ISeriesService _seriesService;
@@ -87,7 +87,7 @@ namespace Sonarr.Api.V3.Series
 
 
         [HttpGet]
-        public List<SeriesResource> AllSeries([FromQuery] int tvdbId = 0, [FromQuery] bool includeSeasonImages = false)
+        public IActionResult AllSeries([FromQuery] int tvdbId = 0, [FromQuery] bool includeSeasonImages = false)
         {
             //var tvdbId = Request.GetIntegerQueryParameter("tvdbId");
             //var includeSeasonImages = Request.GetBooleanQueryParameter("includeSeasonImages");
@@ -108,27 +108,26 @@ namespace Sonarr.Api.V3.Series
             PopulateAlternateTitles(seriesResources);
             seriesResources.ForEach(LinkRootFolderPath);
 
-            return seriesResources;
+            return Ok(seriesResources);
         }
 
         [HttpGet("{id:int}")]
-        public SeriesResource GetSeries(int id, [FromQuery] bool includeSeasonImages = false)
+        public IActionResult GetSeries(int id, [FromQuery] bool includeSeasonImages = false)
         {
             var series = _seriesService.GetSeries(id);
-            return GetSeriesResource(series, includeSeasonImages);
+            return Ok(GetSeriesResource(series, includeSeasonImages));
         }
 
         [HttpPost]
-        public int AddSeries([FromBody] SeriesResource seriesResource)
+        public IActionResult AddSeries([FromBody] SeriesResource seriesResource)
         {
             var series = _addSeriesService.AddSeries(seriesResource.ToModel());
-            return series.Id;
+            return Created($"{Request.Path}/{series.Id}", GetSeriesResource(series, false));
         }
 
         [HttpPut]
-        public void UpdateSeries(SeriesResource seriesResource, [FromQuery] bool moveFiles = false)
+        public IActionResult UpdateSeries(SeriesResource seriesResource, [FromQuery] bool moveFiles = false)
         {
-            //var moveFiles = Request.GetBooleanQueryParameter("moveFiles");
             var series = _seriesService.GetSeries(seriesResource.Id);
 
             if (moveFiles)
@@ -145,17 +144,18 @@ namespace Sonarr.Api.V3.Series
                 });
             }
 
-            var model = seriesResource.ToModel(series);
-
-            _seriesService.UpdateSeries(model);
+            var updateSeries = _seriesService.UpdateSeries(seriesResource.ToModel(series));
 
             //BroadcastResourceChange(ModelAction.Updated, seriesResource);
+
+            return Accepted(GetSeriesResource(updateSeries, false));
         }
 
         [HttpDelete]
-        public void DeleteSeries(int id, [FromQuery] bool deleteFiles = false, [FromQuery] bool addImportListExclusion = false)
+        public IActionResult DeleteSeries(int id, [FromQuery] bool deleteFiles = false, [FromQuery] bool addImportListExclusion = false)
         {
             _seriesService.DeleteSeries(id, deleteFiles, addImportListExclusion);
+            return Ok(new object());
         }
 
         private SeriesResource GetSeriesResource(NzbDrone.Core.Tv.Series series, bool includeSeasonImages)

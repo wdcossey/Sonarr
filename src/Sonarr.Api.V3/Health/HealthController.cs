@@ -1,12 +1,12 @@
-﻿using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.HealthCheck;
+using NzbDrone.Core.Messaging.Events;
 
 namespace Sonarr.Api.V3.Health
 {
     [ApiController]
-    [Route("/api/v3/health")]
-    public class HealthController : ControllerBase
+    [SonarrV3Route("health")]
+    public class HealthController : ControllerBase, IHandle<HealthCheckCompleteEvent>
     {
         private readonly IHealthCheckService _healthCheckService;
 
@@ -16,13 +16,16 @@ namespace Sonarr.Api.V3.Health
             //: base(signalRBroadcaster)
         {
             _healthCheckService = healthCheckService;
-            /*GetResourceAll = GetHealth;*/
         }
 
         [HttpGet]
-        public List<HealthResource> GetHealth()
+        public IActionResult GetHealth()
+            => Ok(_healthCheckService.Results().ToResource());
+
+        public void Handle(HealthCheckCompleteEvent message)
         {
-            return _healthCheckService.Results().ToResource();
+            //TODO
+            //BroadcastResourceChange(ModelAction.Sync);
         }
     }
 }

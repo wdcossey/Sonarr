@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.ThingiProvider;
 using NzbDrone.Core.Validation;
@@ -23,9 +25,7 @@ namespace Sonarr.Api.V3
 
         protected ProviderControllerBase(
                 IProviderFactory<TProvider, TProviderDefinition> providerFactory,
-                //string resource,
                 ProviderResourceMapper<TProviderResource, TProviderDefinition> resourceMapper)
-            //: base(resource)
         {
             _providerFactory = providerFactory;
             _resourceMapper = resourceMapper;
@@ -51,10 +51,13 @@ namespace Sonarr.Api.V3
 
         [HttpGet("{id:int}")]
         private IActionResult GetProviderById(int id)
+            => Ok(_resourceMapper.ToResource(GetProviderDefinitionById(id)));
+
+        private TProviderDefinition GetProviderDefinitionById(int id)
         {
             var definition = _providerFactory.Get(id);
             _providerFactory.SetProviderCharacteristics(definition);
-            return Ok(_resourceMapper.ToResource(definition));
+            return definition;
         }
 
         [HttpGet]
@@ -80,28 +83,29 @@ namespace Sonarr.Api.V3
             var providerDefinition = GetDefinition(providerResource, false);
 
             if (providerDefinition.Enable)
-            {
                 Test(providerDefinition, false);
-            }
 
             providerDefinition = _providerFactory.Create(providerDefinition);
 
-            return Ok(providerDefinition.Id);
+            return Created(Request.Path, providerDefinition);
         }
 
         [HttpPut]
-        public void UpdateProvider([FromBody] TProviderResource providerResource, [FromQuery] bool? forceSave = false)
+        [HttpPut("{id:int?}")]
+        public Task<IActionResult> UpdateProvider(int? id, [FromBody] TProviderResource providerResource, [FromQuery] bool forceSave = false)
         {
+            if (id.HasValue && providerResource != null)
+                providerResource.Id = id.Value;
+
             var providerDefinition = GetDefinition(providerResource, false);
-            //var forceSave = Request.GetBooleanQueryParameter("forceSave");
 
             // Only test existing definitions if it is enabled and forceSave isn't set.
-            if (providerDefinition.Enable && !(forceSave ?? false))
-            {
+            if (providerDefinition.Enable && !(forceSave))
                 Test(providerDefinition, false);
-            }
 
             _providerFactory.Update(providerDefinition);
+
+            return Task.FromResult<IActionResult>(Accepted(GetProviderDefinitionById(providerDefinition.Id)));
         }
 
         private TProviderDefinition GetDefinition(TProviderResource providerResource, bool includeWarnings = false, bool validate = true)
@@ -145,17 +149,18 @@ namespace Sonarr.Api.V3
             return Ok(result);
         }
 
-        private object Test(TProviderResource providerResource)
+        [HttpPost("test")]
+        public IActionResult Test([FromBody] TProviderResource providerResource)
         {
             var providerDefinition = GetDefinition(providerResource, true);
 
             Test(providerDefinition, true);
 
-            return "{}";
+            return Ok("{}");
         }
 
-        /*[HttpGet("testall")]
-        public object TestAll()
+        [HttpPost("testall")]
+        public IActionResult TestAll()
         {
             var providerDefinitions = _providerFactory.All()
                                                       .Where(c => c.Settings.Validate().IsValid && c.Enable)
@@ -173,20 +178,25 @@ namespace Sonarr.Api.V3
                            });
             }
 
-            return ResponseWithCode(result, result.Any(c => !c.IsValid) ? HttpStatusCode.BadRequest : HttpStatusCode.OK);
-        }*/
+            return StatusCode(
+                result.Any(c => !c.IsValid) ? StatusCodes.Status400BadRequest : StatusCodes.Status200OK,
+                result);
+        }
 
-        /*private object RequestAction(string action, TProviderResource providerResource)
+        [HttpPost("action/{action}")]
+        public IActionResult RequestAction(string action, TProviderResource providerResource)
         {
             var providerDefinition = GetDefinition(providerResource, true, false);
 
-            var query = ((IDictionary<string, object>)Request.Query.ToDictionary()).ToDictionary(k => k.Key, k => k.Value.ToString());
+            //TODO
+            return NotFound();
+            /*var query = ((IDictionary<string, object>)Request.Query.ToDictionary()).ToDictionary(k => k.Key, k => k.Value.ToString());
 
             var data = _providerFactory.RequestAction(providerDefinition, action, query);
             Response resp = data.ToJson();
             resp.ContentType = "application/json";
-            return resp;
-        }*/
+            return resp;*/
+        }
 
         protected virtual void Validate(TProviderDefinition definition, bool includeWarnings)
         {

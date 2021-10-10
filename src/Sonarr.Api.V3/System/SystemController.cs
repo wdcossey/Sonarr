@@ -52,9 +52,10 @@ namespace Sonarr.Api.V3.System
         }
 
         [HttpGet("status")]
-        public object GetStatus()
+        public IActionResult GetStatus()
         {
-            return new
+            //TODO: Create converter for `Version`
+            var value = new
                    {
                        Version = BuildInfo.Version.ToString(),
                        BuildTime = BuildInfo.BuildDateTime,
@@ -84,6 +85,8 @@ namespace Sonarr.Api.V3.System
                        PackageUpdateMechanism = _deploymentInfoProvider.PackageUpdateMechanism,
                        PackageUpdateMechanismMessage = _deploymentInfoProvider.PackageUpdateMechanismMessage
             };
+
+            return Ok(value);
         }
 
         [HttpGet("routes")]

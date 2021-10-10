@@ -1,5 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Authentication;
@@ -8,8 +11,8 @@ using NzbDrone.Core.Configuration;
 namespace Sonarr.Api.V3.Config
 {
     [ApiController]
-    [Route("/api/v3/config/host")]
-    public class HostConfigController : ControllerBase // SonarrRestModule<HostConfigResource>
+    [SonarrV3ConfigRoute("host")]
+    public class HostConfigController : SonarrControllerBase<HostConfigResource> // SonarrRestModule<HostConfigResource>
     {
         private readonly IConfigFileProvider _configFileProvider;
         private readonly IConfigService _configService;
@@ -51,8 +54,39 @@ namespace Sonarr.Api.V3.Config
 
         }
 
-        [HttpGet]
-        public HostConfigResource GetHostConfig()
+        public override Task<IActionResult> GetAllAsync()
+            => Task.FromResult<IActionResult>(Ok(GetHostConfig()));
+
+        protected override Task<IList<HostConfigResource>> GetAllResourcesAsync()
+            => throw new NotImplementedException();
+
+        protected override Task<HostConfigResource> GetResourceByIdAsync(int id)
+            => Task.FromResult(GetHostConfig());
+
+        protected override Task DeleteResourceByIdAsync(int id)
+            => throw new NotImplementedException();
+
+        protected override Task<HostConfigResource> UpdateResourceAsync(HostConfigResource resource)
+        {
+            var dictionary = resource.GetType()
+                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                .ToDictionary(prop => prop.Name, prop => prop.GetValue(resource, null));
+
+            _configFileProvider.SaveConfigDictionary(dictionary);
+            _configService.SaveConfigDictionary(dictionary);
+
+            if (resource.Username.IsNotNullOrWhiteSpace() && resource.Password.IsNotNullOrWhiteSpace())
+            {
+                _userService.Upsert(resource.Username, resource.Password);
+            }
+
+            return Task.FromResult(GetHostConfig());
+        }
+
+        protected override Task<HostConfigResource> CreateResourceAsync(HostConfigResource resource)
+            => throw new NotImplementedException();
+
+        private HostConfigResource GetHostConfig()
         {
             var resource = _configFileProvider.ToResource(_configService);
             resource.Id = 1;
@@ -65,26 +99,6 @@ namespace Sonarr.Api.V3.Config
             }
 
             return resource;
-        }
-
-        [HttpGet("{id:int}")]
-        public IActionResult GetHostConfig(int id)
-            => Ok(GetHostConfig());
-
-        [HttpPut]
-        public void SaveHostConfig([FromBody] HostConfigResource resource)
-        {
-            var dictionary = resource.GetType()
-                                     .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                                     .ToDictionary(prop => prop.Name, prop => prop.GetValue(resource, null));
-
-            _configFileProvider.SaveConfigDictionary(dictionary);
-            _configService.SaveConfigDictionary(dictionary);
-
-            if (resource.Username.IsNotNullOrWhiteSpace() && resource.Password.IsNotNullOrWhiteSpace())
-            {
-                _userService.Upsert(resource.Username, resource.Password);
-            }
         }
     }
 }

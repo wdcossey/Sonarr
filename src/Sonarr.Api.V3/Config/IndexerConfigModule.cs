@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+﻿/*using FluentValidation;
 using NzbDrone.Core.Configuration;
 using Sonarr.Http.Validation;
 
@@ -25,4 +25,4 @@ namespace Sonarr.Api.V3.Config
             return IndexerConfigResourceMapper.ToResource(model);
         }
     }
-}
+}*/

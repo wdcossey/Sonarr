@@ -1,9 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using NzbDrone.Core.Download;
+﻿using NzbDrone.Core.Download;
 
 namespace Sonarr.Api.V3.DownloadClient
 {
-    [Route("/api/v3/downloadclient")]
+    [SonarrV3Route("downloadclient")]
     public class DownloadClientController : ProviderControllerBase<DownloadClientResource, IDownloadClient, DownloadClientDefinition>
     {
         public static readonly DownloadClientResourceMapper ResourceMapper = new DownloadClientResourceMapper();

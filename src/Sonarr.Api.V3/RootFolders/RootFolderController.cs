@@ -25,11 +25,7 @@ namespace NzbDrone.Api.V3.RootFolders
         {
             _rootFolderService = rootFolderService;
 
-            /*GetResourceAll = GetRootFolders;
-            GetResourceById = GetRootFolder;
-            CreateResource = CreateRootFolder;
-            DeleteResource = DeleteFolder;
-
+            /*
             SharedValidator.RuleFor(c => c.Path)
                            .Cascade(CascadeMode.StopOnFirstFailure)
                            .IsValidPath()
@@ -42,26 +38,22 @@ namespace NzbDrone.Api.V3.RootFolders
         }
 
         [HttpGet("{id:int}")]
-        public RootFolderResource GetRootFolder(int id, [FromQuery] bool? timeout = true)
-        {
-            //var timeout = Context?.Request?.GetBooleanQueryParameter("timeout", true) ?? true;
-            return _rootFolderService.Get(id, timeout ?? true).ToResource();
-        }
+        public IActionResult GetRootFolder(int id, [FromQuery] bool timeout = true)
+            => Ok(_rootFolderService.Get(id, timeout).ToResource());
 
         [HttpPost]
-        public int CreateRootFolder([FromBody] RootFolderResource rootFolderResource)
-        {
-            var model = rootFolderResource.ToModel();
-            return _rootFolderService.Add(model).Id;
-        }
+        public IActionResult CreateRootFolder([FromBody] RootFolderResource rootFolderResource)
+            => Created(Request.Path, _rootFolderService.Add(rootFolderResource.ToModel()));
 
         [HttpGet]
-        public List<RootFolderResource> GetRootFolders()
-            => _rootFolderService.AllWithUnmappedFolders().ToResource();
+        public IActionResult GetRootFolders()
+            => Ok(_rootFolderService.AllWithUnmappedFolders().ToResource());
 
         [HttpDelete("{id:int}")]
-        public void DeleteFolder(int id)
-            => _rootFolderService.Remove(id);
-
+        public IActionResult DeleteFolder(int id)
+        {
+            _rootFolderService.Remove(id);
+            return Ok(new object());
+        }
     }
 }

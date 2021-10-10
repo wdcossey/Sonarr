@@ -23,7 +23,6 @@ namespace Sonarr.Api.V3.Blacklist
         private PagingResource<BlocklistResource> Blocklist(PagingResource<BlocklistResource> pagingResource)
         {
             var pagingSpec = pagingResource.MapToPagingSpec<BlocklistResource, NzbDrone.Core.Blocklisting.Blocklist>("date", SortDirection.Descending);
-
             return ApplyToPage(_blocklistService.Paged, pagingSpec, BlocklistResourceMapper.MapToResource);
         }
 

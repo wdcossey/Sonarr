@@ -7,7 +7,7 @@ using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Lifecycle;
 using NzbDrone.Core.Messaging.Events;
-using NzbDrone.Host.WebHost;
+//using NzbDrone.Host.WebHost;
 
 namespace NzbDrone.Host
 {
@@ -21,14 +21,14 @@ namespace NzbDrone.Host
     {
         private readonly IConfigFileProvider _configFileProvider;
         private readonly IRuntimeInfo _runtimeInfo;
-        private readonly IHostController _hostController;
+        //private readonly IHostController _hostController;
         private readonly IStartupContext _startupContext;
         private readonly IBrowserService _browserService;
         private readonly IContainer _container;
         private readonly Logger _logger;
 
         public NzbDroneServiceFactory(IConfigFileProvider configFileProvider,
-                                      IHostController hostController,
+                                      //IHostController hostController,
                                       IRuntimeInfo runtimeInfo,
                                       IStartupContext startupContext,
                                       IBrowserService browserService,
@@ -36,7 +36,7 @@ namespace NzbDrone.Host
                                       Logger logger)
         {
             _configFileProvider = configFileProvider;
-            _hostController = hostController;
+            //_hostController = hostController;
             _runtimeInfo = runtimeInfo;
             _startupContext = startupContext;
             _browserService = browserService;
@@ -66,7 +66,7 @@ namespace NzbDrone.Host
                 return;
             }
 
-            _hostController.StartServer();
+            //_hostController.StartServer();
 
             if (!_startupContext.Flags.Contains(StartupContext.NO_BROWSER)
                 && _configFileProvider.LaunchBrowser)
@@ -90,7 +90,7 @@ namespace NzbDrone.Host
         private void Shutdown()
         {
             _logger.Info("Attempting to stop application.");
-            _hostController.StopServer();
+            //_hostController.StopServer();
             _logger.Info("Application has finished stop routine.");
             _runtimeInfo.IsExiting = true;
         }

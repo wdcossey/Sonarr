@@ -1,4 +1,4 @@
-﻿using NzbDrone.Core.Download;
+﻿/*using NzbDrone.Core.Download;
 
 namespace Sonarr.Api.V3.DownloadClient
 {
@@ -17,4 +17,4 @@ namespace Sonarr.Api.V3.DownloadClient
             base.Validate(definition, includeWarnings);
         }
     }
-}
+}*/

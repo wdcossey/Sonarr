@@ -31,8 +31,7 @@ namespace Sonarr.Api.V3.MediaCovers
 
         [Route("")]
         [Route("{seriesId:int:regex(\\d+)?}/{filename:regex(((.+))\\.((jpg|png|gif)))}")]
-        //[Route("/{seriesId:int?}/{filename}")]
-        public IActionResult GetMediaCover(int? seriesId, string? filename)
+        public IActionResult GetMediaCover(int? seriesId, string filename)
         {
             if (seriesId is <= 0 || string.IsNullOrWhiteSpace(filename))
                 return NotFound();

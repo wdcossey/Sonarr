@@ -10,7 +10,7 @@ namespace NzbDrone.Core.Qualities
 {
     public interface IQualityDefinitionService
     {
-        void Update(QualityDefinition qualityDefinition);
+        QualityDefinition Update(QualityDefinition qualityDefinition);
         void UpdateMany(List<QualityDefinition> qualityDefinitions);
         List<QualityDefinition> All();
         QualityDefinition GetById(int id);
@@ -35,11 +35,13 @@ namespace NzbDrone.Core.Qualities
             return _cache.Get("all", () => _repo.All().Select(WithWeight).ToDictionary(v => v.Quality), TimeSpan.FromSeconds(5.0));
         }
 
-        public void Update(QualityDefinition qualityDefinition)
+        public QualityDefinition Update(QualityDefinition qualityDefinition)
         {
-            _repo.Update(qualityDefinition);
+            var result = _repo.Update(qualityDefinition);
 
             _cache.Clear();
+
+            return result;
         }
 
         public void UpdateMany(List<QualityDefinition> qualityDefinitions)
@@ -56,17 +58,17 @@ namespace NzbDrone.Core.Qualities
         {
             return GetAll().Values.Single(v => v.Id == id);
         }
-        
+
         public QualityDefinition Get(Quality quality)
         {
             return GetAll()[quality];
         }
-        
+
         private void InsertMissingDefinitions()
         {
             List<QualityDefinition> insertList = new List<QualityDefinition>();
             List<QualityDefinition> updateList = new List<QualityDefinition>();
-            
+
             var allDefinitions = Quality.DefaultQualityDefinitions.OrderBy(d => d.Weight).ToList();
             var existingDefinitions = _repo.All().ToList();
 
@@ -89,7 +91,7 @@ namespace NzbDrone.Core.Qualities
             _repo.InsertMany(insertList);
             _repo.UpdateMany(updateList);
             _repo.DeleteMany(existingDefinitions);
-            
+
             _cache.Clear();
         }
 

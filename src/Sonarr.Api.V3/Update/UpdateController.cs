@@ -8,7 +8,7 @@ using NzbDrone.Core.Update.History;
 namespace Sonarr.Api.V3.Update
 {
     [ApiController]
-    [Route("/api/v3/update")]
+    [SonarrV3Route("update")]
     public class UpdateController : ControllerBase//SonarrRestModule<UpdateResource>
     {
         private readonly IRecentUpdateProvider _recentUpdateProvider;
