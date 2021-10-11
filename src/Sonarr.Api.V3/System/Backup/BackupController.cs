@@ -13,14 +13,15 @@ using Sonarr.Http.REST;
 
 namespace Sonarr.Api.V3.System.Backup
 {
-    [SonarrV3Route("system/backup")]
+    [ApiController]
+    [SonarrApiRoute("system/backup", RouteVersion.V3)]
     public class BackupController : ControllerBase
     {
         private readonly IBackupService _backupService;
         private readonly IAppFolderInfo _appFolderInfo;
         private readonly IDiskProvider _diskProvider;
 
-        private static readonly List<string> ValidExtensions = new List<string> { ".zip", ".db", ".xml" };
+        private static readonly List<string> ValidExtensions = new() { ".zip", ".db", ".xml" };
 
         public BackupController(
             IBackupService backupService,
@@ -30,11 +31,6 @@ namespace Sonarr.Api.V3.System.Backup
             _backupService = backupService;
             _appFolderInfo = appFolderInfo;
             _diskProvider = diskProvider;
-            //GetResourceAll = GetBackupFiles;
-            //DeleteResource = DeleteBackup;
-
-            //Post(@"/restore/(?<id>[\d]{1,10})",  x => Restore((int)x.Id));
-            //Post("/restore/upload",  x => UploadAndRestore());
         }
 
         [HttpGet]

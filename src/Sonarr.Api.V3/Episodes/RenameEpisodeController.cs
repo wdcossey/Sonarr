@@ -3,20 +3,17 @@ using NzbDrone.Core.MediaFiles;
 
 namespace Sonarr.Api.V3.Episodes
 {
-    [SonarrV3Route("episode/rename")]
+    [SonarrApiRoute("episode/rename", RouteVersion.V3)]
     public class RenameEpisodeController : ControllerBase
     {
         private readonly IRenameEpisodeFileService _renameEpisodeFileService;
 
         public RenameEpisodeController(IRenameEpisodeFileService renameEpisodeFileService)
-        {
-            _renameEpisodeFileService = renameEpisodeFileService;
-        }
+            => _renameEpisodeFileService = renameEpisodeFileService;
 
         [HttpGet]
         public IActionResult GetEpisodes([FromQuery] int? seriesId, [FromQuery] int? seasonNumber)
         {
-
             if (!seriesId.HasValue)
                 return BadRequest($"{nameof(seriesId)} is missing");
 

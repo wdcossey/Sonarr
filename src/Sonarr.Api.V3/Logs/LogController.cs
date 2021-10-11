@@ -2,20 +2,18 @@
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.Instrumentation;
 using Sonarr.Http;
+using Sonarr.Http.Extensions;
 
 namespace Sonarr.Api.V3.Logs
 {
     [ApiController]
-    [SonarrV3Route("log")]
-    public class LogController : SonarrPagedController<LogResource>
+    [SonarrApiRoute("log", RouteVersion.V3)]
+    public class LogController : ControllerBase
     {
         private readonly ILogService _logService;
 
         public LogController(ILogService logService)
-        {
-            _logService = logService;
-            //GetResourcePaged = GetLogs;
-        }
+            => _logService = logService;
 
         [HttpGet]
         [PagingResourceFilter]
@@ -24,9 +22,7 @@ namespace Sonarr.Api.V3.Logs
             var pageSpec = pagingResource.MapToPagingSpec<LogResource, Log>();
 
             if (pageSpec.SortKey == "time")
-            {
                 pageSpec.SortKey = "id";
-            }
 
             var levelFilter = pagingResource?.Filters?.FirstOrDefault(f => f.Key == "level");
 
@@ -55,12 +51,10 @@ namespace Sonarr.Api.V3.Logs
                 }
             }
 
-            var response = ApplyToPage(_logService.Paged, pageSpec, LogResourceMapper.ToResource);
+            var response = pageSpec.ApplyToPage(_logService.Paged, LogResourceMapper.ToResource);
 
             if (pageSpec.SortKey == "id")
-            {
                 response.SortKey = "time";
-            }
 
             return Ok(response);
         }

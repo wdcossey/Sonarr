@@ -3,12 +3,18 @@ using NzbDrone.Core.Datastore.Events;
 
 namespace NzbDrone.SignalR
 {
-    public class SignalRMessage
+
+    public class SignalRMessage<TBody> where TBody: class
     {
-        public object Body { get; set; }
+        public TBody Body { get; set; }
+
         public string Name { get; set; }
 
         [JsonIgnore]
         public ModelAction Action { get; set; }
     }
+
+    public class SignalRMessage : SignalRMessage<object> { }
+
+
 }

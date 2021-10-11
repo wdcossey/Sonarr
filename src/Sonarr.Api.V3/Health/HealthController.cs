@@ -5,13 +5,13 @@ using NzbDrone.Core.Messaging.Events;
 namespace Sonarr.Api.V3.Health
 {
     [ApiController]
-    [SonarrV3Route("health")]
+    [SonarrApiRoute("health", RouteVersion.V3)]
     public class HealthController : ControllerBase, IHandle<HealthCheckCompleteEvent>
     {
         private readonly IHealthCheckService _healthCheckService;
 
         public HealthController(
-            //IBroadcastSignalRMessage signalRBroadcaster,
+            //IBroadcastSignalRMessage signalRBroadcaster, //TODO: SignalR Hub
             IHealthCheckService healthCheckService)
             //: base(signalRBroadcaster)
         {
@@ -24,7 +24,7 @@ namespace Sonarr.Api.V3.Health
 
         public void Handle(HealthCheckCompleteEvent message)
         {
-            //TODO
+            //TODO: SignalR Hub
             //BroadcastResourceChange(ModelAction.Sync);
         }
     }

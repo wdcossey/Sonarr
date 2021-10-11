@@ -6,7 +6,7 @@ using NzbDrone.Core.Validation.Paths;
 namespace Sonarr.Api.V3.ImportLists
 {
     [ApiController]
-    [SonarrV3Route("importlist")]
+    [SonarrApiRoute("importlist", RouteVersion.V3)]
     public class ImportListController : ProviderControllerBase<ImportListResource, IImportList, ImportListDefinition>
     {
         public static readonly ImportListResourceMapper ResourceMapper = new ImportListResourceMapper();

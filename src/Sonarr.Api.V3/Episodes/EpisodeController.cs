@@ -7,7 +7,7 @@ using Sonarr.Http.Extensions;
 
 namespace Sonarr.Api.V3.Episodes
 {
-    [SonarrV3Route("episode")]
+    [SonarrApiRoute("episode", RouteVersion.V3)]
     public class EpisodeController : EpisodeControllerBase
     {
         public EpisodeController(

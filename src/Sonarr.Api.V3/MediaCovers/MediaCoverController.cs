@@ -13,24 +13,19 @@ namespace Sonarr.Api.V3.MediaCovers
     [Route("/MediaCover")]
     public class MediaCoverController : ControllerBase
     {
-        private static readonly Regex RegexResizedImage = new Regex(@"-\d+\.jpg$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
-        //private const string MEDIA_COVER_ROUTE = @"/(?<seriesId>\d+)/(?<filename>(.+)\.(jpg|png|gif))";
+        private static readonly Regex RegexResizedImage = new(@"-\d+\.jpg$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private readonly IAppFolderInfo _appFolderInfo;
         private readonly IDiskProvider _diskProvider;
 
         public MediaCoverController(IAppFolderInfo appFolderInfo, IDiskProvider diskProvider)
-            //: base("MediaCover")
         {
             _appFolderInfo = appFolderInfo;
             _diskProvider = diskProvider;
-
-            //Get(MEDIA_COVER_ROUTE,  options => GetMediaCover(options.seriesId, options.filename));
         }
 
-        [Route("")]
-        [Route("{seriesId:int:regex(\\d+)?}/{filename:regex(((.+))\\.((jpg|png|gif)))}")]
+        [HttpGet]
+        [HttpGet("{seriesId:int:regex(\\d+)?}/{filename:regex(((.+))\\.((jpg|png|gif)))}")]
         public IActionResult GetMediaCover(int? seriesId, string filename)
         {
             if (seriesId is <= 0 || string.IsNullOrWhiteSpace(filename))

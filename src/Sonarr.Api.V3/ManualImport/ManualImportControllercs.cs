@@ -10,7 +10,7 @@ using Sonarr.Http.Extensions;
 namespace Sonarr.Api.V3.ManualImport
 {
     [ApiController]
-    [SonarrV3Route("manualimport")]
+    [SonarrApiRoute("manualimport", RouteVersion.V3)]
     public class ManualImportController : ControllerBase
     {
         private readonly IManualImportService _manualImportService;
@@ -59,7 +59,7 @@ namespace Sonarr.Api.V3.ManualImport
             return Ok(items);
         }
 
-        private ManualImportResource AddQualityWeight(ManualImportResource item)
+        private static ManualImportResource AddQualityWeight(ManualImportResource item)
         {
             if (item.Quality != null)
             {

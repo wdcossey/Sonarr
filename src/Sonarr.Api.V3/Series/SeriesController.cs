@@ -15,7 +15,7 @@ using NzbDrone.Core.Validation.Paths;
 namespace Sonarr.Api.V3.Series
 {
     [ApiController]
-    [SonarrV3Route("series")]
+    [SonarrApiRoute("series", RouteVersion.V3)]
     public class SeriesController : ControllerBase
     {
         private readonly ISeriesService _seriesService;

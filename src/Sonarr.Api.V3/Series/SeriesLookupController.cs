@@ -10,7 +10,7 @@ using Sonarr.Api.V3.Series;
 namespace Sonarr.Api.V3.Series
 {
     [ApiController]
-    [SonarrV3Route("series/lookup")]
+    [SonarrApiRoute("series/lookup", RouteVersion.V3)]
     public class SeriesLookupController : ControllerBase //SonarrRestModule<SeriesResource>
     {
         private readonly ISearchForNewSeries _searchProxy;

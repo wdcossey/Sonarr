@@ -1,11 +1,8 @@
-﻿//TODO
-/*
-using System;
+﻿using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Datastore;
-using NzbDrone.Core.Datastore.Events;
 using NzbDrone.Core.Download.Pending;
 using NzbDrone.Core.Languages;
 using NzbDrone.Core.Messaging.Events;
@@ -13,12 +10,14 @@ using NzbDrone.Core.Profiles.Languages;
 using NzbDrone.Core.Profiles.Qualities;
 using NzbDrone.Core.Qualities;
 using NzbDrone.Core.Queue;
+using Sonarr.Http;
+using Sonarr.Http.Extensions;
 
 namespace Sonarr.Api.V3.Queue
 {
     [ApiController]
-    [Route("")]
-    public class QueueController : ControllerBase //SonarrRestModuleWithSignalR<QueueResource, NzbDrone.Core.Queue.Queue>, IHandle<QueueUpdatedEvent>, IHandle<PendingReleasesUpdatedEvent>
+    [SonarrApiRoute("queue", RouteVersion.V3)]
+    public class QueueController : ControllerBase, IHandle<QueueUpdatedEvent>, IHandle<PendingReleasesUpdatedEvent>
     {
         private readonly IQueueService _queueService;
         private readonly IPendingReleaseService _pendingReleaseService;
@@ -27,7 +26,7 @@ namespace Sonarr.Api.V3.Queue
         private readonly QualityModelComparer QUALITY_COMPARER;
 
         public QueueController(
-            //IBroadcastSignalRMessage broadcastSignalRMessage,
+            //IBroadcastSignalRMessage broadcastSignalRMessage, //TODO: SignalR
             IQueueService queueService,
             IPendingReleaseService pendingReleaseService,
             ILanguageProfileService languageProfileService,
@@ -36,20 +35,16 @@ namespace Sonarr.Api.V3.Queue
         {
             _queueService = queueService;
             _pendingReleaseService = pendingReleaseService;
-            GetResourcePaged = GetQueue;
 
             LANGUAGE_COMPARER = new LanguageComparer(languageProfileService.GetDefaultProfile(string.Empty));
             QUALITY_COMPARER = new QualityModelComparer(qualityProfileService.GetDefaultProfile(string.Empty));
         }
 
-        private PagingResource<QueueResource> GetQueue(PagingResource<QueueResource> pagingResource)
+        [HttpGet]
+        public IActionResult GetQueue([FromQuery] PagingResource<QueueResource> pagingResource, [FromQuery] bool includeUnknownSeriesItems = false, [FromQuery] bool includeSeries = false, [FromQuery] bool includeEpisode = false)
         {
             var pagingSpec = pagingResource.MapToPagingSpec<QueueResource, NzbDrone.Core.Queue.Queue>("timeleft", SortDirection.Ascending);
-            var includeUnknownSeriesItems = Request.GetBooleanQueryParameter("includeUnknownSeriesItems");
-            var includeSeries = Request.GetBooleanQueryParameter("includeSeries");
-            var includeEpisode = Request.GetBooleanQueryParameter("includeEpisode");
-
-            return ApplyToPage((spec) => GetQueue(spec, includeUnknownSeriesItems), pagingSpec, (q) => MapToResource(q, includeSeries, includeEpisode));
+            return Ok(pagingSpec.ApplyToPage((spec) => GetQueue(spec, includeUnknownSeriesItems), (q) => MapToResource(q, includeSeries, includeEpisode)));
         }
 
         private PagingSpec<NzbDrone.Core.Queue.Queue> GetQueue(PagingSpec<NzbDrone.Core.Queue.Queue> pagingSpec, bool includeUnknownSeriesItems)
@@ -175,13 +170,12 @@ namespace Sonarr.Api.V3.Queue
 
         public void Handle(QueueUpdatedEvent message)
         {
-            BroadcastResourceChange(ModelAction.Sync);
+            //BroadcastResourceChange(ModelAction.Sync);
         }
 
         public void Handle(PendingReleasesUpdatedEvent message)
         {
-            BroadcastResourceChange(ModelAction.Sync);
+            //BroadcastResourceChange(ModelAction.Sync);
         }
     }
 }
-*/

@@ -117,7 +117,6 @@ namespace Sonarr.Blazor.Server
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapHub<SonarrHub>("/signalr");
-                //endpoints.MapGet("/api/v3/importlist", TempImportListDelegate);
                 endpoints.MapControllerRoute(name: "initialize", pattern: "{controller=Initialize}/initialize.js");
 
                 endpoints.MapRazorPages();
@@ -126,10 +125,5 @@ namespace Sonarr.Blazor.Server
             });
         }
 
-        private Task TempImportListDelegate(HttpContext context)
-        {
-            context.Response.ContentType = MediaTypeNames.Application.Json;
-            return context.Response.WriteAsync("[]", Encoding.UTF8);
-        }
     }
 }

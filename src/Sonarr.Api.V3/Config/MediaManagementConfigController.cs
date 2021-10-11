@@ -6,7 +6,8 @@ using NzbDrone.Core.Validation.Paths;
 namespace Sonarr.Api.V3.Config
 {
     [ApiController]
-    [SonarrV3ConfigRoute("mediamanagement")]
+    [SonarrApiConfigRoute("mediamanagement", RouteVersion.V3)]
+    //TODO: Remove `SonarrControllerBase<>`
     public class MediaManagementConfigController : SonarrConfigController<MediaManagementConfigResource>
     {
         public MediaManagementConfigController(IConfigService configService, PathExistsValidator pathExistsValidator, FolderChmodValidator folderChmodValidator)

@@ -4,7 +4,7 @@ using NzbDrone.Core.Configuration;
 namespace Sonarr.Api.V3.Config
 {
     [ApiController]
-    [SonarrV3ConfigRoute("downloadclient")]
+    [SonarrApiConfigRoute("downloadclient", RouteVersion.V3)]
     public class DownloadClientConfigController : SonarrConfigController<DownloadClientConfigResource>
     {
         public DownloadClientConfigController(IConfigService configService)

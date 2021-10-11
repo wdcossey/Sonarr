@@ -4,7 +4,7 @@ using NzbDrone.Core.Indexers;
 namespace Sonarr.Api.V3.Indexers
 {
     [ApiController]
-    [SonarrV3Route("indexer")]
+    [SonarrApiRoute("indexer", RouteVersion.V3)]
     public class IndexerController : ProviderControllerBase<IndexerResource, IIndexer, IndexerDefinition>
     {
         public static readonly IndexerResourceMapper ResourceMapper = new IndexerResourceMapper();

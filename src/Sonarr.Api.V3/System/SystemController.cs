@@ -11,7 +11,7 @@ using NzbDrone.Core.Lifecycle;
 namespace Sonarr.Api.V3.System
 {
     [ApiController]
-    [Route("/api/v3/system")]
+    [SonarrApiRoute("system", RouteVersion.V3)]
     public class SystemController : ControllerBase
     {
         private readonly IAppFolderInfo _appFolderInfo;
@@ -34,7 +34,6 @@ namespace Sonarr.Api.V3.System
                 IMainDatabase database,
                 ILifecycleService lifecycleService,
                 IDeploymentInfoProvider deploymentInfoProvider)
-            //: base("system")
         {
             _appFolderInfo = appFolderInfo;
             _runtimeInfo = runtimeInfo;
@@ -45,16 +44,11 @@ namespace Sonarr.Api.V3.System
             _database = database;
             _lifecycleService = lifecycleService;
             _deploymentInfoProvider = deploymentInfoProvider;
-            /*Get("/status",  x => GetStatus());
-            Get("/routes",  x => GetRoutes());
-            Post("/shutdown",  x => Shutdown());
-            Post("/restart",  x => Restart());*/
         }
 
         [HttpGet("status")]
         public IActionResult GetStatus()
         {
-            //TODO: Create converter for `Version`
             var value = new
                    {
                        Version = BuildInfo.Version.ToString(),
@@ -75,9 +69,9 @@ namespace Sonarr.Api.V3.System
                        Mode = _runtimeInfo.Mode,
                        Branch = _configFileProvider.Branch,
                        Authentication = _configFileProvider.AuthenticationMethod,
-                       SqliteVersion = _database.Version.ToString(),
+                       SqliteVersion = _database.Version.ToString(), //TODO: Create converter for `Version`
                        UrlBase = _configFileProvider.UrlBase,
-                       RuntimeVersion = _platformInfo.Version.ToString(),
+                       RuntimeVersion = _platformInfo.Version.ToString(), //TODO: Create converter for `Version`
                        RuntimeName = PlatformInfo.Platform,
                        StartTime = _runtimeInfo.StartTime,
                        PackageVersion = _deploymentInfoProvider.PackageVersion,
@@ -90,7 +84,7 @@ namespace Sonarr.Api.V3.System
         }
 
         [HttpGet("routes")]
-        public IActionResult GetRoutes()
+        public IActionResult GetRoutes() //TODO: What to do?!?
         {
             throw new NotImplementedException("IRouteCacheProvider is from Nancy");
             //return Ok(_routeCacheProvider.GetCache().Values);

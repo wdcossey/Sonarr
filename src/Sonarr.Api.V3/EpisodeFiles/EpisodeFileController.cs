@@ -15,17 +15,19 @@ using BadRequestException = Sonarr.Http.REST.BadRequestException;
 
 namespace Sonarr.Api.V3.EpisodeFiles
 {
-    [SonarrV3Route("episodeFile")]
-    public class EpisodeFileController : SonarrControllerBase<EpisodeFileResource, EpisodeFile>,
-                                 IHandle<EpisodeFileAddedEvent>,
-                                 IHandle<EpisodeFileDeletedEvent>
+    [SonarrApiRoute("episodeFile", RouteVersion.V3)]
+    //TODO: Remove `SonarrControllerBase<>`
+    public class EpisodeFileController :
+        SonarrControllerBase<EpisodeFileResource, EpisodeFile>,
+        IHandle<EpisodeFileAddedEvent>,
+        IHandle<EpisodeFileDeletedEvent>
     {
         private readonly IMediaFileService _mediaFileService;
         private readonly IDeleteMediaFiles _mediaFileDeletionService;
         private readonly ISeriesService _seriesService;
         private readonly IUpgradableSpecification _upgradableSpecification;
 
-        public EpisodeFileController(/*IBroadcastSignalRMessage signalRBroadcaster,*/
+        public EpisodeFileController(/*IBroadcastSignalRMessage signalRBroadcaster,*/ //TODO: Add SignalR
                              IMediaFileService mediaFileService,
                              IDeleteMediaFiles mediaFileDeletionService,
                              ISeriesService seriesService,
@@ -36,14 +38,6 @@ namespace Sonarr.Api.V3.EpisodeFiles
             _mediaFileDeletionService = mediaFileDeletionService;
             _seriesService = seriesService;
             _upgradableSpecification = upgradableSpecification;
-
-            //GetResourceById = GetEpisodeFile;
-            //GetResourceAll = GetEpisodeFiles;
-            //UpdateResource = SetQuality;
-            //DeleteResource = DeleteEpisodeFile;
-
-            //Put("/editor",  episodeFiles => SetQuality());
-            //Delete("/bulk",  episodeFiles => DeleteEpisodeFiles());
         }
 
         public void Handle(EpisodeFileAddedEvent message)

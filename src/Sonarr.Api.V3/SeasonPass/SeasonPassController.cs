@@ -7,25 +7,25 @@ using Sonarr.Http.Extensions;
 namespace Sonarr.Api.V3.SeasonPass
 {
     [ApiController]
-    [SonarrV3Route("seasonpass")]
-    public class SeasonPassController : ControllerBase //SonarrV3Module
+    [SonarrApiRoute("seasonpass", RouteVersion.V3)]
+    public class SeasonPassController : ControllerBase
     {
         private readonly ISeriesService _seriesService;
         private readonly IEpisodeMonitoredService _episodeMonitoredService;
 
-        public SeasonPassController(ISeriesService seriesService, IEpisodeMonitoredService episodeMonitoredService)
-            //: base("/seasonpass")
+        public SeasonPassController(
+            ISeriesService seriesService,
+            IEpisodeMonitoredService episodeMonitoredService)
         {
             _seriesService = seriesService;
             _episodeMonitoredService = episodeMonitoredService;
-            //Post("/",  series => UpdateAll());
         }
 
         [HttpPost]
-        public IActionResult UpdateAll()
+        public IActionResult UpdateAll([FromBody] SeasonPassResource request)
         {
             //Read from request
-            var request = Request.Body.FromJson<SeasonPassResource>();
+            //var request = Request.Body.FromJson<SeasonPassResource>();
             var seriesToUpdate = _seriesService.GetSeries(request.Series.Select(s => s.Id));
 
             foreach (var s in request.Series)
@@ -58,7 +58,7 @@ namespace Sonarr.Api.V3.SeasonPass
                 _episodeMonitoredService.SetEpisodeMonitoredStatus(series, request.MonitoringOptions);
             }
 
-            return Accepted((string)null, "ok");//ResponseWithCode("ok", HttpStatusCode.Accepted)
+            return Accepted(value: "ok");
         }
     }
 }

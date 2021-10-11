@@ -11,7 +11,7 @@ using Sonarr.Http.Validation;
 namespace Sonarr.Api.V3.Profiles.Delay
 {
     [ApiController]
-    [SonarrV3Route("delayprofile")]
+    [SonarrApiRoute("delayprofile", RouteVersion.V3)]
     public class DelayProfileController : ControllerBase
     {
         private readonly IDelayProfileService _delayProfileService;

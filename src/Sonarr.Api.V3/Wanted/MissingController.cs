@@ -12,18 +12,15 @@ using Sonarr.Http.Extensions;
 namespace Sonarr.Api.V3.Wanted
 {
     [ApiController]
-    [SonarrV3Route("wanted/missing")]
+    [SonarrApiRoute("wanted/missing", RouteVersion.V3)]
     public class MissingController : EpisodeControllerBase
     {
         public MissingController(IEpisodeService episodeService,
                              ISeriesService seriesService,
                              IUpgradableSpecification upgradableSpecification/*,
-                             IBroadcastSignalRMessage signalRBroadcaster*/)
-            //: base(episodeService, seriesService, upgradableSpecification, signalRBroadcaster, )
-            : base(episodeService, seriesService, upgradableSpecification)
-        {
-            //GetResourcePaged = GetMissingEpisodes;
-        }
+                             IBroadcastSignalRMessage signalRBroadcaster*/) //TODO: SignalR Hub
+            //: base(episodeService, seriesService, upgradableSpecification, signalRBroadcaster)
+            : base(episodeService, seriesService, upgradableSpecification) { }
 
         [HttpGet]
         [PagingResourceFilter]
@@ -51,7 +48,7 @@ namespace Sonarr.Api.V3.Wanted
                 pagingSpec.FilterExpressions.Add(v => v.Monitored == true && v.Series.Monitored == true);
             }
 
-            var resource = ApplyToPage(_episodeService.EpisodesWithoutFiles, pagingSpec, v => MapToResource(v, includeSeries, false, includeImages));
+            var resource = pagingSpec.ApplyToPage(_episodeService.EpisodesWithoutFiles, v => MapToResource(v, includeSeries, false, includeImages));
 
             return Ok(resource);
         }

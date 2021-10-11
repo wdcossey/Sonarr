@@ -15,10 +15,10 @@ using Sonarr.Http;
 
 namespace Sonarr.Api.V3.Episodes
 {
-    public abstract class EpisodeControllerBase : SonarrPagedController<EpisodeResource> //TODO //,// SonarrRestModuleWithSignalR<EpisodeResource, Episode>,
-                                                     //IHandle<EpisodeGrabbedEvent>,
-                                                     //IHandle<EpisodeImportedEvent>,
-                                                     //IHandle<EpisodeFileDeletedEvent>
+    public abstract class EpisodeControllerBase : SonarrPagedController<EpisodeResource>,// SonarrRestModuleWithSignalR<EpisodeResource, Episode>,
+                                                     IHandle<EpisodeGrabbedEvent>,
+                                                     IHandle<EpisodeImportedEvent>,
+                                                     IHandle<EpisodeFileDeletedEvent>
     {
         protected readonly IEpisodeService _episodeService;
         protected readonly ISeriesService _seriesService;
@@ -27,7 +27,7 @@ namespace Sonarr.Api.V3.Episodes
         protected EpisodeControllerBase(IEpisodeService episodeService,
                                            ISeriesService seriesService,
                                            IUpgradableSpecification upgradableSpecification/*,
-                                           IBroadcastSignalRMessage signalRBroadcaster*/)
+                                           IBroadcastSignalRMessage signalRBroadcaster*/) //TODO: SignalR Hub
             //: base(signalRBroadcaster)
         {
             _episodeService = episodeService;
@@ -43,6 +43,7 @@ namespace Sonarr.Api.V3.Episodes
             return resource;
         }
 
+        //TODO
         /*protected override EpisodeResource GetResourceByIdForBroadcast(int id)
         {
             var episode = _episodeService.GetEpisode(id);
@@ -112,14 +113,14 @@ namespace Sonarr.Api.V3.Episodes
             return result;
         }
 
-        /*public void Handle(EpisodeGrabbedEvent message)
+        public void Handle(EpisodeGrabbedEvent message)
         {
             foreach (var episode in message.Episode.Episodes)
             {
                 var resource = episode.ToResource();
                 resource.Grabbed = true;
 
-                BroadcastResourceChange(ModelAction.Updated, resource);
+                //BroadcastResourceChange(ModelAction.Updated, resource); //TODO: SignalR Hub
             }
         }
 
@@ -127,7 +128,7 @@ namespace Sonarr.Api.V3.Episodes
         {
             foreach (var episode in message.EpisodeInfo.Episodes)
             {
-                BroadcastResourceChange(ModelAction.Updated, episode.Id);
+                //BroadcastResourceChange(ModelAction.Updated, episode.Id); //TODO: SignalR Hub
             }
         }
 
@@ -135,8 +136,8 @@ namespace Sonarr.Api.V3.Episodes
         {
             foreach (var episode in message.EpisodeFile.Episodes.Value)
             {
-                BroadcastResourceChange(ModelAction.Updated, episode.Id);
+                //BroadcastResourceChange(ModelAction.Updated, episode.Id); //TODO: SignalR Hub
             }
-        }*/
+        }
     }
 }

@@ -13,7 +13,7 @@ using Sonarr.Api.V3.Series;
 namespace Sonarr.Api.V3.Series
 {
     [ApiController]
-    [SonarrV3Route("series/editor")]
+    [SonarrApiRoute("series/editor", RouteVersion.V3)]
     public class SeriesEditorController : ControllerBase // SonarrV3Module
     {
 

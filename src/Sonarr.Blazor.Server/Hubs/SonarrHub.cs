@@ -1,15 +1,10 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
+using NzbDrone.SignalR;
 
 namespace Sonarr.Blazor.Server.Hubs
 {
-
-    public interface ISonarrClient
-    {
-        Task ReceiveMessage(string user, string message);
-    }
-
-    public class SonarrHub: Hub<ISonarrClient>
+    public class SonarrHub: Hub<ISonarrHub>
     {
 
         public SonarrHub()
@@ -22,11 +17,8 @@ namespace Sonarr.Blazor.Server.Hubs
             return base.OnConnectedAsync();
         }
 
-
         //[HubMethodName("SendMessageToUser")]
-        public Task SendMessage(string user, string message)
-        {
-            return Clients.All.ReceiveMessage(user, message);
-        }
+        public Task BroadcastMessage(SignalRMessage message)
+            => Clients.All.BroadcastMessage(message);
     }
 }

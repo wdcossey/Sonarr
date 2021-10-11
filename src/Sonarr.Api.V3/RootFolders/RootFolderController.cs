@@ -8,23 +8,21 @@ namespace NzbDrone.Api.V3.RootFolders
 {
     [ApiController]
     [Route("/api/v3/rootFolder")]
-    public class RootFolderController : ControllerBase// SonarrRestModuleWithSignalR<RootFolderResource, RootFolder>
+    public class RootFolderController : ControllerBase
     {
         private readonly IRootFolderService _rootFolderService;
 
         public RootFolderController(IRootFolderService rootFolderService/*,
-                                IBroadcastSignalRMessage signalRBroadcaster*/,
-                                RootFolderValidator rootFolderValidator,
-                                PathExistsValidator pathExistsValidator,
-                                MappedNetworkDriveValidator mappedNetworkDriveValidator,
-                                StartupFolderValidator startupFolderValidator,
-                                SystemFolderValidator systemFolderValidator,
-                                FolderWritableValidator folderWritableValidator
+            IBroadcastSignalRMessage signalRBroadcaster*/, //TODO: SignalR Hub
+            RootFolderValidator rootFolderValidator,
+            PathExistsValidator pathExistsValidator,
+            MappedNetworkDriveValidator mappedNetworkDriveValidator,
+            StartupFolderValidator startupFolderValidator,
+            SystemFolderValidator systemFolderValidator,
+            FolderWritableValidator folderWritableValidator
             )
-            //: base(signalRBroadcaster)
         {
             _rootFolderService = rootFolderService;
-
             /*
             SharedValidator.RuleFor(c => c.Path)
                            .Cascade(CascadeMode.StopOnFirstFailure)
@@ -43,7 +41,11 @@ namespace NzbDrone.Api.V3.RootFolders
 
         [HttpPost]
         public IActionResult CreateRootFolder([FromBody] RootFolderResource rootFolderResource)
-            => Created(Request.Path, _rootFolderService.Add(rootFolderResource.ToModel()));
+        {
+            var model = rootFolderResource.ToModel();
+            var rootFolder = _rootFolderService.Add(model);
+            return Created($"{Request.Path}/{rootFolder.Id}", rootFolder.ToResource());
+        }
 
         [HttpGet]
         public IActionResult GetRootFolders()

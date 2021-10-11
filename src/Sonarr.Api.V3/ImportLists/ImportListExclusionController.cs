@@ -8,7 +8,7 @@ using NzbDrone.Core.Validation;
 namespace Sonarr.Api.V3.ImportLists
 {
     [ApiController]
-    [SonarrV3Route("importlistexclusion")]
+    [SonarrApiRoute("importlistexclusion", RouteVersion.V3)]
     public class ImportListExclusionController : ControllerBase
     {
         private readonly IImportListExclusionService _importListExclusionService;

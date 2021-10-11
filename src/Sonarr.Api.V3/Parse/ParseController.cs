@@ -9,28 +9,19 @@ using Sonarr.Http.REST;
 namespace Sonarr.Api.V3.Parse
 {
     [ApiController]
-    [SonarrV3Route("parse")]
-    public class ParseController : ControllerBase// SonarrRestModule<ParseResource>
+    [SonarrApiRoute("parse", RouteVersion.V3)]
+    public class ParseController : ControllerBase
     {
         private readonly IParsingService _parsingService;
 
         public ParseController(IParsingService parsingService)
-        {
-            _parsingService = parsingService;
-
-            //GetResourceSingle = Parse;
-        }
+            => _parsingService = parsingService;
 
         [HttpGet]
         public IActionResult Parse([FromQuery] string title, [FromQuery] string path)
         {
-            //var title = Request.Query.Title.Value as string;
-            //var path = Request.Query.Path.Value as string;
-
             if (path.IsNullOrWhiteSpace() && title.IsNullOrWhiteSpace())
-            {
-                throw new BadRequestException("title or path is missing");
-            }
+                return BadRequest($"{nameof(title)} or {nameof(path)} is missing");
 
             var parsedEpisodeInfo = path.IsNotNullOrWhiteSpace() ? Parser.ParsePath(path) : Parser.ParseTitle(title);
 
@@ -54,14 +45,12 @@ namespace Sonarr.Api.V3.Parse
                     Episodes = remoteEpisode.Episodes.ToResource()
                 });
             }
-            else
+
+            return Ok(new ParseResource
             {
-                return Ok(new ParseResource
-                {
-                    Title = title,
-                    ParsedEpisodeInfo = parsedEpisodeInfo
-                });
-            }
+                Title = title,
+                ParsedEpisodeInfo = parsedEpisodeInfo
+            });
         }
     }
 }

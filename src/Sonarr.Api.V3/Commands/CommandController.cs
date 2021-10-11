@@ -13,7 +13,8 @@ using IServiceProvider = System.IServiceProvider;
 namespace Sonarr.Api.V3.Commands
 {
     [ApiController]
-    [Route("/api/v3/command")]
+    [SonarrApiRoute("command", RouteVersion.V1)]
+    //TODO: Remove `SonarrControllerBase`
     public class CommandController : SonarrControllerBase<CommandResource, CommandModel>,// SonarrRestModuleWithSignalR<CommandResource, CommandModel>
                                                    IHandle<CommandUpdatedEvent>
     {

@@ -13,7 +13,7 @@ using NzbDrone.Core.Configuration;
 namespace Sonarr.Api.V3.Logs
 {
     [ApiController]
-    [SonarrV3Route("log/file/update")]
+    [SonarrApiRoute("log/file/update", RouteVersion.V3)]
     public class UpdateLogFileController : LogFileControllerBase
     {
         private readonly IAppFolderInfo _appFolderInfo;

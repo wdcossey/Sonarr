@@ -6,7 +6,7 @@ using NzbDrone.Core.Qualities;
 namespace Sonarr.Api.V3.Qualities
 {
     [ApiController]
-    [SonarrV3Route("qualitydefinition")]
+    [SonarrApiRoute("qualitydefinition", RouteVersion.V3)]
     public class QualityDefinitionController : ControllerBase
     {
         private readonly IQualityDefinitionService _qualityDefinitionService;

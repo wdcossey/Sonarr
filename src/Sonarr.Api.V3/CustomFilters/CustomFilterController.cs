@@ -6,21 +6,14 @@ using NzbDrone.Core.CustomFilters;
 namespace Sonarr.Api.V3.CustomFilters
 {
     [ApiController]
-    [SonarrV3Route("customFilter")]
+    [SonarrApiRoute("customFilter", RouteVersion.V3)]
+    //TODO: Remove `SonarrControllerBase<>`
     public class CustomFilterController : SonarrControllerBase<CustomFilterResource>
     {
         private readonly ICustomFilterService _customFilterService;
 
         public CustomFilterController(ICustomFilterService customFilterService)
-        {
-            _customFilterService = customFilterService;
-
-            /*GetResourceById = GetCustomFilter;
-            GetResourceAll = GetCustomFilters;
-            CreateResource = AddCustomFilter;
-            UpdateResource = UpdateCustomFilter;
-            DeleteResource = DeleteCustomResource;*/
-        }
+            => _customFilterService = customFilterService;
 
         protected override Task<IList<CustomFilterResource>> GetAllResourcesAsync()
             => Task.FromResult<IList<CustomFilterResource>>(_customFilterService.All().ToResource());

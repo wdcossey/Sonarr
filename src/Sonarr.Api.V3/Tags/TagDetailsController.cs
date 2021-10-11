@@ -6,8 +6,8 @@ using Sonarr.Http;
 namespace Sonarr.Api.V3.Tags
 {
     [ApiController]
-    [SonarrV3Route("tag/detail")]
-    public class TagDetailsController : ControllerBase// SonarrRestModule<TagDetailsResource>
+    [SonarrApiRoute("tag/detail", RouteVersion.V3)]
+    public class TagDetailsController : ControllerBase
     {
         private readonly ITagService _tagService;
 
@@ -17,7 +17,6 @@ namespace Sonarr.Api.V3.Tags
         [HttpGet("{id:int:required}")]
         public IActionResult GetTagDetails(int id)
             => Ok(_tagService.Details(id).ToResource());
-
 
         [HttpGet]
         public IActionResult GetAll()

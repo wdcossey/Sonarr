@@ -5,12 +5,13 @@ using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.Blocklisting;
 using NzbDrone.Core.Datastore;
 using Sonarr.Http;
+using Sonarr.Http.Extensions;
 
 namespace Sonarr.Api.V3.Blocklist
 {
     [ApiController]
-    [Route("/api/v3/blocklist")]
-    public class BlocklistController : SonarrPagedController<BlocklistResource>
+    [SonarrApiRoute("blocklist", RouteVersion.V3)]
+    public class BlocklistController : ControllerBase
     {
         private readonly BlocklistService _blocklistService;
 
@@ -18,10 +19,10 @@ namespace Sonarr.Api.V3.Blocklist
             => _blocklistService = blocklistService;
 
         [HttpGet]
-        public PagingResource<BlocklistResource> Blocklist([FromQuery] PagingResource<BlocklistResource> pagingResource)
+        public IActionResult Blocklist([FromQuery] PagingResource<BlocklistResource> pagingResource)
         {
             var pagingSpec = pagingResource.MapToPagingSpec<BlocklistResource, NzbDrone.Core.Blocklisting.Blocklist>("date", SortDirection.Descending);
-            return ApplyToPage(_blocklistService.Paged, pagingSpec, BlocklistResourceMapper.MapToResource);
+            return Ok(pagingSpec.ApplyToPage(_blocklistService.Paged, BlocklistResourceMapper.MapToResource));
         }
 
         [HttpDelete("{id:int}")]

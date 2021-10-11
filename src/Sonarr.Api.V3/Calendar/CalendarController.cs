@@ -9,13 +9,13 @@ using Sonarr.Api.V3.Episodes;
 namespace Sonarr.Api.V3.Calendar
 {
     [ApiController]
-    [Route("/api/v3/calendar")]
-    public class CalendarController : EpisodeControllerBase //TODO
+    [SonarrApiRoute("calendar", RouteVersion.V3)]
+    public class CalendarController : EpisodeControllerBase
     {
         public CalendarController(IEpisodeService episodeService,
                               ISeriesService seriesService,
                               IUpgradableSpecification ugradableSpecification/*,
-                              IBroadcastSignalRMessage signalRBroadcaster*/)
+                              IBroadcastSignalRMessage signalRBroadcaster*/) //TODO: SignalR Hub
             : base(episodeService, seriesService, ugradableSpecification/*, signalRBroadcaster*/) { }
 
         [HttpGet]

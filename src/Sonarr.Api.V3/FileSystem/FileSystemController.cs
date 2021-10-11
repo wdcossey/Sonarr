@@ -8,7 +8,7 @@ using NzbDrone.Core.MediaFiles;
 
 namespace Sonarr.Api.V3.FileSystem
 {
-    [SonarrV3Route("filesystem")]
+    [SonarrApiRoute("filesystem", RouteVersion.V3)]
     public class FileSystemController : ControllerBase
     {
         private readonly IFileSystemLookupService _fileSystemLookupService;

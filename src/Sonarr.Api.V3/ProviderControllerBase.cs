@@ -8,10 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.ThingiProvider;
 using NzbDrone.Core.Validation;
 
-//using Nancy;
-//using Sonarr.Http;
-//using Sonarr.Http.Extensions;
-
 namespace Sonarr.Api.V3
 {
     [ApiController]
@@ -52,13 +48,6 @@ namespace Sonarr.Api.V3
         [HttpGet("{id:int}")]
         private IActionResult GetProviderById(int id)
             => Ok(_resourceMapper.ToResource(GetProviderDefinitionById(id)));
-
-        private TProviderDefinition GetProviderDefinitionById(int id)
-        {
-            var definition = _providerFactory.Get(id);
-            _providerFactory.SetProviderCharacteristics(definition);
-            return definition;
-        }
 
         [HttpGet]
         public IActionResult GetAll()
@@ -106,6 +95,13 @@ namespace Sonarr.Api.V3
             _providerFactory.Update(providerDefinition);
 
             return Task.FromResult<IActionResult>(Accepted(GetProviderDefinitionById(providerDefinition.Id)));
+        }
+
+        private TProviderDefinition GetProviderDefinitionById(int id)
+        {
+            var definition = _providerFactory.Get(id);
+            _providerFactory.SetProviderCharacteristics(definition);
+            return definition;
         }
 
         private TProviderDefinition GetDefinition(TProviderResource providerResource, bool includeWarnings = false, bool validate = true)

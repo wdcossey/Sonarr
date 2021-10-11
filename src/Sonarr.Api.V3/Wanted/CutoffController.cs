@@ -12,20 +12,20 @@ using Sonarr.Http.Extensions;
 namespace Sonarr.Api.V3.Wanted
 {
     [ApiController]
-    [SonarrV3Route("wanted/cutoff")]
+    [SonarrApiRoute("wanted/cutoff", RouteVersion.V3)]
     public class CutoffController : EpisodeControllerBase
     {
         private readonly IEpisodeCutoffService _episodeCutoffService;
 
-        public CutoffController(IEpisodeCutoffService episodeCutoffService,
-                            IEpisodeService episodeService,
-                            ISeriesService seriesService,
-                            IUpgradableSpecification upgradableSpecification/*,
-                            IBroadcastSignalRMessage signalRBroadcaster*/)
-            : base(episodeService, seriesService, upgradableSpecification/*, signalRBroadcaster, "wanted/cutoff"*/)
+        public CutoffController(
+            IEpisodeCutoffService episodeCutoffService,
+            IEpisodeService episodeService,
+            ISeriesService seriesService,
+            IUpgradableSpecification upgradableSpecification/*,
+            IBroadcastSignalRMessage signalRBroadcaster*/) //TODO: SignalR Hub
+            : base(episodeService, seriesService, upgradableSpecification/*, signalRBroadcaster*/)
         {
             _episodeCutoffService = episodeCutoffService;
-            //GetResourcePaged = GetCutoffUnmetEpisodes;
         }
 
         [HttpGet]
@@ -58,7 +58,7 @@ namespace Sonarr.Api.V3.Wanted
                 pagingSpec.FilterExpressions.Add(v => v.Monitored == true && v.Series.Monitored == true);
             }
 
-            var resource = ApplyToPage(_episodeCutoffService.EpisodesWhereCutoffUnmet, pagingSpec, v => MapToResource(v, includeSeries, includeEpisodeFile, includeImages));
+            var resource = pagingSpec.ApplyToPage(_episodeCutoffService.EpisodesWhereCutoffUnmet, v => MapToResource(v, includeSeries, includeEpisodeFile, includeImages));
 
             return Ok(resource);
         }

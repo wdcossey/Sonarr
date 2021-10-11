@@ -9,22 +9,17 @@ using Sonarr.Http;
 namespace Sonarr.Api.V3.Tags
 {
     [ApiController]
-    [SonarrV3Route("tag")]
-    public class TagController : ControllerBase//SonarrRestModuleWithSignalR<TagResource, Tag>, IHandle<TagsUpdatedEvent>
+    [SonarrApiRoute("tag", RouteVersion.V3)]
+    public class TagController : ControllerBase, IHandle<TagsUpdatedEvent>
     {
         private readonly ITagService _tagService;
 
-        public TagController(/*IBroadcastSignalRMessage signalRBroadcaster,*/
-                         ITagService tagService)
+        public TagController(
+                //IBroadcastSignalRMessage signalRBroadcaster, //TODO: SignalR Hub
+                ITagService tagService)
             //: base(signalRBroadcaster)
         {
             _tagService = tagService;
-
-            /*GetResourceById = GetTag;
-            GetResourceAll = GetAll;
-            CreateResource = Create;
-            UpdateResource = Update;
-            DeleteResource = DeleteTag;*/
         }
 
         [HttpGet("{id:int:required}")]
@@ -58,7 +53,7 @@ namespace Sonarr.Api.V3.Tags
 
         public void Handle(TagsUpdatedEvent message)
         {
-            //TODO: Complete broadcast
+            //TODO: SignalR Hub
             //BroadcastResourceChange(ModelAction.Sync);
         }
     }

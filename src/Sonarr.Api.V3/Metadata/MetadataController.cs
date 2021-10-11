@@ -4,13 +4,13 @@ using NzbDrone.Core.Extras.Metadata;
 namespace Sonarr.Api.V3.Metadata
 {
     [ApiController]
-    [SonarrV3Route("metadata")]
+    [SonarrApiRoute("metadata", RouteVersion.V3)]
     public class MetadataController : ProviderControllerBase<MetadataResource, IMetadata, MetadataDefinition>
     {
-        public static readonly MetadataResourceMapper ResourceMapper = new MetadataResourceMapper();
+        public static readonly MetadataResourceMapper ResourceMapper = new();
 
         public MetadataController(IMetadataFactory metadataFactory)
-            : base(metadataFactory/*, "metadata"*/, ResourceMapper)
+            : base(metadataFactory, ResourceMapper)
         {
         }
 

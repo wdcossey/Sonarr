@@ -11,7 +11,7 @@ using NzbDrone.Core.Configuration;
 namespace Sonarr.Api.V3.Logs
 {
     [ApiController]
-    [SonarrV3Route("log/file")]
+    [SonarrApiRoute("log/file", RouteVersion.V3)]
     public class LogFileController : LogFileControllerBase
     {
         private readonly IAppFolderInfo _appFolderInfo;

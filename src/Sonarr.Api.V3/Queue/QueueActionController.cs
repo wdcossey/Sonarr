@@ -1,5 +1,4 @@
-﻿//TODO
-/*
+﻿/*
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.Blocklisting;
@@ -11,8 +10,8 @@ using NzbDrone.Core.Queue;
 namespace Sonarr.Api.V3.Queue
 {
     [ApiController]
-    [Route("/api/v3/queue/<>")]
-    public class QueueActionController : ControllerBase //SonarrRestModule<QueueResource>
+    [SonarrApiRoute("queue", RouteVersion.V3)]
+    public class QueueActionController : ControllerBase
     {
         private readonly IQueueService _queueService;
         private readonly ITrackedDownloadService _trackedDownloadService;
@@ -48,69 +47,63 @@ namespace Sonarr.Api.V3.Queue
             //Delete("/bulk",  x => Remove());
         }
 
-        private object Grab(int id)
+        [HttpPost("grab/{id:int:required}")]
+        public IActionResult Grab(int id)
         {
             var pendingRelease = _pendingReleaseService.FindPendingQueueItem(id);
 
             if (pendingRelease == null)
-            {
-                throw new NotFoundException();
-            }
+                return NotFound();
 
             _downloadService.DownloadReport(pendingRelease.RemoteEpisode);
 
-            return new object();
+            return Ok(new object());
         }
 
-        private object Grab()
+        [HttpPost("grab/bulk")]
+        public IActionResult Grab([FromBody] QueueBulkResource resource) //TODO: FromBody or FromForm (some UI requests are broken)?!?
         {
-            var resource = Request.Body.FromJson<QueueBulkResource>();
+            //var resource = Request.Body.FromJson<QueueBulkResource>();
 
             foreach (var id in resource.Ids)
             {
                 var pendingRelease = _pendingReleaseService.FindPendingQueueItem(id);
 
                 if (pendingRelease == null)
-                {
-                    throw new NotFoundException();
-                }
+                    return NotFound();
 
                 _downloadService.DownloadReport(pendingRelease.RemoteEpisode);
             }
 
-            return new object();
+            return Ok(new object());
         }
 
-        private object Remove(int id)
+        [HttpDelete("{id:int:required}")]
+        public IActionResult Remove(int id, [FromQuery] bool removeFromClient = true, [FromQuery] bool? blocklist = false, [FromQuery] bool? blacklist = false)
         {
-            var removeFromClient = Request.GetBooleanQueryParameter("removeFromClient", true);
-
             // blacklist maintained for backwards compatability, UI uses blocklist.
-            var blocklist = Request.GetBooleanQueryParameter("blocklist") ? Request.GetBooleanQueryParameter("blocklist") : Request.GetBooleanQueryParameter("blacklist");
-
-            var trackedDownload = Remove(id, removeFromClient, blocklist);
+            var trackedDownload = Remove(id, removeFromClient, (blocklist is true || blacklist is true));
 
             if (trackedDownload != null)
-            {
                 _trackedDownloadService.StopTracking(trackedDownload.DownloadItem.DownloadId);
-            }
 
-            return new object();
+            return Ok(new object());
         }
 
-        private object Remove()
+        [HttpDelete("bulk")]
+        public IActionResult Remove([FromBody] QueueBulkResource resource, [FromQuery] bool removeFromClient = true, [FromQuery] bool? blocklist = false, [FromQuery] bool? blacklist = false) //TODO: FromBody or FromForm (some UI requests are broken)?!?
         {
-            var removeFromClient = Request.GetBooleanQueryParameter("removeFromClient", true);
+            //var removeFromClient = Request.GetBooleanQueryParameter("removeFromClient", true);
 
             // blacklist maintained for backwards compatability, UI uses blocklist.
-            var blocklist = Request.GetBooleanQueryParameter("blocklist") ? Request.GetBooleanQueryParameter("blocklist") : Request.GetBooleanQueryParameter("blacklist");
+            //var blocklist = Request.GetBooleanQueryParameter("blocklist") ? Request.GetBooleanQueryParameter("blocklist") : Request.GetBooleanQueryParameter("blacklist");
 
-            var resource = Request.Body.FromJson<QueueBulkResource>();
+            //var resource = Request.Body.FromJson<QueueBulkResource>();
             var trackedDownloadIds = new List<string>();
 
             foreach (var id in resource.Ids)
             {
-                var trackedDownload = Remove(id, removeFromClient, blocklist);
+                var trackedDownload = Remove(id, removeFromClient, (blocklist is true || blacklist is true));
 
                 if (trackedDownload != null)
                 {
@@ -120,7 +113,7 @@ namespace Sonarr.Api.V3.Queue
 
             _trackedDownloadService.StopTracking(trackedDownloadIds);
 
-            return new object();
+            return Ok(new object());
         }
 
         private TrackedDownload Remove(int id, bool removeFromClient, bool blocklist)
@@ -138,18 +131,14 @@ namespace Sonarr.Api.V3.Queue
             var trackedDownload = GetTrackedDownload(id);
 
             if (trackedDownload == null)
-            {
                 throw new NotFoundException();
-            }
 
             if (removeFromClient)
             {
                 var downloadClient = _downloadClientProvider.Get(trackedDownload.DownloadClient);
 
                 if (downloadClient == null)
-                {
                     throw new BadRequestException();
-                }
 
                 downloadClient.RemoveItem(trackedDownload.DownloadItem, true);
             }
@@ -175,16 +164,12 @@ namespace Sonarr.Api.V3.Queue
             var queueItem = _queueService.Find(queueId);
 
             if (queueItem == null)
-            {
                 throw new NotFoundException();
-            }
 
             var trackedDownload = _trackedDownloadService.Find(queueItem.DownloadId);
 
             if (trackedDownload == null)
-            {
                 throw new NotFoundException();
-            }
 
             return trackedDownload;
         }

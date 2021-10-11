@@ -10,7 +10,7 @@ using NzbDrone.Core.Queue;
 namespace Sonarr.Api.V3.Queue
 {
     [ApiController]
-    [Route("/api/v3/queue/status")]
+    [SonarrApiRoute("queue/status", RouteVersion.V3)]
     public class QueueStatusController : ControllerBase, IHandle<QueueUpdatedEvent>, IHandle<PendingReleasesUpdatedEvent>//SonarrRestModuleWithSignalR<QueueStatusResource, NzbDrone.Core.Queue.Queue>,
     {
         private readonly IQueueService _queueService;
@@ -19,7 +19,7 @@ namespace Sonarr.Api.V3.Queue
 
 
         public QueueStatusController(
-            //IBroadcastSignalRMessage broadcastSignalRMessage,
+            //IBroadcastSignalRMessage broadcastSignalRMessage, //TODO: SignalR
             IQueueService queueService,
             IPendingReleaseService pendingReleaseService)
             //: base(broadcastSignalRMessage, "queue/status")
@@ -33,10 +33,8 @@ namespace Sonarr.Api.V3.Queue
         }
 
         [HttpGet]
-        public object GetQueueStatusResponse()
-        {
-            return GetQueueStatus();
-        }
+        public IActionResult GetQueueStatusResponse()
+            => Ok(GetQueueStatus());
 
         private QueueStatusResource GetQueueStatus()
         {

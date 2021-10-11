@@ -6,7 +6,8 @@ using NotImplementedException = System.NotImplementedException;
 namespace Sonarr.Api.V3.Config
 {
     [ApiController]
-    [SonarrV3ConfigRoute("ui")]
+    [SonarrApiConfigRoute("ui", RouteVersion.V3)]
+    //TODO: Remove `SonarrControllerBase<>`
     public class UiConfigController : SonarrConfigController<UiConfigResource>
     {
         public UiConfigController(IConfigService configService)

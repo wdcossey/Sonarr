@@ -8,7 +8,7 @@ using Sonarr.Http.Extensions;
 namespace Sonarr.Api.V3.Series
 {
     [ApiController]
-    [SonarrV3Route("series/import")]
+    [SonarrApiRoute("series/import", RouteVersion.V3)]
     public class SeriesImportController : ControllerBase //SonarrRestModule<SeriesResource>
     {
         private readonly IAddSeriesService _addSeriesService;

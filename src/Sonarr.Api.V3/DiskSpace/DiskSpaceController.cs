@@ -5,17 +5,13 @@ using NzbDrone.Core.DiskSpace;
 namespace Sonarr.Api.V3.DiskSpace
 {
     [ApiController]
-    [SonarrV3Route("diskspace")]
-    public class DiskSpaceController : ControllerBase // SonarrRestModule<DiskSpaceResource>
+    [SonarrApiRoute("diskspace", RouteVersion.V3)]
+    public class DiskSpaceController : ControllerBase
     {
         private readonly IDiskSpaceService _diskSpaceService;
 
         public DiskSpaceController(IDiskSpaceService diskSpaceService)
-            //: base("diskspace")
-        {
-            _diskSpaceService = diskSpaceService;
-            //GetResourceAll = GetFreeSpace;
-        }
+            => _diskSpaceService = diskSpaceService;
 
         [HttpGet]
         public List<DiskSpaceResource> GetFreeSpace()

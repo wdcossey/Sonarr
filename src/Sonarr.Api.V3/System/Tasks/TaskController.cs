@@ -12,17 +12,16 @@ using Sonarr.Http;
 namespace Sonarr.Api.V3.System.Tasks
 {
     [ApiController]
-    [SonarrV3Route("system/task")]
+    [SonarrApiRoute("system/task", RouteVersion.V3)]
     public class TaskController : ControllerBase, IHandle<CommandExecutedEvent> //<TaskResource, ScheduledTask>
     {
         private readonly ITaskManager _taskManager;
 
-        public TaskController(ITaskManager taskManager, IBroadcastSignalRMessage broadcastSignalRMessage)
-            //: base(broadcastSignalRMessage)
+        public TaskController(
+            ITaskManager taskManager/*,
+            IBroadcastSignalRMessage broadcastSignalRMessage*/) //TODO: SignalR Hub
         {
             _taskManager = taskManager;
-            //GetResourceAll = GetAll;
-            //GetResourceById = GetTask;
         }
 
         [HttpGet]
@@ -66,7 +65,7 @@ namespace Sonarr.Api.V3.System.Tasks
 
         public void Handle(CommandExecutedEvent message)
         {
-            //TODO
+            //TODO: SignalR Hub
             //BroadcastResourceChange(ModelAction.Sync);
         }
     }

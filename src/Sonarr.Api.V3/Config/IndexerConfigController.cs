@@ -4,7 +4,8 @@ using NzbDrone.Core.Configuration;
 namespace Sonarr.Api.V3.Config
 {
     [ApiController]
-    [SonarrV3ConfigRoute("indexer")]
+    [SonarrApiConfigRoute("indexer", RouteVersion.V3)]
+    //TODO: Remove `SonarrControllerBase<>`
     public class IndexerConfigController : SonarrConfigController<IndexerConfigResource>
     {
         public IndexerConfigController(IConfigService configService)

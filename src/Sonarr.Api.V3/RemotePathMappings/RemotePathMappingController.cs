@@ -7,7 +7,7 @@ using Sonarr.Api.V3.RemotePathMappings;
 namespace NzbDrone.Api.V3.RemotePathMappings
 {
     [ApiController]
-    [SonarrV3Route("remotepathmapping")]
+    [SonarrApiRoute("remotepathmapping", RouteVersion.V3)]
     public class RemotePathMappingController : ControllerBase//SonarrRestModule<RemotePathMappingResource>
     {
         private readonly IRemotePathMappingService _remotePathMappingService;
@@ -19,14 +19,8 @@ namespace NzbDrone.Api.V3.RemotePathMappings
         {
             _remotePathMappingService = remotePathMappingService;
 
-            /*GetResourceAll = GetMappings;
-            GetResourceById = GetMappingById;
-            CreateResource = CreateMapping;
-            DeleteResource = DeleteMapping;
-            UpdateResource = UpdateMapping;
-
-            SharedValidator.RuleFor(c => c.Host)
-                           .NotEmpty();
+            /*SharedValidator.RuleFor(c => c.Host)
+                             .NotEmpty();
 
             // We cannot use IsValidPath here, because it's a remote path, possibly other OS.
             SharedValidator.RuleFor(c => c.RemotePath)
@@ -46,8 +40,7 @@ namespace NzbDrone.Api.V3.RemotePathMappings
         [HttpPost]
         public IActionResult CreateMapping([FromBody] RemotePathMappingResource resource)
         {
-            var model = resource.ToModel();
-            var remotePathMapping = _remotePathMappingService.Add(model);
+            var remotePathMapping = _remotePathMappingService.Add(resource.ToModel());
             return Created($"{Request.Path}/{remotePathMapping.Id}", remotePathMapping.ToResource());
         }
 

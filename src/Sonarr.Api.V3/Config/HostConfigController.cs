@@ -11,24 +11,21 @@ using NzbDrone.Core.Configuration;
 namespace Sonarr.Api.V3.Config
 {
     [ApiController]
-    [SonarrV3ConfigRoute("host")]
-    public class HostConfigController : SonarrControllerBase<HostConfigResource> // SonarrRestModule<HostConfigResource>
+    [SonarrApiConfigRoute("host", RouteVersion.V3)]
+    //TODO: Remove `SonarrControllerBase<>`
+    public class HostConfigController : SonarrControllerBase<HostConfigResource>
     {
         private readonly IConfigFileProvider _configFileProvider;
         private readonly IConfigService _configService;
         private readonly IUserService _userService;
 
         public HostConfigController(IConfigFileProvider configFileProvider, IConfigService configService, IUserService userService)
-            //: base("/config/host")
         {
             _configFileProvider = configFileProvider;
             _configService = configService;
             _userService = userService;
 
-            /*GetResourceSingle = GetHostConfig;
-            GetResourceById = GetHostConfig;
-            UpdateResource = SaveHostConfig;
-
+            /*
             SharedValidator.RuleFor(c => c.BindAddress)
                            .ValidIp4Address()
                            .NotListenAllIp4Address()

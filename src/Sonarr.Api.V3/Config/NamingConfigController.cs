@@ -13,7 +13,8 @@ using NotImplementedException = System.NotImplementedException;
 namespace Sonarr.Api.V3.Config
 {
     [ApiController]
-    [SonarrV3ConfigRoute("naming")]
+    [SonarrApiConfigRoute("naming", RouteVersion.V3)]
+    //TODO: Remove `SonarrControllerBase<>`
     public class NamingConfigController : SonarrControllerBase<NamingConfigResource>
     {
         private readonly INamingConfigService _namingConfigService;
@@ -21,23 +22,17 @@ namespace Sonarr.Api.V3.Config
         private readonly IFilenameValidationService _filenameValidationService;
         private readonly IBuildFileNames _filenameBuilder;
 
-        public NamingConfigController(INamingConfigService namingConfigService,
-                            IFilenameSampleService filenameSampleService,
-                            IFilenameValidationService filenameValidationService,
-                            IBuildFileNames filenameBuilder)
-            //: base("config/naming")
+        public NamingConfigController(
+            INamingConfigService namingConfigService,
+            IFilenameSampleService filenameSampleService,
+            IFilenameValidationService filenameValidationService,
+            IBuildFileNames filenameBuilder)
         {
             _namingConfigService = namingConfigService;
             _filenameSampleService = filenameSampleService;
             _filenameValidationService = filenameValidationService;
             _filenameBuilder = filenameBuilder;
-            /*GetResourceSingle = GetNamingConfig;
-            GetResourceById = GetNamingConfig;
-            UpdateResource = UpdateNamingConfig;
-
-            Get("/examples",  x => GetExamples(this.Bind<NamingConfigResource>()));
-
-            SharedValidator.RuleFor(c => c.MultiEpisodeStyle).InclusiveBetween(0, 5);
+            /*SharedValidator.RuleFor(c => c.MultiEpisodeStyle).InclusiveBetween(0, 5);
             SharedValidator.RuleFor(c => c.StandardEpisodeFormat).ValidEpisodeFormat();
             SharedValidator.RuleFor(c => c.DailyEpisodeFormat).ValidDailyEpisodeFormat();
             SharedValidator.RuleFor(c => c.AnimeEpisodeFormat).ValidAnimeEpisodeFormat();

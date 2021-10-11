@@ -10,7 +10,7 @@ using Sonarr.Http;
 namespace Sonarr.Api.V3.Profiles.Release
 {
     [ApiController]
-    [SonarrV3Route("releaseprofile")]
+    [SonarrApiRoute("releaseprofile", RouteVersion.V3)]
     public class ReleaseProfileController : ControllerBase
     {
         private readonly IReleaseProfileService _releaseProfileService;

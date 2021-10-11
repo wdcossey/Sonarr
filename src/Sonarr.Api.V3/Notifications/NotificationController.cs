@@ -4,7 +4,7 @@ using NzbDrone.Core.Notifications;
 namespace Sonarr.Api.V3.Notifications
 {
     [ApiController]
-    [SonarrV3Route("notification")]
+    [SonarrApiRoute("notification", RouteVersion.V3)]
     public class NotificationController : ProviderControllerBase<NotificationResource, INotification, NotificationDefinition>
     {
         private static readonly NotificationResourceMapper ResourceMapper = new();
