@@ -1,5 +1,4 @@
 using NLog;
-using NzbDrone.Common;
 using NzbDrone.Common.EnsureThat;
 using NzbDrone.Common.Serializer;
 using NzbDrone.Core.Lifecycle;
@@ -9,9 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading;
-using Microsoft.Extensions.DependencyInjection;
 using NzbDrone.Core.Exceptions;
-using IServiceProvider = System.IServiceProvider;
 
 namespace NzbDrone.Core.Messaging.Commands
 {
@@ -36,18 +33,18 @@ namespace NzbDrone.Core.Messaging.Commands
     public class CommandQueueManager : IManageCommandQueue, IHandle<ApplicationStartedEvent>
     {
         private readonly ICommandRepository _repo;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly ICommandFactory _commandFactory;
         private readonly Logger _logger;
 
         private readonly CommandQueue _commandQueue;
 
         public CommandQueueManager(
             ICommandRepository repo,
-            IServiceProvider serviceProvider,
+            ICommandFactory commandFactory,
             Logger logger)
         {
             _repo = repo;
-            _serviceProvider = serviceProvider;
+            _commandFactory = commandFactory;
             _logger = logger;
 
             _commandQueue = new CommandQueue();
@@ -233,8 +230,7 @@ namespace NzbDrone.Core.Messaging.Commands
             commandName = commandName.Split('.').Last();
 
             //TODO: Old implementation got the `Type` not an instance
-            var commandType = _serviceProvider.GetServices<Command>()
-                                             .Single(c => c.Name.Equals(commandName, StringComparison.InvariantCultureIgnoreCase));
+            var commandType = _commandFactory.Create(commandName);
 
             return Json.Deserialize("{}", commandType.GetType());
         }

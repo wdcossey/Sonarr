@@ -18,12 +18,7 @@ namespace Sonarr.Api.V3.ImportLists
         {
             _importListExclusionService = importListExclusionService;
 
-            /*GetResourceById = GetImportListExclusion;
-            GetResourceAll = GetImportListExclusions;
-            CreateResource = AddImportListExclusion;
-            UpdateResource = UpdateImportListExclusion;
-            DeleteResource = DeleteImportListExclusionResource;
-
+            /*
             SharedValidator.RuleFor(c => c.TvdbId).NotEmpty().SetValidator(importListExclusionExistsValidator);
             SharedValidator.RuleFor(c => c.Title).NotEmpty();*/
         }

@@ -41,6 +41,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static IServiceCollection AddSonarr(this IServiceCollection services)
         {
+            //TODO: Replace with file scanner *Sonar*.dll
             var assemblies = new List<string>
             {
                 "Sonarr.Host.dll",
@@ -60,15 +61,14 @@ namespace Microsoft.Extensions.DependencyInjection
 
             assemblyNames.Add(OsInfo.IsWindows ? "Sonarr.Windows.dll" : "Sonarr.Mono.dll");
             assemblyNames.Add("Sonarr.Common.dll");
-            
+
             foreach (var assemblyName in assemblyNames)
             {
                 loadedTypes.AddRange(Assembly.LoadFrom(Path.Join(AppDomain.CurrentDomain.BaseDirectory, assemblyName)).GetExportedTypes());
             }
-            
+
             loadedTypes.AutoRegisterInterfaces(services);
 
-            services.Register<Command>(loadedTypes); //TODO: This is temporary for `Command` (need to register the Type, Factory?)
             services.AddSingleton<InitializeLogger>();
             services.AddSingleton<MediaBrowserProxy>();
             services.AddSingleton<SameEpisodesSpecification>();

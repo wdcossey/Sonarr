@@ -126,7 +126,8 @@ namespace Sonarr.Api.V3.Series
         }
 
         [HttpPut]
-        public IActionResult UpdateSeries(SeriesResource seriesResource, [FromQuery] bool moveFiles = false)
+        [HttpPut("{id:int?}")] //Needed for routing, not much else!
+        public IActionResult UpdateSeries(int id, [FromBody] SeriesResource seriesResource, [FromQuery] bool moveFiles = false)
         {
             var series = _seriesService.GetSeries(seriesResource.Id);
 

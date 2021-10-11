@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Newtonsoft.Json;
 using NzbDrone.Core.DecisionEngine;
@@ -14,6 +15,7 @@ namespace Sonarr.Api.V3.Indexers
 {
     public class ReleaseResource : RestResource
     {
+        //[Required]
         public string Guid { get; set; }
         public QualityModel Quality { get; set; }
         public int QualityWeight { get; set; }
@@ -21,6 +23,8 @@ namespace Sonarr.Api.V3.Indexers
         public double AgeHours { get; set; }
         public double AgeMinutes { get; set; }
         public long Size { get; set; }
+
+        //[Range(1, int.MaxValue)]
         public int IndexerId { get; set; }
         public string Indexer { get; set; }
         public string ReleaseGroup { get; set; }

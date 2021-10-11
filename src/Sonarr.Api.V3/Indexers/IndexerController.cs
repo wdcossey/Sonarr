@@ -7,7 +7,7 @@ namespace Sonarr.Api.V3.Indexers
     [SonarrApiRoute("indexer", RouteVersion.V3)]
     public class IndexerController : ProviderControllerBase<IndexerResource, IIndexer, IndexerDefinition>
     {
-        public static readonly IndexerResourceMapper ResourceMapper = new IndexerResourceMapper();
+        public static readonly IndexerResourceMapper ResourceMapper = new();
 
         public IndexerController(IndexerFactory indexerFactory)
             : base(indexerFactory, ResourceMapper)

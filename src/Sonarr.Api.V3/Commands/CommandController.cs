@@ -1,35 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using NzbDrone.Common.TPL;
 using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.ProgressMessaging;
-using IServiceProvider = System.IServiceProvider;
 
 namespace Sonarr.Api.V3.Commands
 {
     [ApiController]
-    [SonarrApiRoute("command", RouteVersion.V1)]
+    [SonarrApiRoute("command", RouteVersion.V3)]
     //TODO: Remove `SonarrControllerBase`
-    public class CommandController : SonarrControllerBase<CommandResource, CommandModel>,// SonarrRestModuleWithSignalR<CommandResource, CommandModel>
-                                                   IHandle<CommandUpdatedEvent>
+    public class CommandController :
+        ControllerBase,// SonarrRestModuleWithSignalR<CommandResource, CommandModel>
+        IHandle<CommandUpdatedEvent>
     {
         private readonly IManageCommandQueue _commandQueueManager;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly ICommandFactory _commandFactory;
         private readonly Debouncer _debouncer;
         private readonly Dictionary<int, CommandResource> _pendingUpdates;
 
-        public CommandController(IManageCommandQueue commandQueueManager,
-                //IBroadcastSignalRMessage signalRBroadcaster,
-                             IServiceProvider serviceProvider)
+        public CommandController(
+                IManageCommandQueue commandQueueManager,
+                ICommandFactory commandFactory/*,
+                IBroadcastSignalRMessage signalRBroadcaster,*/) //TODO: SignalR
             //: base(signalRBroadcaster)
         {
             _commandQueueManager = commandQueueManager;
-            _serviceProvider = serviceProvider;
+            _commandFactory = commandFactory;
 
             _debouncer = new Debouncer(SendUpdates, TimeSpan.FromSeconds(0.1));
             _pendingUpdates = new Dictionary<int, CommandResource>();
@@ -42,31 +41,25 @@ namespace Sonarr.Api.V3.Commands
             PostValidator.RuleFor(c => c.Name).NotBlank();*/
         }
 
-        protected override Task<IList<CommandResource>> GetAllResourcesAsync()
-            => Task.FromResult<IList<CommandResource>>(_commandQueueManager.All().ToResource());
+        [HttpGet]
+        public IActionResult GetStartedCommands()
+            => Ok(_commandQueueManager.All().ToResource());
 
-        protected override Task<CommandResource> GetResourceByIdAsync(int id)
-            => Task.FromResult(_commandQueueManager.Get(id).ToResource());
+        [HttpGet("{id:int:required}")]
+        public IActionResult GetCommand(int id)
+            => Ok(_commandQueueManager.Get(id).ToResource());
 
-        protected override Task DeleteResourceByIdAsync(int id)
+        [HttpDelete("{id:int:required}")]
+        public IActionResult CancelCommand(int id)
         {
             _commandQueueManager.Cancel(id);
-            return Task.CompletedTask;
+            return Ok(new object());
         }
 
-        protected override Task<CommandResource> UpdateResourceAsync(CommandResource resource)
-            => throw new NotImplementedException();
-
-        protected override async Task<CommandResource> CreateResourceAsync(CommandResource resource)
+        [HttpPost]
+        public IActionResult StartCommand([FromBody] CommandResource resource)
         {
-
-            //TODO: Old implementation got the `Type` not an instance
-            var commandType = //Type.GetType($"{commandResource.Name}{nameof(Command)}");
-                _serviceProvider.GetServices<Command>()
-                    .Single(c => c.Name.Replace("Command", "")
-                        .Equals(resource!.Name, StringComparison.InvariantCultureIgnoreCase)).GetType();
-
-            dynamic command = Activator.CreateInstance(commandType);
+            var command = _commandFactory.Create(resource!.Name);
             command!.Trigger = CommandTrigger.Manual;
             command!.SuppressMessages = !resource!.SendUpdatesToClient;
             command!.SendUpdatesToClient = true;
@@ -76,7 +69,7 @@ namespace Sonarr.Api.V3.Commands
 
             var trackedCommand = _commandQueueManager.Push(command, CommandPriority.Normal, CommandTrigger.Manual);
 
-            return await GetResourceByIdAsync((int)trackedCommand.Id);
+            return Created($"{Request.Path}/{trackedCommand.Id}", _commandQueueManager.Get(trackedCommand.Id).ToResource());
         }
 
         public void Handle(CommandUpdatedEvent message)
