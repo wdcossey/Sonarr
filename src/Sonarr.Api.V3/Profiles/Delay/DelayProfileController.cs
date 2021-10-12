@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using FluentValidation;
-using Microsoft.AspNetCore.Mvc;
-using Nancy;
+﻿using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.Profiles.Delay;
-using Sonarr.Http;
 using Sonarr.Http.REST;
-using Sonarr.Http.Validation;
 
 namespace Sonarr.Api.V3.Profiles.Delay
 {
@@ -20,13 +14,7 @@ namespace Sonarr.Api.V3.Profiles.Delay
         {
             _delayProfileService = delayProfileService;
 
-            /*GetResourceAll = GetAll;
-            GetResourceById = GetById;
-            UpdateResource = Update;
-            CreateResource = Create;
-            DeleteResource = DeleteProfile;
-            Put(@"/reorder/(?<id>[\d]{1,10})",  options => Reorder(options.Id));
-
+            /*
             SharedValidator.RuleFor(d => d.Tags).NotEmpty().When(d => d.Id != 1);
             SharedValidator.RuleFor(d => d.Tags).EmptyCollection<DelayProfileResource, int>().When(d => d.Id == 1);
             SharedValidator.RuleFor(d => d.Tags).SetValidator(tagInUseValidator);
@@ -62,8 +50,8 @@ namespace Sonarr.Api.V3.Profiles.Delay
         }
 
         [HttpPut]
-        //[HttpPut("{id:int?}")]
-        public IActionResult Update([FromBody] DelayProfileResource resource)
+        [HttpPut("{id:int?}")]
+        public IActionResult Update(int? id, [FromBody] DelayProfileResource resource)
         {
             var model = resource.ToModel();
             return Accepted(_delayProfileService.Update(model));
@@ -77,15 +65,8 @@ namespace Sonarr.Api.V3.Profiles.Delay
         public IActionResult GetAll()
             => Ok(_delayProfileService.All().ToResource());
 
-        [HttpPut("reorder/{id:int:required}")]
+        [HttpPut("reorder/{id:int:required:min(1)}")]
         public IActionResult Reorder(int id, [FromQuery] int? after)
-        {
-            //ValidateId(id);
-
-            //var afterIdQuery = Request.Query.After;
-            //int? afterId = afterIdQuery.HasValue ? Convert.ToInt32(afterIdQuery.Value) : null;
-
-            return Ok(_delayProfileService.Reorder(id, after).ToResource());
-        }
+            => Ok(_delayProfileService.Reorder(id, after).ToResource()); //TODO: RestModule<TResource>.ValidateId(id)?!?
     }
 }

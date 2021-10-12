@@ -12,7 +12,7 @@ namespace NzbDrone.Core.Profiles.Languages
     public interface ILanguageProfileService
     {
         LanguageProfile Add(LanguageProfile profile);
-        void Update(LanguageProfile profile);
+        LanguageProfile Update(LanguageProfile profile);
         void Delete(int id);
         List<LanguageProfile> All();
         LanguageProfile Get(int id);
@@ -40,9 +40,9 @@ namespace NzbDrone.Core.Profiles.Languages
             return _profileRepository.Insert(profile);
         }
 
-        public void Update(LanguageProfile profile)
+        public LanguageProfile Update(LanguageProfile profile)
         {
-            _profileRepository.Update(profile);
+            return _profileRepository.Update(profile);
         }
 
         public void Delete(int id)
@@ -98,9 +98,9 @@ namespace NzbDrone.Core.Profiles.Languages
 
             var profile = new LanguageProfile
             {
-                Name = name, 
-                Cutoff = cutoff, 
-                Languages = languages, 
+                Name = name,
+                Cutoff = cutoff,
+                Languages = languages,
             };
 
             return Add(profile);

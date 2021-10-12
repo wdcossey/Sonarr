@@ -1,13 +1,13 @@
-﻿using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.Profiles.Qualities;
+using Sonarr.Api.V3;
 using Sonarr.Api.V3.Profiles.Quality;
 
 namespace NzbDrone.Api.V3.Profiles.Quality
 {
     [ApiController]
-    [Route("/api/v3/qualityprofile")]
-    public class QualityProfileController : ControllerBase //SonarrRestModule<QualityProfileResource>
+    [SonarrApiRoute("qualityprofile", RouteVersion.V3)]
+    public class QualityProfileController : ControllerBase
     {
         private readonly IQualityProfileService _qualityProfileService;
 
@@ -16,47 +16,34 @@ namespace NzbDrone.Api.V3.Profiles.Quality
             _qualityProfileService = qualityProfileService;
             /*SharedValidator.RuleFor(c => c.Name).NotEmpty();
             SharedValidator.RuleFor(c => c.Cutoff).ValidCutoff();
-            SharedValidator.RuleFor(c => c.Items).ValidItems();
-
-            GetResourceAll = GetAll;
-            GetResourceById = GetById;
-            UpdateResource = Update;
-            CreateResource = Create;
-            DeleteResource = DeleteProfile;*/
+            SharedValidator.RuleFor(c => c.Items).ValidItems();*/
         }
 
         [HttpPost]
-        public int Create([FromBody] QualityProfileResource resource)
+        [HttpPost("{id:int?}")]
+        public IActionResult Create(int? id, [FromBody] QualityProfileResource resource)
         {
-            var model = resource.ToModel();
-            model = _qualityProfileService.Add(model);
-            return model.Id;
+            var model = _qualityProfileService.Add(resource.ToModel());
+            return Created($"{Request.Path}/{model.Id}", model.ToResource());
         }
 
-        [HttpDelete("{id:int}")]
-        public void DeleteProfile(int id)
+        [HttpDelete("{id:int:required}")]
+        public IActionResult DeleteProfile(int id)
         {
             _qualityProfileService.Delete(id);
+            return Ok(new object());
         }
 
         [HttpPut]
-        public void Update([FromBody] QualityProfileResource resource)
-        {
-            var model = resource.ToModel();
+        public IActionResult Update([FromBody] QualityProfileResource resource)
+            => Accepted(_qualityProfileService.Update(resource.ToModel()).ToResource());
 
-            _qualityProfileService.Update(model);
-        }
-
-        [HttpGet("{id:int}")]
-        public QualityProfileResource GetById(int id)
-        {
-            return _qualityProfileService.Get(id).ToResource();
-        }
+        [HttpGet("{id:int:required}")]
+        public IActionResult GetById(int id)
+            => Ok(_qualityProfileService.Get(id).ToResource());
 
         [HttpGet]
-        public List<QualityProfileResource> GetAll()
-        {
-            return _qualityProfileService.All().ToResource();
-        }
+        public IActionResult GetAll()
+            => Ok(_qualityProfileService.All().ToResource());
     }
 }

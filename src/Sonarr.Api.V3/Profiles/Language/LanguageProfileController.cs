@@ -1,13 +1,13 @@
-﻿using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.Profiles.Languages;
+using Sonarr.Api.V3;
 using Sonarr.Api.V3.Profiles.Language;
 
 namespace NzbDrone.Api.V3.Profiles.Language
 {
     [ApiController]
-    [Route("/api/v3/languageprofile")]
-    public class LanguageProfileController : ControllerBase//SonarrRestModule<LanguageProfileResource>
+    [SonarrApiRoute("languageprofile", RouteVersion.V3)]
+    public class LanguageProfileController : ControllerBase
     {
         private readonly ILanguageProfileService _profileService;
 
@@ -16,49 +16,37 @@ namespace NzbDrone.Api.V3.Profiles.Language
             _profileService = profileService;
             /*SharedValidator.RuleFor(c => c.Name).NotEmpty();
             SharedValidator.RuleFor(c => c.Cutoff).NotNull();
-            SharedValidator.RuleFor(c => c.Languages).MustHaveAllowedLanguage();
-
-            GetResourceAll = GetAll;
-            GetResourceById = GetById;
-            UpdateResource = Update;
-            CreateResource = Create;
-            DeleteResource = DeleteProfile;*/
+            SharedValidator.RuleFor(c => c.Languages).MustHaveAllowedLanguage();*/
         }
 
         [HttpPost]
-        public int Create([FromBody] LanguageProfileResource resource)
+        public IActionResult Create([FromBody] LanguageProfileResource resource)
         {
-            var model = resource.ToModel();
-            model = _profileService.Add(model);
-            return model.Id;
+            var model = _profileService.Add(resource.ToModel());
+            return Created($"{Request.Path}/{model.Id}", model.ToResource());
         }
 
-        [HttpDelete("{id:int}")]
-        public void DeleteProfile(int id)
+        [HttpDelete("{id:int:required}")]
+        public IActionResult DeleteProfile(int id)
         {
             _profileService.Delete(id);
+            return Ok(new object());
         }
 
         [HttpPut]
-        public void Update([FromBody] LanguageProfileResource resource)
+        [HttpPut("{id:int?}")]
+        public IActionResult Update(int? id, [FromBody] LanguageProfileResource resource)
         {
             var model = resource.ToModel();
-
-            _profileService.Update(model);
+            return Accepted(_profileService.Update(model)?.ToResource());
         }
 
-        [HttpGet("{id:int}")]
-        public LanguageProfileResource GetById(int id)
-        {
-            return _profileService.Get(id).ToResource();
-        }
+        [HttpGet("{id:int:required}")]
+        public IActionResult GetById(int id)
+            => Ok(_profileService.Get(id).ToResource());
 
         [HttpGet]
-        public List<LanguageProfileResource> GetAll()
-        {
-            var profiles = _profileService.All().ToResource();
-
-            return profiles;
-        }
+        public IActionResult GetAll()
+            => Ok(_profileService.All().ToResource());
     }
 }

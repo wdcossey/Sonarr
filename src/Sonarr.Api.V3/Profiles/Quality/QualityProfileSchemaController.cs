@@ -1,28 +1,21 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.Profiles.Qualities;
+using Sonarr.Api.V3;
 using Sonarr.Api.V3.Profiles.Quality;
 
 namespace NzbDrone.Api.V3.Profiles.Quality
 {
     [ApiController]
-    [Route("/api/v3/qualityprofile/schema")]
-    public class QualityProfileSchemaController : ControllerBase //SonarrRestModule<QualityProfileResource>
+    [SonarrApiRoute("qualityprofile/schema", RouteVersion.V3)]
+    public class QualityProfileSchemaController : ControllerBase
     {
         private readonly IQualityProfileService _qualityProfileService;
 
         public QualityProfileSchemaController(IQualityProfileService qualityProfileService)
-            //: base("/qualityprofile/schema")
-        {
-            _qualityProfileService = qualityProfileService;
-            /*GetResourceSingle = GetSchema;*/
-        }
+            => _qualityProfileService = qualityProfileService;
 
         [HttpGet]
-        private QualityProfileResource GetSchema()
-        {
-            var qualityProfile = _qualityProfileService.GetDefaultProfile(string.Empty);
-
-            return qualityProfile.ToResource();
-        }
+        public IActionResult GetSchema()
+            => Ok(_qualityProfileService.GetDefaultProfile(string.Empty).ToResource());
     }
 }

@@ -16,45 +16,32 @@ namespace Sonarr.Api.V3.Logs
         private readonly IDiskProvider _diskProvider;
         private readonly IConfigFileProvider _configFileProvider;
 
-        public LogFileControllerBase(
-                IDiskProvider diskProvider,
-                IConfigFileProvider configFileProvider)
-            //: base("log/file" + route)
+        protected LogFileControllerBase(
+            IDiskProvider diskProvider,
+            IConfigFileProvider configFileProvider)
         {
             _diskProvider = diskProvider;
             _configFileProvider = configFileProvider;
-            //GetResourceAll = GetLogFilesResponse;
-
-            //Get(LOGFILE_ROUTE,  options => GetLogFileResponse(options.filename));
         }
 
         [HttpGet]
         public IActionResult GetLogFilesResponse()
         {
-            var result = new List<LogFileResource>();
-
-            var files = GetLogFiles().ToList();
-
-            /*
-             "contentsUrl": "/api/v3/log/file/sonarr.txt",
-        "downloadUrl": ,
-             */
-            for (int i = 0; i < files.Count; i++)
+            var index = 0;
+            var result = GetLogFiles()?.Select(file =>
             {
-                var file = files[i];
                 var filename = Path.GetFileName(file);
-
-                result.Add(new LogFileResource
+                return new LogFileResource
                 {
-                    Id = i + 1,
+                    Id = ++index,
                     Filename = filename,
                     LastWriteTime = _diskProvider.FileGetLastWrite(file),
-                    ContentsUrl = $"{_configFileProvider.UrlBase}/api/v3/{"Resource"}/{filename}",  //"/api/v3/log/file/sonarr.txt"
-                    DownloadUrl = $"{_configFileProvider.UrlBase}/{DownloadUrlRoot}/{filename}"     //"/logfile/sonarr.txt"
-                });
-            }
+                    ContentsUrl = $"{_configFileProvider.UrlBase}{Request.Path}/{filename}",
+                    DownloadUrl = $"{_configFileProvider.UrlBase}/{DownloadUrlRoot}/{filename}"
+                };
+            });
 
-            return Ok(result.OrderByDescending(l => l.LastWriteTime).ToList());
+            return Ok(result?.OrderByDescending(l => l.LastWriteTime) ?? Enumerable.Empty<LogFileResource>());
         }
 
         [Route("{filename:regex([[-.a-zA-Z0-9]]+?\\.txt)}")]

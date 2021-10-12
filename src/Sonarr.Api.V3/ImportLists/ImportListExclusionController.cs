@@ -1,9 +1,5 @@
-using System.Collections.Generic;
 using NzbDrone.Core.ImportLists.Exclusions;
-using Sonarr.Http;
-using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
-using NzbDrone.Core.Validation;
 
 namespace Sonarr.Api.V3.ImportLists
 {

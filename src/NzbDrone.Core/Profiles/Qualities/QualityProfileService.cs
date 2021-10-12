@@ -12,7 +12,7 @@ namespace NzbDrone.Core.Profiles.Qualities
     public interface IQualityProfileService
     {
         QualityProfile Add(QualityProfile profile);
-        void Update(QualityProfile profile);
+        QualityProfile Update(QualityProfile profile);
         void Delete(int id);
         List<QualityProfile> All();
         QualityProfile Get(int id);
@@ -40,9 +40,9 @@ namespace NzbDrone.Core.Profiles.Qualities
             return _profileRepository.Insert(profile);
         }
 
-        public void Update(QualityProfile profile)
+        public QualityProfile Update(QualityProfile profile)
         {
-            _profileRepository.Update(profile);
+            return _profileRepository.Update(profile);
         }
 
         public void Delete(int id)
@@ -70,7 +70,7 @@ namespace NzbDrone.Core.Profiles.Qualities
         {
             return _profileRepository.Exists(id);
         }
-        
+
         public void Handle(ApplicationStartedEvent message)
         {
             if (All().Any()) return;

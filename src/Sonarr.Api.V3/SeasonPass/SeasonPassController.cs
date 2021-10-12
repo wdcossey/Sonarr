@@ -1,8 +1,9 @@
 ﻿using System.Linq;
+using System.Net.Mime;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Nancy;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using NzbDrone.Core.Tv;
-using Sonarr.Http.Extensions;
 
 namespace Sonarr.Api.V3.SeasonPass
 {
@@ -58,7 +59,11 @@ namespace Sonarr.Api.V3.SeasonPass
                 _episodeMonitoredService.SetEpisodeMonitoredStatus(series, request.MonitoringOptions);
             }
 
-            return Accepted(value: "ok");
+            return new AcceptedResult
+            {
+                Value = "ok",
+                ContentTypes = new MediaTypeCollection { MediaTypeNames.Application.Json }
+            };
         }
     }
 }

@@ -1,27 +1,21 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.Profiles.Languages;
+using Sonarr.Api.V3;
 using Sonarr.Api.V3.Profiles.Language;
 
 namespace NzbDrone.Api.V3.Profiles.Language
 {
     [ApiController]
-    [Route("/api/v3/languageprofile/schema")]
-    public class LanguageProfileSchemaController : ControllerBase//SonarrRestModule<LanguageProfileResource>
+    [SonarrApiRoute("languageprofile/schema", RouteVersion.V3)]
+    public class LanguageProfileSchemaController : ControllerBase
     {
         private readonly LanguageProfileService _languageProfileService;
 
         public LanguageProfileSchemaController(LanguageProfileService languageProfileService)
-            //: base("/languageprofile/schema")
-        {
-            _languageProfileService = languageProfileService;
-            /*GetResourceSingle = GetAll;*/
-        }
+            => _languageProfileService = languageProfileService;
 
         [HttpGet]
-        public LanguageProfileResource GetAll()
-        {
-            var profile = _languageProfileService.GetDefaultProfile(string.Empty);
-            return profile.ToResource();
-        }
+        public IActionResult GetAll()
+            => Ok(_languageProfileService.GetDefaultProfile(string.Empty).ToResource());
     }
 }
