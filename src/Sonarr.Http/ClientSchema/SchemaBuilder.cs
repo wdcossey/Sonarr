@@ -182,93 +182,90 @@ namespace Sonarr.Http.ClientSchema
 
         private static Func<object, object> GetValueConverter(Type propertyType)
         {
+
             if (propertyType == typeof(string))
-            {
                 return fieldValue => (fieldValue as JsonElement?)?.GetString();
-            }
 
             if (propertyType == typeof(bool))
-            {
-                return fieldValue => (fieldValue as JsonElement?)?.GetBoolean();
-            }
+                return fieldValue => (fieldValue as JsonElement?)?.GetBoolean() ?? default(bool);
 
             if (propertyType == typeof(int))
-            {
-                return fieldValue => (fieldValue as JsonElement?)?.GetInt32() ?? 0; //fieldValue?.ToString().ParseInt32() ?? 0;
-            }
+                return fieldValue => (fieldValue as JsonElement?)?.GetInt32() ?? default(int);
 
-            else if (propertyType == typeof(long))
-            {
-                return fieldValue => (fieldValue as JsonElement?)?.GetInt64() ?? 0L; //fieldValue?.ToString().ParseInt64() ?? 0;
-            }
+            if (propertyType == typeof(long))
+                return fieldValue => (fieldValue as JsonElement?)?.GetInt64() ?? default(long);
 
-            else if (propertyType == typeof(double))
-            {
-                return fieldValue => (fieldValue as JsonElement?)?.GetDouble() ?? 0d; //fieldValue?.ToString().ParseDouble() ?? 0.0;
-            }
+            if (propertyType == typeof(double))
+                return fieldValue => (fieldValue as JsonElement?)?.GetDouble() ?? default(double);
 
-            else if (propertyType == typeof(int?))
-            {
-                return fieldValue => (fieldValue as JsonElement?)?.GetInt32(); //fieldValue?.ToString().ParseInt32();
-            }
+            if (propertyType == typeof(decimal))
+                return fieldValue => (fieldValue as JsonElement?)?.GetDecimal() ?? default(decimal);
 
-            else if (propertyType == typeof(Int64?))
-            {
-                return fieldValue => (fieldValue as JsonElement?)?.GetInt64(); //fieldValue?.ToString().ParseInt64();
-            }
+            if (propertyType == typeof(float))
+                return fieldValue => (fieldValue as JsonElement?)?.GetSingle() ?? default(float);
 
-            else if (propertyType == typeof(double?))
-            {
-                return fieldValue => (fieldValue as JsonElement?)?.GetDouble(); //fieldValue?.ToString().ParseDouble();
-            }
+            if (propertyType == typeof(DateTime))
+                return fieldValue => (fieldValue as JsonElement?)?.GetDateTime() ?? default(DateTime);
 
-            else if (propertyType == typeof(IEnumerable<int>))
+            if (propertyType == typeof(Guid))
+                return fieldValue => (fieldValue as JsonElement?)?.GetGuid() ?? default(Guid);
+
+            if (propertyType == typeof(bool?))
+                return fieldValue => (fieldValue as JsonElement?)?.GetBoolean();
+
+            if (propertyType == typeof(int?))
+                return fieldValue => (fieldValue as JsonElement?)?.GetInt32();
+
+            if (propertyType == typeof(long?))
+                return fieldValue => (fieldValue as JsonElement?)?.GetInt64();
+
+            if (propertyType == typeof(double?))
+                return fieldValue => (fieldValue as JsonElement?)?.GetDouble();
+
+            if (propertyType == typeof(decimal?))
+                return fieldValue => (fieldValue as JsonElement?)?.GetDecimal();
+
+            if (propertyType == typeof(float?))
+                return fieldValue => (fieldValue as JsonElement?)?.GetSingle();
+
+            if (propertyType == typeof(DateTime?))
+                return fieldValue => (fieldValue as JsonElement?)?.GetDateTime();
+
+            if (propertyType == typeof(Guid?))
+                return fieldValue => (fieldValue as JsonElement?)?.GetGuid();
+
+            if (propertyType == typeof(IEnumerable<int>))
             {
                 return fieldValue =>
                 {
                     if (fieldValue == null)
-                    {
                         return Enumerable.Empty<int>();
-                    }
-                    else if (fieldValue is JsonElement { ValueKind: JsonValueKind.Array } jsonElement)
-                    {
+
+                    if (fieldValue is JsonElement { ValueKind: JsonValueKind.Array } jsonElement)
                         return jsonElement.EnumerateArray().Select(s => s.GetInt32());
-                    }
-                    else
-                    {
-                        return fieldValue.ToString().Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(s => Convert.ToInt32(s));
-                    }
+
+                    return fieldValue.ToString().Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(s => Convert.ToInt32(s));
                 };
             }
 
-            else if (propertyType == typeof(IEnumerable<string>))
+            if (propertyType == typeof(IEnumerable<string>))
             {
                 return fieldValue =>
                 {
                     if (fieldValue == null)
-                    {
                         return Enumerable.Empty<string>();
-                    }
-                    else if (fieldValue is JsonElement { ValueKind: JsonValueKind.Array } jsonElement)
-                    {
+
+                    if (fieldValue is JsonElement { ValueKind: JsonValueKind.Array } jsonElement)
                         return jsonElement.EnumerateArray().Select(s => s.GetString());
-                    }
-                    else
-                    {
-                        return fieldValue.ToString().Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(v => v.Trim());
-                    }
+
+                    return fieldValue.ToString().Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(v => v.Trim());
                 };
             }
 
-            else
-            {
-                return fieldValue => fieldValue;
-            }
+            return fieldValue => fieldValue;
         }
 
         private static string GetCamelCaseName(string name)
-        {
-            return Char.ToLowerInvariant(name[0]) + name.Substring(1);
-        }
+            => char.ToLowerInvariant(name[0]) + name[1..];
     }
 }
