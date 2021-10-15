@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.Instrumentation;
 using Sonarr.Http;
+using Sonarr.Http.Attributes;
 using Sonarr.Http.Extensions;
+using Sonarr.Http.Filters;
 
 namespace Sonarr.Api.V3.Logs
 {
@@ -16,7 +18,7 @@ namespace Sonarr.Api.V3.Logs
             => _logService = logService;
 
         [HttpGet]
-        [PagingResourceFilter]
+        [SonarrPagingResourceFilter]
         public IActionResult GetLogs([FromQuery] PagingResource<LogResource> pagingResource)
         {
             var pageSpec = pagingResource.MapToPagingSpec<LogResource, Log>();

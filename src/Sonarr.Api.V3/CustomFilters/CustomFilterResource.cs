@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using NzbDrone.Common.Serializer;
 using NzbDrone.Core.CustomFilters;
 using Sonarr.Http.REST;
@@ -26,7 +25,7 @@ namespace Sonarr.Api.V3.CustomFilters
                        Id = model.Id,
                        Type = model.Type,
                        Label = model.Label,
-                       Filters = JsonSerializer.Deserialize<List<dynamic>>(model.Filters)//Json.Deserialize<List<dynamic>>(model.Filters)
+                       Filters = Json.Deserialize<List<dynamic>>(model.Filters)
                    };
         }
 
@@ -39,7 +38,7 @@ namespace Sonarr.Api.V3.CustomFilters
                        Id = resource.Id,
                        Type = resource.Type,
                        Label = resource.Label,
-                       Filters = JsonSerializer.Serialize(resource.Filters)//Json.ToJson(resource.Filters)
+                       Filters = Json.ToJson(resource.Filters)
                    };
         }
 

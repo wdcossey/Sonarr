@@ -11,6 +11,7 @@ using NzbDrone.Core.Tv;
 using NzbDrone.Core.Tv.Commands;
 using NzbDrone.Core.Validation;
 using NzbDrone.Core.Validation.Paths;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.Series
 {

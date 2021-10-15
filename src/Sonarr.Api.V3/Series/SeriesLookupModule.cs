@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using Nancy;
 using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.MetadataSource;
 using NzbDrone.Core.Organizer;

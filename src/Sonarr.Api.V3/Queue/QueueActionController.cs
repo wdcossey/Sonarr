@@ -1,11 +1,12 @@
-﻿/*
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.Blocklisting;
 using NzbDrone.Core.Download;
 using NzbDrone.Core.Download.Pending;
 using NzbDrone.Core.Download.TrackedDownloads;
 using NzbDrone.Core.Queue;
+using Sonarr.Http.Attributes;
+using Sonarr.Http.REST;
 
 namespace Sonarr.Api.V3.Queue
 {
@@ -78,8 +79,17 @@ namespace Sonarr.Api.V3.Queue
             return Ok(new object());
         }
 
+        [HttpPost("grab/bulk")]
+        [Consumes("application/x-www-form-urlencoded")] //TODO: some UI requests are broken?!?
+        public IActionResult GrabFormForm([FromForm] QueueBulkResource resource)
+            => Grab(resource);
+
         [HttpDelete("{id:int:required}")]
-        public IActionResult Remove(int id, [FromQuery] bool removeFromClient = true, [FromQuery] bool? blocklist = false, [FromQuery] bool? blacklist = false)
+        public IActionResult Remove(
+            int id,
+            [FromQuery] bool removeFromClient = true,
+            [FromQuery] bool? blocklist = false,
+            [FromQuery] bool? blacklist = false)
         {
             // blacklist maintained for backwards compatability, UI uses blocklist.
             var trackedDownload = Remove(id, removeFromClient, (blocklist is true || blacklist is true));
@@ -91,7 +101,11 @@ namespace Sonarr.Api.V3.Queue
         }
 
         [HttpDelete("bulk")]
-        public IActionResult Remove([FromBody] QueueBulkResource resource, [FromQuery] bool removeFromClient = true, [FromQuery] bool? blocklist = false, [FromQuery] bool? blacklist = false) //TODO: FromBody or FromForm (some UI requests are broken)?!?
+        public IActionResult Remove(
+            [FromBody] QueueBulkResource resource,
+            [FromQuery] bool removeFromClient = true,
+            [FromQuery] bool? blocklist = false,
+            [FromQuery] bool? blacklist = false) //TODO: FromBody or FromForm (some UI requests are broken)?!?
         {
             //var removeFromClient = Request.GetBooleanQueryParameter("removeFromClient", true);
 
@@ -115,6 +129,15 @@ namespace Sonarr.Api.V3.Queue
 
             return Ok(new object());
         }
+
+        [HttpDelete("bulk")]
+        [Consumes("application/x-www-form-urlencoded")] //TODO: some UI requests are broken?!?
+        public IActionResult RemoveFromForm(
+            [FromForm] QueueBulkResource resource,
+            [FromQuery] bool removeFromClient = true,
+            [FromQuery] bool? blocklist = false,
+            [FromQuery] bool? blacklist = false)
+            => Remove(resource, removeFromClient, blocklist, blacklist);
 
         private TrackedDownload Remove(int id, bool removeFromClient, bool blocklist)
         {
@@ -175,4 +198,3 @@ namespace Sonarr.Api.V3.Queue
         }
     }
 }
-*/

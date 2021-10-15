@@ -2,6 +2,7 @@
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.Qualities;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.Qualities
 {
@@ -15,12 +16,9 @@ namespace Sonarr.Api.V3.Qualities
             => _qualityDefinitionService = qualityDefinitionService;
 
         [HttpPut]
-        public IActionResult Update([FromBody] QualityDefinitionResource resource)
-        {
-            var model = resource.ToModel();
-            var  result = _qualityDefinitionService.Update(model);
-            return Accepted(result.ToResource());
-        }
+        [HttpPut("{id:int?}")]
+        public IActionResult Update(int? id, [FromBody] QualityDefinitionResource resource)
+            => Accepted(_qualityDefinitionService.Update(resource.ToModel()).ToResource());
 
         [HttpGet("{id:int:required}")]
         public IActionResult GetById(int id)

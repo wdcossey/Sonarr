@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.DecisionEngine.Specifications;
 using NzbDrone.Core.Exceptions;
@@ -10,15 +8,12 @@ using NzbDrone.Core.MediaFiles.Events;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Parser;
 using NzbDrone.Core.Tv;
-using Sonarr.Http.Extensions;
-using BadRequestException = Sonarr.Http.REST.BadRequestException;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.EpisodeFiles
 {
     [SonarrApiRoute("episodeFile", RouteVersion.V3)]
-    //TODO: Remove `SonarrControllerBase<>`
-    public class EpisodeFileController :
-        SonarrControllerBase<EpisodeFileResource, EpisodeFile>,
+    public class EpisodeFileController : ControllerBase,
         IHandle<EpisodeFileAddedEvent>,
         IHandle<EpisodeFileDeletedEvent>
     {
@@ -27,7 +22,7 @@ namespace Sonarr.Api.V3.EpisodeFiles
         private readonly ISeriesService _seriesService;
         private readonly IUpgradableSpecification _upgradableSpecification;
 
-        public EpisodeFileController(/*IBroadcastSignalRMessage signalRBroadcaster,*/ //TODO: Add SignalR
+        public EpisodeFileController(/*IBroadcastSignalRMessage signalRBroadcaster,*/ //TODO: SignalR
                              IMediaFileService mediaFileService,
                              IDeleteMediaFiles mediaFileDeletionService,
                              ISeriesService seriesService,
@@ -42,182 +37,118 @@ namespace Sonarr.Api.V3.EpisodeFiles
 
         public void Handle(EpisodeFileAddedEvent message)
         {
-            //BroadcastResourceChange(ModelAction.Updated, message.EpisodeFile.Id);
+            //BroadcastResourceChange(ModelAction.Updated, message.EpisodeFile.Id); //TODO: SignalR
         }
 
         public void Handle(EpisodeFileDeletedEvent message)
         {
-            //BroadcastResourceChange(ModelAction.Deleted, message.EpisodeFile.Id);
+            //BroadcastResourceChange(ModelAction.Deleted, message.EpisodeFile.Id); //TODO: SignalR
         }
 
-        /*[HttpGet("{seriesId:int?}")]
-        public new IActionResult GetAllAsync([FromQuery] int? seriesId = null, [FromQuery] IList<int> episodeFileIds = null)
-            => Ok(GetEpisodeFiles(seriesId, episodeFileIds));*/
-
-        protected override Task<IList<EpisodeFileResource>> GetAllResourcesAsync()
-            => Task.FromResult<IList<EpisodeFileResource>>(GetEpisodeFiles());
-
-        protected override Task<EpisodeFileResource> GetResourceByIdAsync(int id)
-            => Task.FromResult(GetEpisodeFile(id));
-
-        protected override Task DeleteResourceByIdAsync(int id)
+        [HttpGet]
+        public IActionResult GetEpisodeFiles(
+            [FromQuery] int? seriesId = null,
+            [FromQuery] IList<int> episodeFileIds = null)
         {
-            DeleteEpisodeFile(id);
-            return Task.CompletedTask;
-        }
-
-        protected override Task<EpisodeFileResource> UpdateResourceAsync(EpisodeFileResource resource)
-        {
-            SetQuality(resource);
-            return Task.FromResult(GetEpisodeFile(resource.Id));
-        }
-
-        protected override Task<EpisodeFileResource> CreateResourceAsync(EpisodeFileResource resource)
-            => throw new NotImplementedException();
-
-        [HttpPut("editor")]
-        public virtual Task<IActionResult> EditAllAsync()
-            => Task.FromResult<IActionResult>(Accepted(SetQuality()));
-
-        [HttpPut("bulk")]
-        public virtual Task<IActionResult> DeleteAllAsync()
-        {
-            DeleteEpisodeFiles();
-            return Task.FromResult<IActionResult>(Ok());
-        }
-
-        private EpisodeFileResource GetEpisodeFile(int id)
-        {
-            var episodeFile = _mediaFileService.Get(id);
-            var series = _seriesService.GetSeries(episodeFile.SeriesId);
-
-            return episodeFile.ToResource(series, _upgradableSpecification);
-        }
-
-        private List<EpisodeFileResource> GetEpisodeFiles(/*int? seriesId = null, IList<int> episodeFileIds = null*/)
-        {
-            int? seriesId = null;
-            if (Request.Query.TryGetValue("seriesId", out var seriesIdQuery))
-                seriesId = int.Parse(seriesIdQuery);
-
-            IList<int> episodeFileIds = null;
-            if (Request.Query.TryGetValue("episodeFileIds", out var episodeFileIdsQuery))
-                episodeFileIds = episodeFileIdsQuery.ToString().Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(e => Convert.ToInt32(e))
-                    .ToList();
-
-            //var seriesIdQuery = Request.Query.SeriesId;
-            //var episodeFileIdsQuery = Request.Query.EpisodeFileIds;
-
             if (!seriesId.HasValue && episodeFileIds?.Any() != true)
-            {
-                throw new BadRequestException("seriesId or episodeFileIds must be provided");
-            }
+                return BadRequest($"{nameof(seriesId)} or {nameof(episodeFileIds)} must be provided");
 
             if (seriesId.HasValue)
             {
-                //int seriesId = Convert.ToInt32(seriesIdQuery.Value);
                 var series = _seriesService.GetSeries(seriesId.Value);
-                return _mediaFileService.GetFilesBySeries(seriesId.Value).ConvertAll(f => f.ToResource(series, _upgradableSpecification));
+                return Ok(_mediaFileService.GetFilesBySeries(seriesId.Value)
+                    .ConvertAll(f => f.ToResource(series, _upgradableSpecification)));
             }
 
-            else
-            {
-                /*string episodeFileIdsValue = episodeFileIdsQuery.Value.ToString();
+            var episodeFiles = _mediaFileService.Get(episodeFileIds);
 
-                var episodeFileIds = episodeFileIdsValue.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                                                        .Select(e => Convert.ToInt32(e))
-                                                        .ToList();*/
-
-                var episodeFiles = _mediaFileService.Get(episodeFileIds);
-
-                return episodeFiles.GroupBy(e => e.SeriesId)
-                                   .SelectMany(f => f.ToList()
-                                                     .ConvertAll( e => e.ToResource(_seriesService.GetSeries(f.Key), _upgradableSpecification)))
-                                   .ToList();
-            }
+            return Ok(episodeFiles.GroupBy(e => e.SeriesId)
+                .SelectMany(f => f.ToList()
+                    .ConvertAll(e => e.ToResource(_seriesService.GetSeries(f.Key), _upgradableSpecification))));
         }
 
-        private void SetQuality(EpisodeFileResource episodeFileResource)
+        [HttpGet("{id:int:required}")]
+        public IActionResult GetEpisodeFile(int id)
         {
-            var episodeFile = _mediaFileService.Get(episodeFileResource.Id);
-            episodeFile.Quality = episodeFileResource.Quality;
-
-            if (episodeFileResource.SceneName != null && SceneChecker.IsSceneTitle(episodeFileResource.SceneName))
-            {
-                episodeFile.SceneName = episodeFileResource.SceneName;
-            }
-
-            if (episodeFileResource.ReleaseGroup != null)
-            {
-                episodeFile.ReleaseGroup = episodeFileResource.ReleaseGroup;
-            }
-
-            _mediaFileService.Update(episodeFile);
+            var episodeFile = _mediaFileService.Get(id);
+            var series = _seriesService.GetSeries(episodeFile.SeriesId);
+            return Ok(episodeFile.ToResource(series, _upgradableSpecification));
         }
 
-        private object SetQuality()
-        {
-            var resource = Request.Body.FromJson<EpisodeFileListResource>();
-            var episodeFiles = _mediaFileService.GetFiles(resource.EpisodeFileIds);
-
-            foreach (var episodeFile in episodeFiles)
-            {
-                if (resource.Language != null)
-                {
-                    episodeFile.Language = resource.Language;
-                }
-
-                if (resource.Quality != null)
-                {
-                    episodeFile.Quality = resource.Quality;
-                }
-
-                if (resource.SceneName != null && SceneChecker.IsSceneTitle(resource.SceneName))
-                {
-                    episodeFile.SceneName = resource.SceneName;
-                }
-
-                if (resource.ReleaseGroup != null)
-                {
-                    episodeFile.ReleaseGroup = resource.ReleaseGroup;
-                }
-            }
-
-            _mediaFileService.Update(episodeFiles);
-
-            var series = _seriesService.GetSeries(episodeFiles.First().SeriesId);
-
-            return episodeFiles.ConvertAll(f => f.ToResource(series, _upgradableSpecification));
-                //ResponseWithCode(episodeFiles.ConvertAll(f => f.ToResource(series, _upgradableSpecification)), HttpStatusCode.Accepted);
-        }
-
-        private void DeleteEpisodeFile(int id)
+        [HttpDelete("{id:int:required}")]
+        public IActionResult DeleteEpisodeFile(int id)
         {
             var episodeFile = _mediaFileService.Get(id);
 
             if (episodeFile == null)
             {
+                //TODO: return NotFound()?!?
                 throw new NzbDroneClientException(global::System.Net.HttpStatusCode.NotFound, "Episode file not found");
             }
 
             var series = _seriesService.GetSeries(episodeFile.SeriesId);
 
             _mediaFileDeletionService.DeleteEpisodeFile(series, episodeFile);
+
+            return Ok(new object());
         }
 
-        private object DeleteEpisodeFiles()
+        [HttpPut]
+        [HttpPut("{id:int?}")]
+        public IActionResult SetQuality(int? id, [FromBody] EpisodeFileResource resource)
         {
-            var resource = Request.Body.FromJson<EpisodeFileListResource>();
+            var episodeFile = _mediaFileService.Get(resource.Id);
+            episodeFile.Quality = resource.Quality;
+
+            if (resource.SceneName != null && SceneChecker.IsSceneTitle(resource.SceneName))
+                episodeFile.SceneName = resource.SceneName;
+
+            if (resource.ReleaseGroup != null)
+                episodeFile.ReleaseGroup = resource.ReleaseGroup;
+
+            var series = _seriesService.GetSeries(episodeFile.SeriesId);
+            return Accepted(_mediaFileService.Update(episodeFile).ToResource(series, _upgradableSpecification));
+        }
+
+        [HttpPut("editor")]
+        public IActionResult EditAllAsync([FromBody] EpisodeFileListResource resource)
+        {
+            var episodeFiles = _mediaFileService
+                .GetFiles(resource.EpisodeFileIds)
+                .Select(episodeFile =>
+                {
+                    if (resource.Language != null)
+                        episodeFile.Language = resource.Language;
+
+                    if (resource.Quality != null)
+                        episodeFile.Quality = resource.Quality;
+
+                    if (resource.SceneName != null && SceneChecker.IsSceneTitle(resource.SceneName))
+                        episodeFile.SceneName = resource.SceneName;
+
+                    if (resource.ReleaseGroup != null)
+                        episodeFile.ReleaseGroup = resource.ReleaseGroup;
+
+                    return episodeFile;
+                }).ToList();
+
+            _mediaFileService.Update(episodeFiles);
+
+            var series = _seriesService.GetSeries(episodeFiles.First().SeriesId);
+
+            return Accepted(episodeFiles.ConvertAll(f => f.ToResource(series, _upgradableSpecification)));
+        }
+
+        [HttpPut("bulk")]
+        public IActionResult DeleteAllAsync([FromBody] EpisodeFileListResource resource)
+        {
             var episodeFiles = _mediaFileService.GetFiles(resource.EpisodeFileIds);
             var series = _seriesService.GetSeries(episodeFiles.First().SeriesId);
 
             foreach (var episodeFile in episodeFiles)
-            {
                 _mediaFileDeletionService.DeleteEpisodeFile(series, episodeFile);
-            }
 
-            return new object();
+            return Ok(new object());
         }
     }
 }

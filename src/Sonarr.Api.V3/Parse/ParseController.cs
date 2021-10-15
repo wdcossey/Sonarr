@@ -3,8 +3,7 @@ using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Parser;
 using Sonarr.Api.V3.Episodes;
 using Sonarr.Api.V3.Series;
-using Sonarr.Http;
-using Sonarr.Http.REST;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.Parse
 {

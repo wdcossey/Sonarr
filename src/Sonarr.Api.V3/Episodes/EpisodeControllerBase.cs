@@ -1,21 +1,17 @@
 ﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
-using NzbDrone.Common.Extensions;
-using NzbDrone.Core.Datastore.Events;
-using NzbDrone.Core.DecisionEngine;
 using NzbDrone.Core.DecisionEngine.Specifications;
 using NzbDrone.Core.Download;
 using NzbDrone.Core.MediaFiles.Events;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Tv;
-using NzbDrone.SignalR;
 using Sonarr.Api.V3.EpisodeFiles;
 using Sonarr.Api.V3.Series;
-using Sonarr.Http;
+
 
 namespace Sonarr.Api.V3.Episodes
 {
-    public abstract class EpisodeControllerBase : SonarrPagedController<EpisodeResource>,// SonarrRestModuleWithSignalR<EpisodeResource, Episode>,
+    public abstract class EpisodeControllerBase : ControllerBase,
                                                      IHandle<EpisodeGrabbedEvent>,
                                                      IHandle<EpisodeImportedEvent>,
                                                      IHandle<EpisodeFileDeletedEvent>
@@ -60,19 +56,13 @@ namespace Sonarr.Api.V3.Episodes
                 var series = episode.Series ?? _seriesService.GetSeries(episode.SeriesId);
 
                 if (includeSeries)
-                {
                     resource.Series = series.ToResource();
-                }
 
                 if (includeEpisodeFile && episode.EpisodeFileId != 0)
-                {
                     resource.EpisodeFile = episode.EpisodeFile.Value.ToResource(series, _upgradableSpecification);
-                }
 
                 if (includeImages)
-                {
                     resource.Images = episode.Images;
-                }
             }
 
             return resource;

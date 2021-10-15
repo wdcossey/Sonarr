@@ -2,6 +2,7 @@
 using NzbDrone.Core.Profiles.Languages;
 using Sonarr.Api.V3;
 using Sonarr.Api.V3.Profiles.Language;
+using Sonarr.Http.Attributes;
 
 namespace NzbDrone.Api.V3.Profiles.Language
 {

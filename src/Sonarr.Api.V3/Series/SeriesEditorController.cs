@@ -1,14 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Net.Mime;
 using System.Text.Json;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Tv;
 using NzbDrone.Core.Tv.Commands;
-using Sonarr.Api.V3.Series;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.Series
 {
@@ -102,8 +100,7 @@ namespace Sonarr.Api.V3.Series
                 });
             }
 
-            return StatusCode(StatusCodes.Status202Accepted,
-                _seriesService.UpdateSeries(seriesToUpdate, !resource.MoveFiles).ToResource());
+            return Accepted(_seriesService.UpdateSeries(seriesToUpdate, !resource.MoveFiles).ToResource());
         }
 
         [HttpDelete]
@@ -116,7 +113,7 @@ namespace Sonarr.Api.V3.Series
 
         [HttpDelete]
         [Consumes("application/x-www-form-urlencoded")]
-        public IActionResult DeleteSeriesFromForm() //TODO: This should be json from the Body?
+        public IActionResult DeleteSeriesFromForm() //TODO: This should be from the Body?!?
         {
             var resource = JsonSerializer.Deserialize<SeriesEditorResource>(Request.Form.FirstOrDefault().Key,
                 new JsonSerializerOptions(JsonSerializerDefaults.Web));

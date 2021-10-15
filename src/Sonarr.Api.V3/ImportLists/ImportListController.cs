@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.ImportLists;
 using NzbDrone.Core.Validation;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.ImportLists
 {

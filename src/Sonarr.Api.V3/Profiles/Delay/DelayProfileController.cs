@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.Profiles.Delay;
-using Sonarr.Http.REST;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.Profiles.Delay
 {
@@ -38,14 +38,13 @@ namespace Sonarr.Api.V3.Profiles.Delay
             return Created($"{Request.Path}/{model.Id}", model);
         }
 
-        [HttpDelete("{id:int}")]
+        [HttpDelete("{id:int:required}")]
         public IActionResult DeleteProfile(int id)
         {
             if (id == 1)
-                throw new MethodNotAllowedException("Cannot delete global delay profile");
+                return BadRequest("Cannot delete global delay profile");
 
             _delayProfileService.Delete(id);
-
             return Ok(new object());
         }
 

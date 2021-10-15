@@ -1,13 +1,13 @@
 ﻿using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.Datastore;
-using NzbDrone.Core.DecisionEngine;
 using NzbDrone.Core.DecisionEngine.Specifications;
 using NzbDrone.Core.Tv;
-using NzbDrone.SignalR;
 using Sonarr.Api.V3.Episodes;
 using Sonarr.Http;
+using Sonarr.Http.Attributes;
 using Sonarr.Http.Extensions;
+using Sonarr.Http.Filters;
 
 namespace Sonarr.Api.V3.Wanted
 {
@@ -29,7 +29,7 @@ namespace Sonarr.Api.V3.Wanted
         }
 
         [HttpGet]
-        [PagingResourceFilter]
+        [SonarrPagingResourceFilter]
         public IActionResult GetCutoffUnmetEpisodes(
             [FromQuery] PagingResource<EpisodeResource> pagingResource,
             [FromQuery] bool includeSeries = false,
@@ -44,9 +44,6 @@ namespace Sonarr.Api.V3.Wanted
                 SortDirection = pagingResource.SortDirection
             };
 
-            //var includeSeries = true;//Request.GetBooleanQueryParameter("includeSeries");
-            //var includeEpisodeFile = true;//Request.GetBooleanQueryParameter("includeEpisodeFile");
-            //var includeImages = true;//Request.GetBooleanQueryParameter("includeImages");
             var filter = pagingResource.Filters.FirstOrDefault(f => f.Key == "monitored");
 
             if (filter != null && filter.Value == "false")

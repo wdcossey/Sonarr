@@ -6,12 +6,16 @@ using NzbDrone.Core.Download.Pending;
 using NzbDrone.Core.Download.TrackedDownloads;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Queue;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.Queue
 {
     [ApiController]
     [SonarrApiRoute("queue/status", RouteVersion.V3)]
-    public class QueueStatusController : ControllerBase, IHandle<QueueUpdatedEvent>, IHandle<PendingReleasesUpdatedEvent>//SonarrRestModuleWithSignalR<QueueStatusResource, NzbDrone.Core.Queue.Queue>,
+    public class QueueStatusController :
+        ControllerBase,
+        IHandle<QueueUpdatedEvent>,
+        IHandle<PendingReleasesUpdatedEvent>
     {
         private readonly IQueueService _queueService;
         private readonly IPendingReleaseService _pendingReleaseService;

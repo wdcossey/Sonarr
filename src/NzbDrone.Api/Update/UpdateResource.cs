@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
+using NzbDrone.Common.Serializer;
 using Sonarr.Http.REST;
 using NzbDrone.Core.Update;
 
@@ -9,7 +10,7 @@ namespace NzbDrone.Api.Update
 {
     public class UpdateResource : RestResource
     {
-        [JsonConverter(typeof(Newtonsoft.Json.Converters.VersionConverter))]
+        [JsonConverter(typeof(JsonVersionConverter))]
         public Version Version { get; set; }
 
         public string Branch { get; set; }

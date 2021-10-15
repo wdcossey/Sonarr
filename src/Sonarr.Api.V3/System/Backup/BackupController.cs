@@ -8,8 +8,7 @@ using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Backup;
-using Sonarr.Http;
-using Sonarr.Http.REST;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.System.Backup
 {
@@ -81,7 +80,6 @@ namespace Sonarr.Api.V3.System.Backup
             return Ok(new { RestartRequired = true });
         }
 
-        ////Post("/restore/upload",  x => UploadAndRestore());
         [HttpPost("restore/upload")]
         public IActionResult UploadAndRestore()
         {

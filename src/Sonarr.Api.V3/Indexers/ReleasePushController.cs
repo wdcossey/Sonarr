@@ -12,6 +12,7 @@ using NzbDrone.Core.Indexers;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Profiles.Languages;
 using NzbDrone.Core.Profiles.Qualities;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.Indexers
 {

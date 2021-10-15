@@ -6,15 +6,13 @@ using NzbDrone.Common.TPL;
 using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.ProgressMessaging;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.Commands
 {
     [ApiController]
     [SonarrApiRoute("command", RouteVersion.V3)]
-    //TODO: Remove `SonarrControllerBase`
-    public class CommandController :
-        ControllerBase,// SonarrRestModuleWithSignalR<CommandResource, CommandModel>
-        IHandle<CommandUpdatedEvent>
+    public class CommandController : ControllerBase, IHandle<CommandUpdatedEvent>
     {
         private readonly IManageCommandQueue _commandQueueManager;
         private readonly ICommandFactory _commandFactory;
@@ -33,12 +31,7 @@ namespace Sonarr.Api.V3.Commands
             _debouncer = new Debouncer(SendUpdates, TimeSpan.FromSeconds(0.1));
             _pendingUpdates = new Dictionary<int, CommandResource>();
 
-            /*GetResourceById = GetCommand;
-            CreateResource = StartCommand;
-            GetResourceAll = GetStartedCommands;
-            DeleteResource = CancelCommand;
-
-            PostValidator.RuleFor(c => c.Name).NotBlank();*/
+            /*PostValidator.RuleFor(c => c.Name).NotBlank();*/
         }
 
         [HttpGet]
@@ -87,7 +80,6 @@ namespace Sonarr.Api.V3.Commands
 
         private void SendUpdates()
         {
-            //TODO
             lock (_pendingUpdates)
             {
                 var pendingUpdates = _pendingUpdates.Values.ToArray();
@@ -95,13 +87,13 @@ namespace Sonarr.Api.V3.Commands
 
                 foreach (var pendingUpdate in pendingUpdates)
                 {
-                    /*BroadcastResourceChange(ModelAction.Updated, pendingUpdate);
+                    //BroadcastResourceChange(ModelAction.Updated, pendingUpdate); //TODO: SignalR
 
                     if (pendingUpdate.Name == typeof(MessagingCleanupCommand).Name.Replace("Command", "") &&
                         pendingUpdate.Status == CommandStatus.Completed)
                     {
-                        BroadcastResourceChange(ModelAction.Sync);
-                    }*/
+                        //BroadcastResourceChange(ModelAction.Sync); //TODO: SignalR
+                    }
                 }
             }
         }

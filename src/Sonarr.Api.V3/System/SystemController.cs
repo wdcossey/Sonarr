@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Nancy.Routing;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Lifecycle;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.System
 {
@@ -69,9 +69,9 @@ namespace Sonarr.Api.V3.System
                        Mode = _runtimeInfo.Mode,
                        Branch = _configFileProvider.Branch,
                        Authentication = _configFileProvider.AuthenticationMethod,
-                       SqliteVersion = _database.Version.ToString(), //TODO: Create converter for `Version`
+                       SqliteVersion = _database.Version,
                        UrlBase = _configFileProvider.UrlBase,
-                       RuntimeVersion = _platformInfo.Version.ToString(), //TODO: Create converter for `Version`
+                       RuntimeVersion = _platformInfo.Version,
                        RuntimeName = PlatformInfo.Platform,
                        StartTime = _runtimeInfo.StartTime,
                        PackageVersion = _deploymentInfoProvider.PackageVersion,

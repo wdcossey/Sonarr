@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using FluentValidation;
-using Nancy;
 using NLog;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Extensions;

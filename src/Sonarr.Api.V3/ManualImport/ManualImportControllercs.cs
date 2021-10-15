@@ -5,7 +5,7 @@ using NzbDrone.Core.Languages;
 using NzbDrone.Core.MediaFiles.EpisodeImport.Manual;
 using NzbDrone.Core.Qualities;
 using Sonarr.Api.V3.Episodes;
-using Sonarr.Http.Extensions;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.ManualImport
 {

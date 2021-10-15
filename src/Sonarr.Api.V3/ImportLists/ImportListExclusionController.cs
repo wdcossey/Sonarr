@@ -1,5 +1,6 @@
 using NzbDrone.Core.ImportLists.Exclusions;
 using Microsoft.AspNetCore.Mvc;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.ImportLists
 {

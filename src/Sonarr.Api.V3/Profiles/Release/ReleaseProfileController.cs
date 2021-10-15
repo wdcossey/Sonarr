@@ -1,11 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using FluentValidation;
-using Microsoft.AspNetCore.Mvc;
-using NzbDrone.Common.Extensions;
+﻿using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.Indexers;
 using NzbDrone.Core.Profiles.Releases;
-using Sonarr.Http;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.Profiles.Release
 {
@@ -16,19 +12,12 @@ namespace Sonarr.Api.V3.Profiles.Release
         private readonly IReleaseProfileService _releaseProfileService;
         private readonly IIndexerFactory _indexerFactory;
 
-
         public ReleaseProfileController(IReleaseProfileService releaseProfileService, IIndexerFactory indexerFactory)
         {
             _releaseProfileService = releaseProfileService;
             _indexerFactory = indexerFactory;
 
-            /*GetResourceById = GetReleaseProfile;
-            GetResourceAll = GetAll;
-            CreateResource = Create;
-            UpdateResource = Update;
-            DeleteResource = DeleteReleaseProfile;
-
-            SharedValidator.RuleFor(d => d).Custom((restriction, context) =>
+            /*SharedValidator.RuleFor(d => d).Custom((restriction, context) =>
             {
                 if (restriction.Ignored.Empty() && restriction.Required.Empty() && restriction.Preferred.Empty())
                 {
@@ -58,16 +47,16 @@ namespace Sonarr.Api.V3.Profiles.Release
         [HttpPost]
         public IActionResult Create([FromBody] ReleaseProfileResource resource)
         {
-            var value = _releaseProfileService.Add(resource.ToModel());
-            return Created($"{Request.Path}/{value.Id}", value);
+            var model = _releaseProfileService.Add(resource.ToModel());
+            return Created($"{Request.Path}/{model.Id}", model.ToResource());
         }
 
         [HttpPut]
         [HttpPut("{id:int?}")]
         public IActionResult Update(int? id, [FromBody] ReleaseProfileResource resource)
-            => Accepted(_releaseProfileService.Update(resource.ToModel()));
+            => Accepted(_releaseProfileService.Update(resource.ToModel()).ToResource());
 
-        [HttpDelete("{id:int}")]
+        [HttpDelete("{id:int:required}")]
         public IActionResult DeleteReleaseProfile(int id)
         {
             _releaseProfileService.Delete(id);

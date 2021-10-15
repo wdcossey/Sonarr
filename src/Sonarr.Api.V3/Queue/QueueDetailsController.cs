@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.Download.Pending;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Queue;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.Queue
 {
     [ApiController]
-    [Route("/api/v3/queue/details")]
+    [SonarrApiRoute("queue/details", RouteVersion.V3)]
     public class QueueDetailsController : ControllerBase, IHandle<QueueUpdatedEvent>, IHandle<PendingReleasesUpdatedEvent>//SonarrRestModuleWithSignalR<QueueResourceNzbDrone.Core.Queue.Queue>,
     {
         private readonly IQueueService _queueService;
@@ -26,7 +26,6 @@ namespace Sonarr.Api.V3.Queue
         }
 
         [HttpGet]
-        //[HttpGet("{includeSeries:bool?}/{includeEpisode:bool?}")]
         public IActionResult GetQueue(
             [FromQuery] int? seriesId = null,
             [FromQuery] IList<int> episodeIds = null,

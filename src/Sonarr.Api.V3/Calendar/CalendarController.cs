@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.DecisionEngine.Specifications;
 using NzbDrone.Core.Tv;
 using Sonarr.Api.V3.Episodes;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.Calendar
 {

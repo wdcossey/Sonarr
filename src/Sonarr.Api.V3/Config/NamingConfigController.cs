@@ -1,21 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
-using Nancy.ModelBinding;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Organizer;
-using Sonarr.Http;
-using NotImplementedException = System.NotImplementedException;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.Config
 {
     [ApiController]
     [SonarrApiConfigRoute("naming", RouteVersion.V3)]
-    //TODO: Remove `SonarrControllerBase<>`
-    public class NamingConfigController : SonarrControllerBase<NamingConfigResource>
+    public class NamingConfigController : ControllerBase
     {
         private readonly INamingConfigService _namingConfigService;
         private readonly IFilenameSampleService _filenameSampleService;
@@ -69,30 +65,27 @@ namespace Sonarr.Api.V3.Config
             }
         }
 
-        public override Task<IActionResult> GetAllAsync()
-            => Task.FromResult<IActionResult>(Ok(GetNamingConfig()));
 
-        protected override Task<IList<NamingConfigResource>> GetAllResourcesAsync()
-            => throw new NotImplementedException();
+        [HttpGet]
+        [HttpGet("{id:int?}")]
+        public IActionResult GetNamingConfig(int? id = null)
+            => Ok(GetNamingConfigResource());
 
-        protected override Task<NamingConfigResource> GetResourceByIdAsync(int id)
-            => Task.FromResult(GetNamingConfig());
-
-        protected override Task DeleteResourceByIdAsync(int id)
-            => throw new NotImplementedException();
-
-        protected override Task<NamingConfigResource> UpdateResourceAsync(NamingConfigResource resource)
-            => Task.FromResult(UpdateNamingConfig(resource));
-
-        protected override Task<NamingConfigResource> CreateResourceAsync(NamingConfigResource resource)
-            => throw new NotImplementedException();
+        [HttpPut]
+        [HttpPut("{id:int?}")]
+        public IActionResult UpdateResource(int? id, [FromBody] NamingConfigResource resource)
+        {
+            var nameSpec = resource.ToModel();
+            ValidateFormatResult(nameSpec);
+            return Accepted(GetNamingConfigResource());
+        }
 
         [HttpGet("examples")]
         public IActionResult Examples()
             //=> Ok(GetExamples(this.Bind<NamingConfigResource>()));
-            => Ok(GetExamples(GetNamingConfig()));
+            => Ok(GetExamples(GetNamingConfigResource()));
 
-        private NamingConfigResource GetNamingConfig()
+        private NamingConfigResource GetNamingConfigResource()
         {
             var nameSpec = _namingConfigService.GetConfig();
             var resource = nameSpec.ToResource();
@@ -106,21 +99,11 @@ namespace Sonarr.Api.V3.Config
             return resource;
         }
 
-        private NamingConfigResource UpdateNamingConfig(NamingConfigResource resource)
-        {
-            var nameSpec = resource.ToModel();
-            ValidateFormatResult(nameSpec);
-
-            _namingConfigService.Save(nameSpec);
-
-            return GetNamingConfig();
-        }
-
         private object GetExamples(NamingConfigResource config)
         {
             if (config.Id == 0)
             {
-                config = GetNamingConfig();
+                config = GetNamingConfigResource();
             }
 
             var nameSpec = config.ToModel();

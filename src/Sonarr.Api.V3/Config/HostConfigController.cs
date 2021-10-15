@@ -1,19 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Authentication;
 using NzbDrone.Core.Configuration;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.Config
 {
     [ApiController]
     [SonarrApiConfigRoute("host", RouteVersion.V3)]
-    //TODO: Remove `SonarrControllerBase<>`
-    public class HostConfigController : SonarrControllerBase<HostConfigResource>
+    public class HostConfigController : ControllerBase
     {
         private readonly IConfigFileProvider _configFileProvider;
         private readonly IConfigService _configService;
@@ -48,22 +45,15 @@ namespace Sonarr.Api.V3.Config
             SharedValidator.RuleFor(c => c.BackupFolder).IsValidPath().When(c => Path.IsPathRooted(c.BackupFolder));
             SharedValidator.RuleFor(c => c.BackupInterval).InclusiveBetween(1, 7);
             SharedValidator.RuleFor(c => c.BackupRetention).InclusiveBetween(1, 90);*/
-
         }
 
-        public override Task<IActionResult> GetAllAsync()
-            => Task.FromResult<IActionResult>(Ok(GetHostConfig()));
+        [HttpGet]
+        [HttpGet("{id:int?}")]
+        public IActionResult GetHostConfig(int? id = null)
+            => Ok(GetHostConfigResource());
 
-        protected override Task<IList<HostConfigResource>> GetAllResourcesAsync()
-            => throw new NotImplementedException();
-
-        protected override Task<HostConfigResource> GetResourceByIdAsync(int id)
-            => Task.FromResult(GetHostConfig());
-
-        protected override Task DeleteResourceByIdAsync(int id)
-            => throw new NotImplementedException();
-
-        protected override Task<HostConfigResource> UpdateResourceAsync(HostConfigResource resource)
+        [HttpPut]
+        public IActionResult SaveHostConfig([FromBody] HostConfigResource resource)
         {
             var dictionary = resource.GetType()
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public)
@@ -77,13 +67,10 @@ namespace Sonarr.Api.V3.Config
                 _userService.Upsert(resource.Username, resource.Password);
             }
 
-            return Task.FromResult(GetHostConfig());
+            return Accepted(GetHostConfigResource());
         }
 
-        protected override Task<HostConfigResource> CreateResourceAsync(HostConfigResource resource)
-            => throw new NotImplementedException();
-
-        private HostConfigResource GetHostConfig()
+        private HostConfigResource GetHostConfigResource()
         {
             var resource = _configFileProvider.ToResource(_configService);
             resource.Id = 1;

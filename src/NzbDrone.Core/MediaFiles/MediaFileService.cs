@@ -13,7 +13,7 @@ namespace NzbDrone.Core.MediaFiles
     public interface IMediaFileService
     {
         EpisodeFile Add(EpisodeFile episodeFile);
-        void Update(EpisodeFile episodeFile);
+        EpisodeFile Update(EpisodeFile episodeFile);
         void Update(List<EpisodeFile> episodeFiles);
         void Delete(EpisodeFile episodeFile, DeleteMediaFileReason reason);
         List<EpisodeFile> GetFilesBySeries(int seriesId);
@@ -46,9 +46,9 @@ namespace NzbDrone.Core.MediaFiles
             return addedFile;
         }
 
-        public void Update(EpisodeFile episodeFile)
+        public EpisodeFile Update(EpisodeFile episodeFile)
         {
-            _mediaFileRepository.Update(episodeFile);
+            return _mediaFileRepository.Update(episodeFile);
         }
 
         public void Update(List<EpisodeFile> episodeFiles)

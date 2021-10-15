@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.DiskSpace;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.DiskSpace
 {
@@ -15,8 +16,6 @@ namespace Sonarr.Api.V3.DiskSpace
 
         [HttpGet]
         public List<DiskSpaceResource> GetFreeSpace()
-        {
-            return _diskSpaceService.GetFreeSpace().ConvertAll(DiskSpaceResourceMapper.MapToResource);
-        }
+            => _diskSpaceService.GetFreeSpace().ConvertAll(DiskSpaceResourceMapper.MapToResource);
     }
 }

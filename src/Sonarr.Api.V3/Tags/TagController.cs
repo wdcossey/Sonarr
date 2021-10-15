@@ -1,10 +1,7 @@
-﻿using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
-using NzbDrone.Core.Datastore.Events;
+﻿using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Tags;
-using NzbDrone.SignalR;
-using Sonarr.Http;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.Tags
 {
@@ -33,16 +30,14 @@ namespace Sonarr.Api.V3.Tags
         [HttpPost]
         public IActionResult Create([FromBody] TagResource resource)
         {
-            var tag = _tagService.Add(resource.ToModel());
-            return Created($"{Request.Path}/{tag.Id}", tag.ToResource());
+            var model = _tagService.Add(resource.ToModel());
+            return Created($"{Request.Path}/{model.Id}", model.ToResource());
         }
 
         [HttpPut]
         public IActionResult Update([FromBody] TagResource resource)
-        {
-            var tag =_tagService.Update(resource.ToModel());
-            return Accepted(tag.ToResource());
-        }
+            => Accepted(_tagService.Update(resource.ToModel()).ToResource());
+
 
         [HttpDelete("{id:int:required}")]
         public IActionResult DeleteTag(int id)

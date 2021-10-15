@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.DecisionEngine.Specifications;
 using NzbDrone.Core.Tv;
+using Sonarr.Http.Attributes;
 using Sonarr.Http.Extensions;
 
 namespace Sonarr.Api.V3.Episodes
@@ -14,11 +15,10 @@ namespace Sonarr.Api.V3.Episodes
             ISeriesService seriesService,
             IEpisodeService episodeService,
             IUpgradableSpecification upgradableSpecification/*,
-            IBroadcastSignalRMessage signalRBroadcaster*/)
+            IBroadcastSignalRMessage signalRBroadcaster*/) //TODO: SignalR
             : base(episodeService, seriesService, upgradableSpecification/*, signalRBroadcaster*/) { }
 
         [HttpGet]
-        //[EpisodeIdsFilter]
         public IActionResult GetEpisodes(
             [FromQuery] int? seriesId = null,
             [FromQuery] IList<int> episodeIds = null,

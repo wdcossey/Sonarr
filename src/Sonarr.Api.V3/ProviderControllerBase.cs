@@ -11,7 +11,7 @@ using NzbDrone.Core.Validation;
 namespace Sonarr.Api.V3
 {
     [ApiController]
-    public abstract class ProviderControllerBase<TProviderResource, TProvider, TProviderDefinition> : ControllerBase //: SonarrRestModule<TProviderResource>
+    public abstract class ProviderControllerBase<TProviderResource, TProvider, TProviderDefinition> : ControllerBase
         where TProviderDefinition : ProviderDefinition, new()
         where TProvider : IProvider
         where TProviderResource : ProviderResource, new()
@@ -26,17 +26,7 @@ namespace Sonarr.Api.V3
             _providerFactory = providerFactory;
             _resourceMapper = resourceMapper;
 
-            /*Get("schema",  x => GetTemplates());
-            Post("test",  x => Test(ReadResourceFromRequest(true)));
-            Post("testall",  x => TestAll());
-            Post("action/{action}",  x => RequestAction(x.action, ReadResourceFromRequest(true, true)));
-
-            GetResourceAll = GetAll;
-            GetResourceById = GetProviderById;
-            CreateResource = CreateProvider;
-            UpdateResource = UpdateProvider;
-            DeleteResource = DeleteProvider;
-
+            /*
             SharedValidator.RuleFor(c => c.Name).NotEmpty();
             SharedValidator.RuleFor(c => c.Name).Must((v,c) => !_providerFactory.All().Any(p => p.Name == c && p.Id != v.Id)).WithMessage("Should be unique");
             SharedValidator.RuleFor(c => c.Implementation).NotEmpty();
@@ -46,7 +36,7 @@ namespace Sonarr.Api.V3
         }
 
         [HttpGet("{id:int}")]
-        private IActionResult GetProviderById(int id)
+        public IActionResult GetProviderById(int id)
             => Ok(_resourceMapper.ToResource(GetProviderDefinitionById(id)));
 
         [HttpGet]
@@ -95,25 +85,6 @@ namespace Sonarr.Api.V3
             _providerFactory.Update(providerDefinition);
 
             return Task.FromResult<IActionResult>(Accepted(GetProviderDefinitionById(providerDefinition.Id)));
-        }
-
-        private TProviderDefinition GetProviderDefinitionById(int id)
-        {
-            var definition = _providerFactory.Get(id);
-            _providerFactory.SetProviderCharacteristics(definition);
-            return definition;
-        }
-
-        private TProviderDefinition GetDefinition(TProviderResource providerResource, bool includeWarnings = false, bool validate = true)
-        {
-            var definition = _resourceMapper.ToModel(providerResource);
-
-            if (validate)
-            {
-                Validate(definition, includeWarnings);
-            }
-
-            return definition;
         }
 
         [HttpDelete("{id:int}")]
@@ -179,19 +150,40 @@ namespace Sonarr.Api.V3
                 result);
         }
 
-        [HttpPost("action/{action}")]
-        public IActionResult RequestAction(string action, TProviderResource providerResource)
+        [HttpPost("action/{actionAction:required:regex(.*)}")]
+        public IActionResult RequestAction(string actionAction, [FromBody] TProviderResource providerResource)
         {
             var providerDefinition = GetDefinition(providerResource, true, false);
 
-            //TODO
-            return NotFound();
-            /*var query = ((IDictionary<string, object>)Request.Query.ToDictionary()).ToDictionary(k => k.Key, k => k.Value.ToString());
+            var query = Request.Query.ToDictionary(k => k.Key, v => v.Value.ToString());
+            var data = _providerFactory.RequestAction(providerDefinition, actionAction, query);
 
-            var data = _providerFactory.RequestAction(providerDefinition, action, query);
-            Response resp = data.ToJson();
-            resp.ContentType = "application/json";
-            return resp;*/
+            //TODO: Incomplete!
+            return Ok(data)/* new ContentResult
+            {
+                Content = data.ToJson(),
+                ContentType = MediaTypeNames.Application.Json,
+                StatusCode = StatusCodes.Status200OK,
+            }*/;
+        }
+
+        private TProviderDefinition GetProviderDefinitionById(int id)
+        {
+            var definition = _providerFactory.Get(id);
+            _providerFactory.SetProviderCharacteristics(definition);
+            return definition;
+        }
+
+        private TProviderDefinition GetDefinition(TProviderResource providerResource, bool includeWarnings = false, bool validate = true)
+        {
+            var definition = _resourceMapper.ToModel(providerResource);
+
+            if (validate)
+            {
+                Validate(definition, includeWarnings);
+            }
+
+            return definition;
         }
 
         protected virtual void Validate(TProviderDefinition definition, bool includeWarnings)

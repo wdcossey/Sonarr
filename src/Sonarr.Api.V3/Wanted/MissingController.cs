@@ -1,13 +1,13 @@
 ﻿using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.Datastore;
-using NzbDrone.Core.DecisionEngine;
 using NzbDrone.Core.DecisionEngine.Specifications;
 using NzbDrone.Core.Tv;
-using NzbDrone.SignalR;
 using Sonarr.Api.V3.Episodes;
 using Sonarr.Http;
+using Sonarr.Http.Attributes;
 using Sonarr.Http.Extensions;
+using Sonarr.Http.Filters;
 
 namespace Sonarr.Api.V3.Wanted
 {
@@ -23,7 +23,7 @@ namespace Sonarr.Api.V3.Wanted
             : base(episodeService, seriesService, upgradableSpecification) { }
 
         [HttpGet]
-        [PagingResourceFilter]
+        [SonarrPagingResourceFilter]
         public IActionResult GetMissingEpisodes(
             [FromQuery] PagingResource<EpisodeResource> pagingResource,
             [FromQuery] bool includeSeries = false,

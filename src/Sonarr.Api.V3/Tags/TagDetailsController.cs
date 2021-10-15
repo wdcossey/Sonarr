@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.Tags;
-using Sonarr.Http;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.Tags
 {

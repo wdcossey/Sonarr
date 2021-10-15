@@ -14,6 +14,7 @@ using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Profiles.Languages;
 using NzbDrone.Core.Profiles.Qualities;
 using NzbDrone.Core.Tv;
+using Sonarr.Http.Attributes;
 using HttpStatusCode = System.Net.HttpStatusCode;
 
 namespace Sonarr.Api.V3.Indexers

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Nancy;
+﻿using System.Collections.Generic;
 using NzbDrone.Core.Blocklisting;
 using NzbDrone.Core.Download;
 using NzbDrone.Core.Download.Pending;

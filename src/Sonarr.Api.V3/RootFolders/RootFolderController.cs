@@ -1,19 +1,22 @@
-﻿using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.RootFolders;
 using NzbDrone.Core.Validation.Paths;
+using Sonarr.Api.V3;
 using Sonarr.Api.V3.RootFolders;
+using Sonarr.Http.Attributes;
 
 namespace NzbDrone.Api.V3.RootFolders
 {
     [ApiController]
-    [Route("/api/v3/rootFolder")]
+    [SonarrApiRoute("rootFolder", RouteVersion.V3)]
     public class RootFolderController : ControllerBase
     {
         private readonly IRootFolderService _rootFolderService;
+        //private readonly IEventAggregator _eventAggregator;
 
         public RootFolderController(IRootFolderService rootFolderService/*,
             IBroadcastSignalRMessage signalRBroadcaster*/, //TODO: SignalR Hub
+            //IEventAggregator eventAggregator,
             RootFolderValidator rootFolderValidator,
             PathExistsValidator pathExistsValidator,
             MappedNetworkDriveValidator mappedNetworkDriveValidator,
@@ -23,6 +26,7 @@ namespace NzbDrone.Api.V3.RootFolders
             )
         {
             _rootFolderService = rootFolderService;
+            //_eventAggregator = eventAggregator;
             /*
             SharedValidator.RuleFor(c => c.Path)
                            .Cascade(CascadeMode.StopOnFirstFailure)
@@ -42,9 +46,8 @@ namespace NzbDrone.Api.V3.RootFolders
         [HttpPost]
         public IActionResult CreateRootFolder([FromBody] RootFolderResource rootFolderResource)
         {
-            var model = rootFolderResource.ToModel();
-            var rootFolder = _rootFolderService.Add(model);
-            return Created($"{Request.Path}/{rootFolder.Id}", rootFolder.ToResource());
+            var model = _rootFolderService.Add(rootFolderResource.ToModel());
+            return Created($"{Request.Path}/{model.Id}", model.ToResource());
         }
 
         [HttpGet]
@@ -55,6 +58,13 @@ namespace NzbDrone.Api.V3.RootFolders
         public IActionResult DeleteFolder(int id)
         {
             _rootFolderService.Remove(id);
+
+            /*_eventAggregator.PublishEvent(new BroadcastMessageEvent() { Message = new SignalRMessage
+            {
+                Name = "rootFolder",
+                Body = new ResourceChangeMessage<RootFolderResource>(ModelAction.Deleted),
+                Action = ModelAction.Deleted
+            }});*/
             return Ok(new object());
         }
     }

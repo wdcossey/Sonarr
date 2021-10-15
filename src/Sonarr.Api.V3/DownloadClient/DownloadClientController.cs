@@ -1,11 +1,12 @@
 ﻿using NzbDrone.Core.Download;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.DownloadClient
 {
     [SonarrApiRoute("downloadclient", RouteVersion.V3)]
     public class DownloadClientController : ProviderControllerBase<DownloadClientResource, IDownloadClient, DownloadClientDefinition>
     {
-        public static readonly DownloadClientResourceMapper ResourceMapper = new();
+        private static readonly DownloadClientResourceMapper ResourceMapper = new();
 
         public DownloadClientController(IDownloadClientFactory downloadClientFactory)
             : base(downloadClientFactory, ResourceMapper) { }

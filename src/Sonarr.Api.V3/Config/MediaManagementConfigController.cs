@@ -2,12 +2,12 @@
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Validation;
 using NzbDrone.Core.Validation.Paths;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.Config
 {
     [ApiController]
     [SonarrApiConfigRoute("mediamanagement", RouteVersion.V3)]
-    //TODO: Remove `SonarrControllerBase<>`
     public class MediaManagementConfigController : SonarrConfigController<MediaManagementConfigResource>
     {
         public MediaManagementConfigController(IConfigService configService, PathExistsValidator pathExistsValidator, FolderChmodValidator folderChmodValidator)

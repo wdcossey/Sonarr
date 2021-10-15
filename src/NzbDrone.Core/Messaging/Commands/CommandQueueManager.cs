@@ -227,12 +227,9 @@ namespace NzbDrone.Core.Messaging.Commands
 
         private dynamic GetCommand(string commandName)
         {
-            commandName = commandName.Split('.').Last();
-
-            //TODO: Old implementation got the `Type` not an instance
-            var commandType = _commandFactory.Create(commandName);
-
-            return Json.Deserialize("{}", commandType.GetType());
+            commandName = commandName.Split('.', StringSplitOptions.RemoveEmptyEntries).Last();
+            var commandType = _commandFactory.GetCommandType(commandName);
+            return Json.Deserialize("{}", commandType);
         }
 
         private void Update(CommandModel command, CommandStatus status, string message)

@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.Configuration;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.Config
 {
     [ApiController]
     [SonarrApiConfigRoute("indexer", RouteVersion.V3)]
-    //TODO: Remove `SonarrControllerBase<>`
     public class IndexerConfigController : SonarrConfigController<IndexerConfigResource>
     {
         public IndexerConfigController(IConfigService configService)

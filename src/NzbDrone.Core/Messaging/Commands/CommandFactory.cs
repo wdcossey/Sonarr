@@ -10,6 +10,8 @@ namespace NzbDrone.Core.Messaging.Commands
         Command Create(string name);
 
         Command Create(Type type);
+
+        Type GetCommandType(string name);
     }
 
     public class CommandFactory : ICommandFactory
@@ -32,14 +34,18 @@ namespace NzbDrone.Core.Messaging.Commands
 
         public Command Create(string name)
         {
-            var commandType =
-                _validCommandTypes
-                    .Single(c => c.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase) || c.Name.Replace(nameof(Command), string.Empty).Equals(name, StringComparison.InvariantCultureIgnoreCase));
-
+            var commandType = GetCommandType(name);
             return Create(commandType);
         }
 
         public Command Create(Type commandType)
             => (Command)ActivatorUtilities.CreateInstance(_serviceProvider, commandType);
+
+        public Type GetCommandType(string name)
+        {
+            return
+                _validCommandTypes
+                    .Single(c => c.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase) || c.Name.Replace(nameof(Command), string.Empty).Equals(name, StringComparison.InvariantCultureIgnoreCase));
+        }
     }
 }

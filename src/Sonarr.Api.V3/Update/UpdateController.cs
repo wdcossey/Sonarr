@@ -4,6 +4,7 @@ using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Update;
 using NzbDrone.Core.Update.History;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.Update
 {
@@ -23,9 +24,10 @@ namespace Sonarr.Api.V3.Update
         [HttpGet]
         public IActionResult GetRecentUpdates()
         {
-            var resources = _recentUpdateProvider.GetRecentUpdatePackages()
-                                                 .OrderByDescending(u => u.Version)
-                                                 .ToResource();
+            var resources = _recentUpdateProvider
+                .GetRecentUpdatePackages()
+                .OrderByDescending(u => u.Version)
+                .ToResource();
 
             if (resources.Any())
             {
@@ -44,16 +46,15 @@ namespace Sonarr.Api.V3.Update
                     installed.Installed = true;
                 }
 
-                var installDates = _updateHistoryService.InstalledSince(resources.Last().ReleaseDate)
-                                                        .DistinctBy(v => v.Version)
-                                                        .ToDictionary(v => v.Version);
+                var installDates = _updateHistoryService
+                    .InstalledSince(resources.Last().ReleaseDate)
+                    .DistinctBy(v => v.Version)
+                    .ToDictionary(v => v.Version);
 
                 foreach (var resource in resources)
                 {
                     if (installDates.TryGetValue(resource.Version, out var installDate))
-                    {
                         resource.InstalledOn = installDate.Date;
-                    }
                 }
             }
 

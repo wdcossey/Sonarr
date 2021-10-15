@@ -5,7 +5,7 @@ using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.MetadataSource;
 using NzbDrone.Core.Organizer;
 using NzbDrone.Core.SeriesStats;
-using Sonarr.Api.V3.Series;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.Series
 {

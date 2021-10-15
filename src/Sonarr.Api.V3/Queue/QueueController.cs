@@ -11,6 +11,7 @@ using NzbDrone.Core.Profiles.Qualities;
 using NzbDrone.Core.Qualities;
 using NzbDrone.Core.Queue;
 using Sonarr.Http;
+using Sonarr.Http.Attributes;
 using Sonarr.Http.Extensions;
 
 namespace Sonarr.Api.V3.Queue

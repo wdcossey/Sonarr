@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Tags;
 using NzbDrone.Core.Tv;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.Calendar
 {

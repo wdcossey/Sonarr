@@ -53,7 +53,7 @@ namespace NzbDrone.Core.ThingiProvider
                         Name = string.Empty,
                         ConfigContract = provider.ConfigContract.Name,
                         Implementation = provider.GetType().Name,
-                        Settings = (IProviderConfig)Activator.CreateInstance(provider.ConfigContract)
+                        Settings = (IProviderConfig)Activator.CreateInstance(provider.ConfigContract) //TODO: ActivatorUtilities ?!?
                     };
                 }
 

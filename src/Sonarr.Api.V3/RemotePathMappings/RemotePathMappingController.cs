@@ -3,12 +3,13 @@ using NzbDrone.Core.RemotePathMappings;
 using NzbDrone.Core.Validation.Paths;
 using Sonarr.Api.V3;
 using Sonarr.Api.V3.RemotePathMappings;
+using Sonarr.Http.Attributes;
 
 namespace NzbDrone.Api.V3.RemotePathMappings
 {
     [ApiController]
     [SonarrApiRoute("remotepathmapping", RouteVersion.V3)]
-    public class RemotePathMappingController : ControllerBase//SonarrRestModule<RemotePathMappingResource>
+    public class RemotePathMappingController : ControllerBase
     {
         private readonly IRemotePathMappingService _remotePathMappingService;
 
@@ -40,8 +41,8 @@ namespace NzbDrone.Api.V3.RemotePathMappings
         [HttpPost]
         public IActionResult CreateMapping([FromBody] RemotePathMappingResource resource)
         {
-            var remotePathMapping = _remotePathMappingService.Add(resource.ToModel());
-            return Created($"{Request.Path}/{remotePathMapping.Id}", remotePathMapping.ToResource());
+            var model = _remotePathMappingService.Add(resource.ToModel());
+            return Created($"{Request.Path}/{model.Id}", model.ToResource());
         }
 
         [HttpGet]
@@ -58,9 +59,6 @@ namespace NzbDrone.Api.V3.RemotePathMappings
         [HttpPut]
         [HttpPut("{id:int?}")]
         public IActionResult UpdateMapping(int? id, [FromBody] RemotePathMappingResource resource)
-        {
-            var mapping = _remotePathMappingService.Update(resource.ToModel());
-            return Accepted(mapping.ToResource());
-        }
+            => Accepted(_remotePathMappingService.Update(resource.ToModel()).ToResource());
     }
 }

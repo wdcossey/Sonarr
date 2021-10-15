@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.Datastore;
@@ -9,8 +8,9 @@ using NzbDrone.Core.History;
 using Sonarr.Api.V3.Episodes;
 using Sonarr.Api.V3.Series;
 using Sonarr.Http;
+using Sonarr.Http.Attributes;
 using Sonarr.Http.Extensions;
-using Sonarr.Http.REST;
+using Sonarr.Http.Filters;
 
 namespace Sonarr.Api.V3.History
 {
@@ -33,7 +33,7 @@ namespace Sonarr.Api.V3.History
         }
 
         [HttpGet]
-        [PagingResourceFilter]
+        [SonarrPagingResourceFilter]
         public IActionResult GetHistory(
             [FromQuery] PagingResource<HistoryResource> pagingResource,
             [FromQuery] bool includeSeries = false,

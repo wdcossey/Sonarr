@@ -1,9 +1,9 @@
 ﻿using System.Linq;
 using System.Net.Mime;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using NzbDrone.Core.Tv;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.SeasonPass
 {

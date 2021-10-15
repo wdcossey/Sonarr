@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.HealthCheck;
 using NzbDrone.Core.Messaging.Events;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.Health
 {

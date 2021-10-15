@@ -1,4 +1,8 @@
-﻿namespace NzbDrone.SignalR
+﻿using System;
+using NzbDrone.Common.Messaging;
+using NzbDrone.Core.Messaging.Events;
+
+namespace NzbDrone.SignalR
 {
     public interface IBroadcastSignalRMessage
     {
@@ -16,4 +20,23 @@
         }
     }
 
+    public class BroadcastMessageEvent : IEvent
+    {
+        public SignalRMessage Message { get; set; }
+    }
+
+    public interface IBroadcastMessageEventWrapper : IHandleAsync<IEvent>
+    {
+        delegate void BroadcastMessageEventHandler(IEvent e);
+
+        event BroadcastMessageEventHandler MessageEventHandler;
+    }
+
+    public class BroadcastMessageEventWrapper : IBroadcastMessageEventWrapper
+    {
+        public void HandleAsync(IEvent message)
+            => MessageEventHandler?.Invoke(message);
+
+        public event IBroadcastMessageEventWrapper.BroadcastMessageEventHandler MessageEventHandler;
+    }
 }

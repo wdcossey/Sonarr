@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.Indexers;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.Indexers
 {
