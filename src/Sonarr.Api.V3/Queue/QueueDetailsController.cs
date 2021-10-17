@@ -10,7 +10,7 @@ namespace Sonarr.Api.V3.Queue
 {
     [ApiController]
     [SonarrApiRoute("queue/details", RouteVersion.V3)]
-    public class QueueDetailsController : ControllerBase, IHandle<QueueUpdatedEvent>, IHandle<PendingReleasesUpdatedEvent>//SonarrRestModuleWithSignalR<QueueResourceNzbDrone.Core.Queue.Queue>,
+    public class QueueDetailsController : ControllerBase, IHandle<QueueUpdatedEvent>, IHandle<PendingReleasesUpdatedEvent>
     {
         private readonly IQueueService _queueService;
         private readonly IPendingReleaseService _pendingReleaseService;

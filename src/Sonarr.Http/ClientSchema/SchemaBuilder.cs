@@ -190,13 +190,41 @@ namespace Sonarr.Http.ClientSchema
                 return fieldValue => (fieldValue as JsonElement?)?.GetBoolean() ?? default(bool);
 
             if (propertyType == typeof(int))
-                return fieldValue => (fieldValue as JsonElement?)?.GetInt32() ?? default(int);
+                return fieldValue =>
+                {
+                    if (fieldValue is not JsonElement jsonElement)
+                        return default(int);
+
+                    if (jsonElement.ValueKind == JsonValueKind.String)
+                        return jsonElement.GetString().ParseInt32() ?? default(int);
+
+                    return jsonElement.GetInt32();
+                };
 
             if (propertyType == typeof(long))
-                return fieldValue => (fieldValue as JsonElement?)?.GetInt64() ?? default(long);
+                return fieldValue =>
+                {
+                    if (fieldValue is not JsonElement jsonElement)
+                        return default(long);
+
+                    if (jsonElement.ValueKind == JsonValueKind.String)
+                        return jsonElement.GetString().ParseInt64() ?? default(long);
+
+                    return jsonElement.GetInt64();
+                };
 
             if (propertyType == typeof(double))
-                return fieldValue => (fieldValue as JsonElement?)?.GetDouble() ?? default(double);
+                return fieldValue =>
+                {
+
+                    if (fieldValue is not JsonElement jsonElement)
+                        return default(double);
+
+                    if (jsonElement.ValueKind == JsonValueKind.String)
+                        return jsonElement.GetString().ParseDouble() ?? default(double);
+
+                    return jsonElement.GetDouble();
+                };
 
             if (propertyType == typeof(decimal))
                 return fieldValue => (fieldValue as JsonElement?)?.GetDecimal() ?? default(decimal);

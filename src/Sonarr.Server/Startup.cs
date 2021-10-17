@@ -10,7 +10,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.FileProviders;
 using NzbDrone.Common.Serializer;
-using NzbDrone.Core.Configuration;
 using Sonarr.Server.Hubs;
 using Sonarr.Server.Middleware;
 

@@ -12,15 +12,11 @@ namespace Sonarr.Api.V3.Queue
 {
     [ApiController]
     [SonarrApiRoute("queue/status", RouteVersion.V3)]
-    public class QueueStatusController :
-        ControllerBase,
-        IHandle<QueueUpdatedEvent>,
-        IHandle<PendingReleasesUpdatedEvent>
+    public class QueueStatusController : ControllerBase, IHandle<QueueUpdatedEvent>, IHandle<PendingReleasesUpdatedEvent>
     {
         private readonly IQueueService _queueService;
         private readonly IPendingReleaseService _pendingReleaseService;
         private readonly Debouncer _broadcastDebounce;
-
 
         public QueueStatusController(
             //IBroadcastSignalRMessage broadcastSignalRMessage, //TODO: SignalR
@@ -32,8 +28,6 @@ namespace Sonarr.Api.V3.Queue
             _pendingReleaseService = pendingReleaseService;
 
             _broadcastDebounce = new Debouncer(BroadcastChange, TimeSpan.FromSeconds(5));
-
-            //Get("/",  x => GetQueueStatusResponse());
         }
 
         [HttpGet]
@@ -69,13 +63,9 @@ namespace Sonarr.Api.V3.Queue
         }
 
         public void Handle(QueueUpdatedEvent message)
-        {
-            _broadcastDebounce.Execute();
-        }
+            => _broadcastDebounce.Execute();
 
         public void Handle(PendingReleasesUpdatedEvent message)
-        {
-            _broadcastDebounce.Execute();
-        }
+            => _broadcastDebounce.Execute();
     }
 }

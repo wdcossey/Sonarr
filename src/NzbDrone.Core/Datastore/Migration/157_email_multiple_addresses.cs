@@ -1,7 +1,9 @@
+using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Text.Json;
 using FluentMigrator;
-using Newtonsoft.Json.Linq;
 using NzbDrone.Common.Serializer;
 using NzbDrone.Core.Datastore.Migration.Framework;
 
@@ -28,10 +30,10 @@ namespace NzbDrone.Core.Datastore.Migration
                     while (reader.Read())
                     {
                         var id = reader.GetInt32(0);
-                        var settings = Json.Deserialize<JObject>(reader.GetString(1));
+                        var settings = Json.Deserialize<Dictionary<string, object>>(reader.GetString(1));
 
                         // "To" was changed from string to array
-                        settings["to"] = new JArray(settings["to"].ToObject<string>().Split(',').Select(v => v.Trim()).ToArray());
+                        settings["to"] = (settings["to"] as JsonElement?)?.GetString()?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(v => v.Trim()).ToArray();
 
                         using (var updateCmd = conn.CreateCommand())
                         {

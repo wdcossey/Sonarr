@@ -11,7 +11,7 @@ namespace Sonarr.Api.V3.Series
 {
     [ApiController]
     [SonarrApiRoute("series/lookup", RouteVersion.V3)]
-    public class SeriesLookupController : ControllerBase //SonarrRestModule<SeriesResource>
+    public class SeriesLookupController : ControllerBase
     {
         private readonly ISearchForNewSeries _searchProxy;
         private readonly IBuildFileNames _fileNameBuilder;
@@ -21,12 +21,10 @@ namespace Sonarr.Api.V3.Series
                 ISearchForNewSeries searchProxy,
                 IBuildFileNames fileNameBuilder,
                 IMapCoversToLocal coverMapper)
-            //: base("/series/lookup")
         {
             _searchProxy = searchProxy;
             _fileNameBuilder = fileNameBuilder;
             _coverMapper = coverMapper;
-            //Get("/",  x => Search());
         }
 
         [HttpGet]

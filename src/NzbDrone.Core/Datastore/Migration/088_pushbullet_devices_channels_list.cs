@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Text.Json;
 using FluentMigrator;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Serializer;
@@ -33,11 +34,11 @@ namespace NzbDrone.Core.Datastore.Migration
 
                         if (settings.ContainsKey("deviceIds"))
                         {
-                            var deviceIdsString = settings.GetValueOrDefault("deviceIds", "") as string;
+                            var deviceIdsString = (settings.GetValueOrDefault("deviceIds", null) as JsonElement?)?.GetString();
 
                             if (deviceIdsString.IsNotNullOrWhiteSpace())
                             {
-                                var deviceIds = deviceIdsString.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+                                var deviceIds = deviceIdsString.Split(',', StringSplitOptions.RemoveEmptyEntries);
 
                                 settings["deviceIds"] = deviceIds;
                             }
@@ -45,11 +46,11 @@ namespace NzbDrone.Core.Datastore.Migration
 
                         if (settings.ContainsKey("channelTags"))
                         {
-                            var channelTagsString = settings.GetValueOrDefault("channelTags", "") as string;
+                            var channelTagsString = (settings.GetValueOrDefault("channelTags", null) as JsonElement?)?.GetString();
 
                             if (channelTagsString.IsNotNullOrWhiteSpace())
                             {
-                                var channelTags = channelTagsString.Split(new[] {","}, StringSplitOptions.RemoveEmptyEntries);
+                                var channelTags = channelTagsString.Split(',', StringSplitOptions.RemoveEmptyEntries);
 
                                 settings["channelTags"] = channelTags;
                             }

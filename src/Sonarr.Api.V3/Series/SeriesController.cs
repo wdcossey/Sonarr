@@ -54,12 +54,7 @@ namespace Sonarr.Api.V3.Series
             _commandQueueManager = commandQueueManager;
             _rootFolderService = rootFolderService;
 
-            /*GetResourceAll = AllSeries;
-            GetResourceById = GetSeries;
-            CreateResource = AddSeries;
-            UpdateResource = UpdateSeries;
-            DeleteResource = DeleteSeries;
-
+            /*
             Http.Validation.RuleBuilderExtensions.ValidId(SharedValidator.RuleFor(s => s.QualityProfileId));
 
             SharedValidator.RuleFor(s => s.Path)
@@ -88,21 +83,15 @@ namespace Sonarr.Api.V3.Series
 
 
         [HttpGet]
-        public IActionResult AllSeries([FromQuery] int tvdbId = 0, [FromQuery] bool includeSeasonImages = false)
+        public IActionResult AllSeries([FromQuery] int? tvdbId = null, [FromQuery] bool includeSeasonImages = false)
         {
-            //var tvdbId = Request.GetIntegerQueryParameter("tvdbId");
-            //var includeSeasonImages = Request.GetBooleanQueryParameter("includeSeasonImages");
             var seriesStats = _seriesStatisticsService.SeriesStatistics();
             var seriesResources = new List<SeriesResource>();
 
-            if (tvdbId > 0)
-            {
-                seriesResources.AddIfNotNull(_seriesService.FindByTvdbId(tvdbId).ToResource(includeSeasonImages));
-            }
+            if (tvdbId is > 0)
+                seriesResources.AddIfNotNull(_seriesService.FindByTvdbId(tvdbId.Value).ToResource(includeSeasonImages));
             else
-            {
                 seriesResources.AddRange(_seriesService.GetAllSeries().Select(s => s.ToResource(includeSeasonImages)));
-            }
 
             MapCoversToLocal(seriesResources.ToArray());
             LinkSeriesStatistics(seriesResources, seriesStats);
@@ -128,7 +117,7 @@ namespace Sonarr.Api.V3.Series
 
         [HttpPut]
         [HttpPut("{id:int?}")] //Needed for routing, not much else!
-        public IActionResult UpdateSeries(int id, [FromBody] SeriesResource seriesResource, [FromQuery] bool moveFiles = false)
+        public IActionResult UpdateSeries(int? id, [FromBody] SeriesResource seriesResource, [FromQuery] bool moveFiles = false)
         {
             var series = _seriesService.GetSeries(seriesResource.Id);
 
@@ -182,9 +171,7 @@ namespace Sonarr.Api.V3.Series
         }
 
         private void FetchAndLinkSeriesStatistics(SeriesResource resource)
-        {
-            LinkSeriesStatistics(resource, _seriesStatisticsService.SeriesStatistics(resource.Id));
-        }
+            => LinkSeriesStatistics(resource, _seriesStatisticsService.SeriesStatistics(resource.Id));
 
         private void LinkSeriesStatistics(List<SeriesResource> resources, List<SeriesStatistics> seriesStatistics)
         {
@@ -230,8 +217,6 @@ namespace Sonarr.Api.V3.Series
         }
 
         private void LinkRootFolderPath(SeriesResource resource)
-        {
-            resource.RootFolderPath = _rootFolderService.GetBestRootFolderPath(resource.Path);
-        }
+            => resource.RootFolderPath = _rootFolderService.GetBestRootFolderPath(resource.Path);
     }
 }

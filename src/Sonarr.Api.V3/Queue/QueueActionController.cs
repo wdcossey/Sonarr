@@ -40,12 +40,6 @@ namespace Sonarr.Api.V3.Queue
             _pendingReleaseService = pendingReleaseService;
             _downloadService = downloadService;
             _blocklistService = blocklistService;
-
-            //Post(@"/grab/(?<id>[\d]{1,10})",  x => Grab((int)x.Id));
-            //Post("/grab/bulk",  x => Grab());
-
-            //Delete(@"/(?<id>[\d]{1,10})",  x => Remove((int)x.Id));
-            //Delete("/bulk",  x => Remove());
         }
 
         [HttpPost("grab/{id:int:required}")]
@@ -62,10 +56,8 @@ namespace Sonarr.Api.V3.Queue
         }
 
         [HttpPost("grab/bulk")]
-        public IActionResult Grab([FromBody] QueueBulkResource resource) //TODO: FromBody or FromForm (some UI requests are broken)?!?
+        public IActionResult Grab([FromBody] QueueBulkResource resource)
         {
-            //var resource = Request.Body.FromJson<QueueBulkResource>();
-
             foreach (var id in resource.Ids)
             {
                 var pendingRelease = _pendingReleaseService.FindPendingQueueItem(id);
@@ -80,7 +72,7 @@ namespace Sonarr.Api.V3.Queue
         }
 
         [HttpPost("grab/bulk")]
-        [Consumes("application/x-www-form-urlencoded")] //TODO: some UI requests are broken?!?
+        [Consumes("application/x-www-form-urlencoded")] //TODO: some UI (ajax) requests are broken?!?
         public IActionResult GrabFormForm([FromForm] QueueBulkResource resource)
             => Grab(resource);
 
@@ -105,14 +97,8 @@ namespace Sonarr.Api.V3.Queue
             [FromBody] QueueBulkResource resource,
             [FromQuery] bool removeFromClient = true,
             [FromQuery] bool? blocklist = false,
-            [FromQuery] bool? blacklist = false) //TODO: FromBody or FromForm (some UI requests are broken)?!?
+            [FromQuery] bool? blacklist = false)
         {
-            //var removeFromClient = Request.GetBooleanQueryParameter("removeFromClient", true);
-
-            // blacklist maintained for backwards compatability, UI uses blocklist.
-            //var blocklist = Request.GetBooleanQueryParameter("blocklist") ? Request.GetBooleanQueryParameter("blocklist") : Request.GetBooleanQueryParameter("blacklist");
-
-            //var resource = Request.Body.FromJson<QueueBulkResource>();
             var trackedDownloadIds = new List<string>();
 
             foreach (var id in resource.Ids)
@@ -131,7 +117,7 @@ namespace Sonarr.Api.V3.Queue
         }
 
         [HttpDelete("bulk")]
-        [Consumes("application/x-www-form-urlencoded")] //TODO: some UI requests are broken?!?
+        [Consumes("application/x-www-form-urlencoded")] //TODO: some UI (ajax) requests are broken?!?
         public IActionResult RemoveFromForm(
             [FromForm] QueueBulkResource resource,
             [FromQuery] bool removeFromClient = true,

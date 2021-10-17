@@ -12,25 +12,17 @@ namespace Sonarr.Api.V3.Series
 {
     [ApiController]
     [SonarrApiRoute("series/editor", RouteVersion.V3)]
-    public class SeriesEditorController : ControllerBase // SonarrV3Module
+    public class SeriesEditorController : ControllerBase
     {
-
         private readonly ISeriesService _seriesService;
         private readonly IManageCommandQueue _commandQueueManager;
 
         public SeriesEditorController(ISeriesService seriesService, IManageCommandQueue commandQueueManager)
-            //: base("/series/editor")
-        {
-            _seriesService = seriesService;
-            _commandQueueManager = commandQueueManager;
-            //Put("/", series => SaveAll());
-            //Delete("/", series => DeleteSeries());
-        }
+            => (_seriesService, _commandQueueManager) = (seriesService, commandQueueManager);
 
         [HttpPut]
         public IActionResult SaveAll([FromBody] SeriesEditorResource resource)
         {
-            //var resource = Request.Body.FromJson<SeriesEditorResource>();
             var seriesToUpdate = _seriesService.GetSeries(resource.SeriesIds);
             var seriesToMove = new List<BulkMoveSeries>();
 

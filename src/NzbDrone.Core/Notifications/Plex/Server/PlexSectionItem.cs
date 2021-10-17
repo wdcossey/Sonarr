@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace NzbDrone.Core.Notifications.Plex.Server
 {
@@ -15,26 +15,26 @@ namespace NzbDrone.Core.Notifications.Plex.Server
             Guids = new List<PlexSectionItemGuid>();
         }
 
-        [JsonProperty("ratingKey")]
+        [JsonPropertyName("ratingKey")]
         public string Id { get; set; }
 
         public string Title { get; set; }
 
         public int Year { get; set; }
 
-        [JsonProperty("Guid")]
+        [JsonPropertyName("Guid")]
         public List<PlexSectionItemGuid> Guids { get; set; }
     }
 
     public class PlexSectionResponse
     {
-        [JsonProperty("Metadata")]
+        [JsonPropertyName("Metadata")]
         public List<PlexSectionItem> Items { get; set; }
     }
 
     public class PlexSectionResponseLegacy
     {
-        [JsonProperty("_children")]
+        [JsonPropertyName("_children")]
         public List<PlexSectionItem> Items { get; set; }
     }
 }

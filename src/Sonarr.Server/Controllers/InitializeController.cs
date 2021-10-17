@@ -14,7 +14,7 @@ namespace Sonarr.Server.Controllers
         private readonly IConfigFileProvider _configFileProvider;
         private readonly IAnalyticsService _analyticsService;
 
-        private string _generatedContent = null;
+        private string? _generatedContent = null;
 
         public InitializeController(IConfigFileProvider configFileProvider, IAnalyticsService analyticsService)
         {

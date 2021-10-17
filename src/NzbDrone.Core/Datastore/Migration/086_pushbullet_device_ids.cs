@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Data;
+using System.Text.Json;
 using FluentMigrator;
-using Newtonsoft.Json.Linq;
-using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Serializer;
 using NzbDrone.Core.Datastore.Migration.Framework;
 
@@ -33,7 +32,7 @@ namespace NzbDrone.Core.Datastore.Migration
 
                         if (settings.ContainsKey("deviceId"))
                         {
-                            var deviceId = settings.GetValueOrDefault("deviceId", "") as string;
+                            var deviceId = (settings.GetValueOrDefault("deviceId", null) as JsonElement?)?.GetString();
 
                             settings.Add("deviceIds", new[] { deviceId });
                             settings.Remove("deviceId");
@@ -54,17 +53,22 @@ namespace NzbDrone.Core.Datastore.Migration
         }
     }
 
-    public class Notification86
+    public abstract class Notification86
     {
         public int Id { get; set; }
         public string Name { get; set; }
         public int OnGrab { get; set; }
         public int OnDownload { get; set; }
-        public JObject Settings { get; set; }
         public string Implementation { get; set; }
         public string ConfigContract { get; set; }
         public int OnUpgrade { get; set; }
         public List<int> Tags { get; set; }
+    }
+
+    public class Notification86<TSettings> : Notification86
+        where TSettings : class
+    {
+        public TSettings Settings { get; set; }
     }
 
     public class PushBulletSettings86

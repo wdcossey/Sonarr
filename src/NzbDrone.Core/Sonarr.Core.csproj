@@ -9,7 +9,9 @@
   <ItemGroup>
     <PackageReference Include="FluentMigrator.Runner" Version="1.6.2" />
     <PackageReference Include="FluentValidation" Version="8.4.0" />
+    <PackageReference Include="Kveer.XmlRPC" Version="1.2.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0007" />
     <PackageReference Include="System.Data.SQLite" Version="1.0.115" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
@@ -18,20 +20,13 @@
     <PackageReference Include="NLog" Version="4.6.6" />
     <PackageReference Include="OAuth" Version="1.0.3" />
     <PackageReference Include="RestSharp" Version="106.6.10" />
+    <PackageReference Include="System.Text.Json" Version="5.0.2" />
     <PackageReference Include="TinyTwitter" Version="1.1.2" />
-    <PackageReference Include="xmlrpcnet" Version="3.0.0.266" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Marr.Data\Marr.Data.csproj" />
     <ProjectReference Include="..\MonoTorrent\MonoTorrent.csproj" />
     <ProjectReference Include="..\NzbDrone.Common\Sonarr.Common.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <!--<Reference Include="System.Data.SQLite">
-      <HintPath>..\Libraries\Sqlite\System.Data.SQLite.dll</HintPath>
-    </Reference>-->
-    <Reference Include="System.Web" />
-    <Reference Include="System.Web.Extensions" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\..\Logo\64.png">

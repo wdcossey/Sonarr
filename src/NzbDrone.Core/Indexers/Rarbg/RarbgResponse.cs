@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
+using NzbDrone.Common.Serializer;
 
 namespace NzbDrone.Core.Indexers.Rarbg
 {
@@ -18,6 +20,8 @@ namespace NzbDrone.Core.Indexers.Rarbg
         public int? seeders { get; set; }
         public int? leechers { get; set; }
         public long size { get; set; }
+
+        [JsonConverter(typeof(JsonDateTimeConverter))]
         public DateTime pubdate { get; set; }
         public RarbgTorrentInfo episode_info { get; set; }
         public int? ranked { get; set; }

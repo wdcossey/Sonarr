@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace NzbDrone.Core.Notifications.Plex.Server
 {
@@ -16,13 +16,13 @@ namespace NzbDrone.Core.Notifications.Plex.Server
             Locations = new List<PlexSectionLocation>();
         }
 
-        [JsonProperty("key")]
+        [JsonPropertyName("key")]
         public int Id { get; set; }
 
         public string Type { get; set; }
         public string Language { get; set; }
 
-        [JsonProperty("Location")]
+        [JsonPropertyName("Location")]
         public List<PlexSectionLocation> Locations { get; set; }
     }
 
@@ -33,25 +33,25 @@ namespace NzbDrone.Core.Notifications.Plex.Server
             Sections = new List<PlexSection>();
         }
 
-        [JsonProperty("Directory")]
+        [JsonPropertyName("Directory")]
         public List<PlexSection> Sections { get; set; }
     }
 
     public class PlexSectionLegacy
     {
-        [JsonProperty("key")]
+        [JsonPropertyName("key")]
         public int Id { get; set; }
 
         public string Type { get; set; }
         public string Language { get; set; }
 
-        [JsonProperty("_children")]
+        [JsonPropertyName("_children")]
         public List<PlexSectionLocation> Locations { get; set; }
     }
 
     public class PlexMediaContainerLegacy
     {
-        [JsonProperty("_children")]
+        [JsonPropertyName("_children")]
         public List<PlexSectionLegacy> Sections { get; set; }
     }
 }

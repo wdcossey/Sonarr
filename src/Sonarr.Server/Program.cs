@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NLog.Web;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Instrumentation;
 
@@ -10,24 +12,23 @@ namespace Sonarr.Server
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
-        }
-
-        public static IHostBuilder CreateHostBuilder(string[] args)
-        {
-            var startupArgs = new StartupContext(args);
+            var startupContext = new StartupContext(args);
             try
             {
-                NzbDroneLogger.Register(startupArgs, false, true);
+                NzbDroneLogger.Register(startupContext, false, true);
+                return CreateHostBuilder(startupContext, args).Build().RunAsync();
             }
             catch (Exception ex)
             {
-                System.Console.WriteLine("NLog Exception: " + ex.ToString());
+                Console.WriteLine("NLog Exception: " + ex.ToString());
                 throw;
             }
+        }
 
+        public static IHostBuilder CreateHostBuilder(IStartupContext startupContext, string[] args)
+        {
             return Host
                 .CreateDefaultBuilder(args)
                 .UseContentRoot(AppDomain.CurrentDomain.BaseDirectory)
@@ -37,8 +38,7 @@ namespace Sonarr.Server
                         .UseWebRoot(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UI"))
                         .UseStartup<Startup>()
                         .UseKestrel(options => options.AddServerHeader = false)
-                        .ConfigureServices(services =>
-                            services.AddSingleton<IStartupContext>(provider => new StartupContext(args)))
+                        .ConfigureServices(services => services.AddSingleton<IStartupContext>(_ => startupContext))
                         .UseDefaultServiceProvider(options => options.ValidateOnBuild = false);
                 });
         }

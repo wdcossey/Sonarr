@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Data;
+using System.Text.Json;
 using FluentMigrator;
-using Newtonsoft.Json.Linq;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Serializer;
 using NzbDrone.Core.Datastore.Migration.Framework;
@@ -32,7 +32,7 @@ namespace NzbDrone.Core.Datastore.Migration
 
                         var settings = Json.Deserialize<Dictionary<string, object>>(settingsJson);
 
-                        var tvCategory = settings.GetValueOrDefault("tvCategory") as string;
+                        var tvCategory = (settings.GetValueOrDefault("tvCategory") as JsonElement?)?.GetString();
                         if (tvCategory.IsNotNullOrWhiteSpace())
                         {
                             settings["tvCategory"] = "." + tvCategory;
@@ -53,14 +53,19 @@ namespace NzbDrone.Core.Datastore.Migration
         }
     }
 
-    public class DownloadClientDefinition81
+    public abstract class DownloadClientDefinition81
     {
         public int Id { get; set; }
         public bool Enable { get; set; }
         public string Name { get; set; }
         public string Implementation { get; set; }
-        public JObject Settings { get; set; }
         public string ConfigContract { get; set; }
+    }
+
+    public class DownloadClientDefinition81<TSettings> : DownloadClientDefinition81
+        where TSettings : class
+    {
+        public TSettings Settings { get; set; }
     }
 
     public class SabnzbdSettings81

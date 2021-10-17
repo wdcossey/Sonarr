@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using NzbDrone.Core.Datastore;
 
 namespace NzbDrone.Core.DataAugmentation.Scene
@@ -8,12 +8,12 @@ namespace NzbDrone.Core.DataAugmentation.Scene
         public string Title { get; set; }
         public string ParseTerm { get; set; }
 
-        [JsonProperty("searchTitle")]
+        [JsonPropertyName("searchTitle")]
         public string SearchTerm { get; set; }
 
         public int TvdbId { get; set; }
 
-        [JsonProperty("season")]
+        [JsonPropertyName("season")]
         public int? SeasonNumber { get; set; }
 
         public int? SceneSeasonNumber { get; set; }

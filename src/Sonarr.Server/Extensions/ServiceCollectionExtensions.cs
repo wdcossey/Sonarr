@@ -91,7 +91,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var contracts = loadedInterfaces.Union(implementedInterfaces).Where(c =>
                     !c.IsGenericTypeDefinition && !string.IsNullOrWhiteSpace(c.FullName))
-                .Where(c => !c.FullName.StartsWith("System"))
+                .Where(c => !string.IsNullOrWhiteSpace(c.FullName) && !c.FullName.StartsWith("System"))
                 //.Where(c => !c.FullName.EndsWith("Module"))
                 //.Where(c => !c.FullName.EndsWith("Controller"))
                 .Except(new List<Type> { typeof(IMessage), typeof(IEvent), typeof(IContainer) }).Distinct() //TODO: remove `IContainer`

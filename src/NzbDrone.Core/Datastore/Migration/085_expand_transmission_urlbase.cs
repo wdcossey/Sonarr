@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Data;
+using System.Text.Json;
 using FluentMigrator;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Serializer;
@@ -31,8 +32,8 @@ namespace NzbDrone.Core.Datastore.Migration
 
                         var settings = Json.Deserialize<Dictionary<string, object>>(settingsJson);
 
-                        var urlBase = settings.GetValueOrDefault("urlBase", "") as string;
-                        
+                        var urlBase = (settings.GetValueOrDefault("urlBase", null) as JsonElement?)?.GetString();
+
                         if (urlBase.IsNullOrWhiteSpace())
                         {
                             settings["urlBase"] = "/transmission/";

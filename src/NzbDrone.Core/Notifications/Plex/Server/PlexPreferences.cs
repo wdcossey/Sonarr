@@ -1,11 +1,11 @@
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace NzbDrone.Core.Notifications.Plex.Server
 {
     public class PlexPreferences
     {
-        [JsonProperty("Setting")]
+        [JsonPropertyName("Setting")]
         public List<PlexPreference> Preferences { get; set; }
     }
 
@@ -18,7 +18,7 @@ namespace NzbDrone.Core.Notifications.Plex.Server
 
     public class PlexPreferencesLegacy
     {
-        [JsonProperty("_children")]
+        [JsonPropertyName("_children")]
         public List<PlexPreference> Preferences { get; set; }
     }
 }

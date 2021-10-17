@@ -14,7 +14,6 @@ namespace Sonarr.Api.V3.Series
         public SeriesImportController(IAddSeriesService addSeriesService)
             => _addSeriesService = addSeriesService;
 
-
         [HttpPost]
         public IActionResult Import([FromBody] List<SeriesResource> resource)
         {

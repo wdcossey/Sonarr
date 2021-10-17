@@ -20,7 +20,7 @@ namespace Sonarr.Server.Middleware
             {
                 var httpContext = state as HttpContext;
                 httpContext?.Response.Headers.TryAdd("X-Application-Version", BuildInfo.Version.ToString());
-                httpContext?.Response.Headers.TryAdd("Server", $"Sonarr");
+                httpContext?.Response.Headers.TryAdd("Server", BuildInfo.AppName);
                 return Task.CompletedTask;
             }, context);
 

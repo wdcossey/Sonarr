@@ -165,9 +165,7 @@ namespace Sonarr.Api.V3.Queue
         }
 
         private QueueResource MapToResource(NzbDrone.Core.Queue.Queue queueItem, bool includeSeries, bool includeEpisode)
-        {
-            return queueItem.ToResource(includeSeries, includeEpisode);
-        }
+            => queueItem.ToResource(includeSeries, includeEpisode);
 
         public void Handle(QueueUpdatedEvent message)
         {

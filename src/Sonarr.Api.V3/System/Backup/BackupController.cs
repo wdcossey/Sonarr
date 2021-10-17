@@ -64,8 +64,8 @@ namespace Sonarr.Api.V3.System.Backup
             return Ok(new object());
         }
 
-        //Post(@"/restore/(?<id>[\d]{1,10})",  x => Restore((int)x.Id));
-        [HttpPost("restore/{id:int}")]
+
+        [HttpPost("restore/{id:int:required}")]
         public IActionResult Restore(int id)
         {
             var backup = GetBackup(id);
@@ -88,7 +88,7 @@ namespace Sonarr.Api.V3.System.Backup
             if (files.Empty())
                 return BadRequest("file must be provided");
 
-            var file = files.First();
+            var file = files.Single();
             var extension = Path.GetExtension(file.Name);
 
             if (!ValidExtensions.Contains(extension))
@@ -107,18 +107,12 @@ namespace Sonarr.Api.V3.System.Backup
         }
 
         private string GetBackupPath(NzbDrone.Core.Backup.Backup backup)
-        {
-            return Path.Combine(_backupService.GetBackupFolder(backup.Type), backup.Name);
-        }
+            => Path.Combine(_backupService.GetBackupFolder(backup.Type), backup.Name);
 
         private int GetBackupId(NzbDrone.Core.Backup.Backup backup)
-        {
-            return HashConverter.GetHashInt31($"backup-{backup.Type}-{backup.Name}");
-        }
+            => HashConverter.GetHashInt31($"backup-{backup.Type}-{backup.Name}");
 
         private NzbDrone.Core.Backup.Backup GetBackup(int id)
-        {
-            return _backupService.GetBackups().SingleOrDefault(b => GetBackupId(b) == id);
-        }
+            => _backupService.GetBackups().SingleOrDefault(b => GetBackupId(b) == id);
     }
 }
