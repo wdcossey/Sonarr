@@ -3,11 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Ical.Net;
+using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
-using Ical.Net.General;
-using Ical.Net.Interfaces.Serialization;
 using Ical.Net.Serialization;
-using Ical.Net.Serialization.iCalendar.Factory;
 using NzbDrone.Core.Tv;
 using Nancy.Responses;
 using NzbDrone.Core.Tags;
@@ -116,11 +114,13 @@ namespace NzbDrone.Api.Calendar
                     continue;
                 }
 
-                var occurrence = calendar.Create<Event>();
-                occurrence.Uid = "NzbDrone_episode_" + episode.Id;
-                occurrence.Status = episode.HasFile ? EventStatus.Confirmed : EventStatus.Tentative;
-                occurrence.Description = episode.Overview;
-                occurrence.Categories = new List<string>() { episode.Series.Network };
+                var occurrence = new CalendarEvent
+                {
+                    Uid = "NzbDrone_episode_" + episode.Id,
+                    Status = episode.HasFile ? EventStatus.Confirmed : EventStatus.Tentative,
+                    Description = episode.Overview,
+                    Categories = new List<string>() { episode.Series.Network }
+                };
 
                 if (asAllDay)
                 {
@@ -141,6 +141,8 @@ namespace NzbDrone.Api.Calendar
                         occurrence.Summary =$"{episode.Series.Title} - {episode.SeasonNumber}x{episode.EpisodeNumber:00} - {episode.Title}";
                         break;
                 }
+
+                calendar.Events.Add(occurrence);
             }
 
             var serializer = (IStringSerializer) new SerializerFactory().Build(calendar.GetType(), new SerializationContext());
