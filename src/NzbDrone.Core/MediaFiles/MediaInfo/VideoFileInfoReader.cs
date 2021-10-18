@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using MediaInfo;
 using NLog;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
@@ -35,16 +36,16 @@ namespace NzbDrone.Core.MediaFiles.MediaInfo
                 throw new FileNotFoundException("Media file does not exist: " + filename);
             }
 
-            MediaInfo mediaInfo = null;
+            global::MediaInfo.MediaInfo mediaInfo = null;
 
             // TODO: Cache media info by path, mtime and length so we don't need to read files multiple times
 
             try
             {
-                mediaInfo = new MediaInfo();
+                mediaInfo = new global::MediaInfo.MediaInfo();
                 _logger.Debug("Getting media info from {0}", filename);
 
-                if (filename.ToLower().EndsWith(".ts"))
+                if (Path.GetExtension(filename).Equals(".ts", StringComparison.OrdinalIgnoreCase))
                 {
                     // For .ts files we often have to scan more of the file to get all the info we need
                     mediaInfo.Option("ParseSpeed", "0.3");
@@ -54,14 +55,10 @@ namespace NzbDrone.Core.MediaFiles.MediaInfo
                     mediaInfo.Option("ParseSpeed", "0.0");
                 }
 
-                int open;
+                IntPtr open = mediaInfo.Open(filename);
 
-                using (var stream = _diskProvider.OpenReadStream(filename))
-                {
-                    open = mediaInfo.Open(stream);
-                }
 
-                if (open != 0)
+                if (!open.Equals(IntPtr.Zero))
                 {
                     int audioRuntime;
                     int videoRuntime;
@@ -83,10 +80,7 @@ namespace NzbDrone.Core.MediaFiles.MediaInfo
                         _logger.Trace("No runtime value found, rescanning at 1.0 scan depth");
                         mediaInfo.Option("ParseSpeed", "1.0");
 
-                        using (var stream = _diskProvider.OpenReadStream(filename))
-                        {
-                            open = mediaInfo.Open(stream);
-                        }
+                        open = mediaInfo.Open(filename);
                     }
                     else if (audioChannels > 2 && audioChannelPositions.IsNullOrWhiteSpace())
                     {
@@ -94,14 +88,11 @@ namespace NzbDrone.Core.MediaFiles.MediaInfo
                         _logger.Trace("DTS audio without expected channel information, rescanning at 0.3 scan depth");
                         mediaInfo.Option("ParseSpeed", "0.3");
 
-                        using (var stream = _diskProvider.OpenReadStream(filename))
-                        {
-                            open = mediaInfo.Open(stream);
-                        }
+                        open = mediaInfo.Open(filename);
                     }
                 }
 
-                if (open != 0)
+                if (!open.Equals(IntPtr.Zero))
                 {
                     int width;
                     int height;

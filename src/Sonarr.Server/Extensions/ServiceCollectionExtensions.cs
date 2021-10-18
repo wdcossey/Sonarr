@@ -12,6 +12,8 @@ using NzbDrone.Common.Processes;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Datastore.Migration.Framework;
 using NzbDrone.Core.DecisionEngine.Specifications;
+using NzbDrone.Core.Lifecycle;
+using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Notifications.Emby;
 
 // ReSharper disable once CheckNamespace
@@ -25,6 +27,10 @@ namespace Microsoft.Extensions.DependencyInjection
             app.ApplicationServices.GetRequiredService<InitializeLogger>().Initialize();
             app.ApplicationServices.GetRequiredService<IAppFolderFactory>().Register();
             app.ApplicationServices.GetRequiredService<IProvidePidFile>().Write();
+
+            //app.ApplicationServices.GetRequiredService<IEventAggregator>().PublishEvent(new ApplicationStartingEvent());
+
+            //app.ApplicationServices.GetRequiredService<IEventAggregator>().PublishEvent(new ApplicationStartedEvent());
 
             //DbFactory.RegisterDatabase(container);
 
@@ -44,7 +50,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 "Sonarr.Http.dll"
             };
 
-            return services!.AddSonarr(assemblies);
+            return services.AddSonarr(assemblies);
         }
 
         public static IServiceCollection AddSonarr(this IServiceCollection services, IList<string> assemblyNames)
@@ -89,24 +95,25 @@ namespace Microsoft.Extensions.DependencyInjection
             var loadedInterfaces = loadedTypes.Where(t => t.IsInterface).ToList();
             var implementedInterfaces = loadedTypes.SelectMany(t => t.GetInterfaces());
 
-            var contracts = loadedInterfaces.Union(implementedInterfaces).Where(c =>
+            var contractTypes = loadedInterfaces.Union(implementedInterfaces).Where(c =>
                     !c.IsGenericTypeDefinition && !string.IsNullOrWhiteSpace(c.FullName))
                 .Where(c => !string.IsNullOrWhiteSpace(c.FullName) && !c.FullName.StartsWith("System"))
                 //.Where(c => !c.FullName.EndsWith("Module"))
                 //.Where(c => !c.FullName.EndsWith("Controller"))
-                .Except(new List<Type> { typeof(IMessage), typeof(IEvent), typeof(IContainer) }).Distinct() //TODO: remove `IContainer`
+                .Except(new List<Type> { typeof(IMessage), typeof(IEvent)/*, typeof(IContainer)*/ }).Distinct() //TODO: remove `IContainer`
                 .OrderBy(c => c.FullName);
 
             var implementations = new List<ServiceDescriptor>();
 
-            foreach (var contract in contracts)
-                implementations.AddRange(AutoRegisterImplementations(contract, loadedTypes));
+            //TODO: Some services require Transient lifetime
+            foreach (var contractType in contractTypes)
+                implementations.AddRange(AutoRegisterImplementations(contractType: contractType, loadedTypes: loadedTypes, lifetime: ServiceLifetime.Singleton));
 
             foreach (var descriptor in implementations)
                 services.Add(descriptor);
         }
 
-        private static IServiceCollection Register<TService>(this IServiceCollection services, IEnumerable<Type> loadedTypes, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        private static IServiceCollection Register<TService>(this IServiceCollection services, IEnumerable<Type> loadedTypes, ServiceLifetime lifetime = ServiceLifetime.Transient)
             where TService : class
         {
             var contracts = loadedTypes.Where(t => typeof(TService).IsAssignableFrom(t) && !t.IsAbstract && !t.IsInterface);
@@ -122,7 +129,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
-        private static IEnumerable<ServiceDescriptor> AutoRegisterImplementations(Type contractType, IEnumerable<Type> loadedTypes)
+        private static IEnumerable<ServiceDescriptor> AutoRegisterImplementations(Type contractType, IEnumerable<Type> loadedTypes, ServiceLifetime lifetime = ServiceLifetime.Transient)
         {
             var implementations = contractType.GetImplementations(loadedTypes).Where(c => !c.IsGenericTypeDefinition).ToList();
 
@@ -130,8 +137,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 return Array.Empty<ServiceDescriptor>();
 
             return implementations.Count > 1
-                ? contractType.RegisterAll(implementations, ServiceLifetime.Singleton)
-                : contractType.Register(implementations.Single(), ServiceLifetime.Singleton);
+                ? contractType.RegisterAll(implementations, lifetime)
+                : contractType.Register(implementations.Single(), lifetime);
         }
 
         private static IEnumerable<Type> GetImplementations(this Type contractType, IEnumerable<Type> loadedTypes)
@@ -144,16 +151,16 @@ namespace Microsoft.Extensions.DependencyInjection
                 );
         }
 
-        private static IEnumerable<ServiceDescriptor> Register(this Type service, Type implementation, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        private static IEnumerable<ServiceDescriptor> Register(this Type service, Type implementation, ServiceLifetime lifetime = ServiceLifetime.Transient)
         {
             return new []
             {
-                ServiceDescriptor.Describe(implementation, implementation, ServiceLifetime.Singleton),
+                ServiceDescriptor.Describe(implementation, implementation, lifetime),
                 ServiceDescriptor.Describe(service, provider => provider.GetRequiredService(implementation), lifetime)
             };
         }
 
-        private static IEnumerable<ServiceDescriptor> RegisterAll(this Type service, IEnumerable<Type> implementationList, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        private static IEnumerable<ServiceDescriptor> RegisterAll(this Type service, IEnumerable<Type> implementationList, ServiceLifetime lifetime = ServiceLifetime.Transient)
         {
             var result = new List<ServiceDescriptor>();
 

@@ -4,7 +4,7 @@ using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.Episodes
 {
-    [SonarrApiRoute("episode/rename", RouteVersion.V3)]
+    [SonarrApiRoute("rename", RouteVersion.V3)]
     public class RenameEpisodeController : ControllerBase
     {
         private readonly IRenameEpisodeFileService _renameEpisodeFileService;

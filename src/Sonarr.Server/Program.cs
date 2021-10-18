@@ -38,7 +38,7 @@ namespace Sonarr.Server
                         .UseWebRoot(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UI"))
                         .UseStartup<Startup>()
                         .UseKestrel(options => options.AddServerHeader = false)
-                        .ConfigureServices(services => services.AddSingleton<IStartupContext>(_ => startupContext))
+                        .ConfigureServices(services => services.AddSingleton(_ => startupContext))
                         .UseDefaultServiceProvider(options => options.ValidateOnBuild = false);
                 });
         }
