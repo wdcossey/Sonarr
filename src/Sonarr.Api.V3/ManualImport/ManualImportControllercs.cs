@@ -27,7 +27,7 @@ namespace Sonarr.Api.V3.ManualImport
             [FromQuery] int? seriesId = null)
         {
             var value = _manualImportService.GetMediaFiles(folder, downloadId, seriesId, filterExistingFiles)
-                .ToResource().Select(AddQualityWeight).ToList();
+                .ToResource().Select(AddQualityWeight);
             return Ok(value);
         }
 
