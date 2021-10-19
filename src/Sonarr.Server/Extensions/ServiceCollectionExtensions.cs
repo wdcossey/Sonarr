@@ -58,6 +58,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var loadedTypes = new List<Type>();
 
             assemblyNames.Add(OsInfo.IsWindows ? "Sonarr.Windows.dll" : "Sonarr.Mono.dll");
+            //assemblyNames.Add("Sonarr.Windows.dll");
             assemblyNames.Add("Sonarr.Common.dll");
 
             foreach (var assemblyName in assemblyNames)

@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <Platforms>x86;AnyCPU</Platforms>
-    <LangVersion>10</LangVersion>
+    <LangVersion>default</LangVersion>
     <Nullable>disable</Nullable>
     <Configurations>Debug;Release</Configurations>
   </PropertyGroup>

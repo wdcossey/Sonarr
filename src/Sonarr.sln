@@ -101,6 +101,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sonarr.RuntimePatches", "So
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sonarr.Server", "Sonarr.Server\Sonarr.Server.csproj", "{50FFBF30-3954-41E5-9FDF-F2CE85BC92EE}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docker", "Docker", "{AA387B18-E393-4A91-B1A3-EC475795F762}"
+ProjectSection(SolutionItems) = preProject
+	..\Dockerfile = ..\Dockerfile
+EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86

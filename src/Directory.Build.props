@@ -11,9 +11,7 @@
     <SonarrOutputType Condition="'$(MSBuildProjectName)'=='Sonarr'">Exe</SonarrOutputType>
     <SonarrOutputType Condition="'$(MSBuildProjectName)'=='Sonarr.Console'">Exe</SonarrOutputType>
     <SonarrOutputType Condition="'$(MSBuildProjectName)'=='Sonarr.Update'">Update</SonarrOutputType>
-    <SonarrOutputType Condition="'$(MSBuildProjectName)'=='Sonarr.Blazor.Server'">Exe</SonarrOutputType>
-    <SonarrOutputType Condition="'$(MSBuildProjectName)'=='Sonarr.Blazor.Client'">Exe</SonarrOutputType>
-    <SonarrOutputType Condition="'$(MSBuildProjectName)'=='Sonarr.Blazor.Shared'">Exe</SonarrOutputType>
+    <SonarrOutputType Condition="'$(MSBuildProjectName)'=='Sonarr.Server'">Exe</SonarrOutputType>
 
     <!-- Specifies whether it's one of our own libraries -->
     <SonarrProject>false</SonarrProject>
