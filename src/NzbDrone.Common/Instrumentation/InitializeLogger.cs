@@ -18,8 +18,7 @@ namespace NzbDrone.Common.Instrumentation
 
         public void Initialize()
         {
-            //TODO: Skip this until NLog is implemented via `Microsoft.Extensions.DependencyInjection`
-            SentryTarget sentryTarget = null;//LogManager.Configuration.AllTargets.OfType<SentryTarget>().FirstOrDefault();
+            SentryTarget sentryTarget = LogManager.Configuration.AllTargets.OfType<SentryTarget>().FirstOrDefault();
             if (sentryTarget != null)
             {
                 sentryTarget.UpdateScope(_osInfo);
