@@ -1,12 +1,10 @@
-﻿
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace Sonarr.Http.REST
 {
     public abstract class RestResource
     {
-
-        //[JsonPropertyName(DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public int Id { get; set; }
 
         [JsonIgnore]

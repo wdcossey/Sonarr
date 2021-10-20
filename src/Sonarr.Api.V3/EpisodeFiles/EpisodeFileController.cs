@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.DecisionEngine.Specifications;
 using NzbDrone.Core.Exceptions;
@@ -83,7 +84,7 @@ namespace Sonarr.Api.V3.EpisodeFiles
             if (episodeFile == null)
             {
                 //TODO: return NotFound()?!?
-                throw new NzbDroneClientException(global::System.Net.HttpStatusCode.NotFound, "Episode file not found");
+                throw new NzbDroneClientException(HttpStatusCode.NotFound, "Episode file not found");
             }
 
             var series = _seriesService.GetSeries(episodeFile.SeriesId);

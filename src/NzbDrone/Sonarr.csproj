@@ -27,7 +27,4 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="EmbedIO" Version="3.4.3" />
-  </ItemGroup>
 </Project>

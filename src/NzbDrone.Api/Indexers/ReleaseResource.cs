@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using Sonarr.Http.REST;
 using NzbDrone.Core.Parser;
 using NzbDrone.Core.Qualities;

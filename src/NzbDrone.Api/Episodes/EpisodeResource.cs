@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using NzbDrone.Api.EpisodeFiles;
 using Sonarr.Http.REST;
 using NzbDrone.Api.Series;
@@ -33,7 +33,7 @@ namespace NzbDrone.Api.Episodes
         public DateTime? LastSearchTime { get; set; }
 
         //Hiding this so people don't think its usable (only used to set the initial state)
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public bool Grabbed { get; set; }
     }
 

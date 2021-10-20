@@ -14,20 +14,16 @@ using Sonarr.Server.HostedServices;
 using Sonarr.Server.Hubs;
 using Sonarr.Server.Middleware;
 
-
 namespace Sonarr.Server
 {
     public class Startup
     {
+        // ReSharper disable once UnusedAutoPropertyAccessor.Local
+        private IConfiguration Configuration { get; }
+
         public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
+            => Configuration = configuration;
 
-        public IConfiguration Configuration { get; }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
             //TODO: Fix NLog integration!
@@ -39,6 +35,7 @@ namespace Sonarr.Server
 
             services
                 .AddControllersWithViews()
+                .AddApplicationPart(Assembly.Load(new AssemblyName("Sonarr.Http")))
                 .AddApplicationPart(Assembly.Load(new AssemblyName("Sonarr.Api.V3")));
 
             services
