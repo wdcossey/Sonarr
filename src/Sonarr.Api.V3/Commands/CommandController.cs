@@ -50,18 +50,9 @@ namespace Sonarr.Api.V3.Commands
         }
 
         [HttpPost]
-        public IActionResult StartCommand([FromBody] CommandResource resource)
+        public IActionResult StartCommand([ModelBinder(typeof(CommandModelBinder))] Command command)
         {
-            var command = _commandFactory.Create(resource!.Name);
-            command!.Trigger = CommandTrigger.Manual;
-            command!.SuppressMessages = !resource!.SendUpdatesToClient;
-            command!.SendUpdatesToClient = true;
-
-            if (Request.Headers.TryGetValue("User-Agent", out var userAgent))
-                command!.ClientUserAgent = userAgent;
-
             var trackedCommand = _commandQueueManager.Push(command, CommandPriority.Normal, CommandTrigger.Manual);
-
             return Created($"{Request.Path}/{trackedCommand.Id}", _commandQueueManager.Get(trackedCommand.Id).ToResource());
         }
 

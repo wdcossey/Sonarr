@@ -1,7 +1,9 @@
 using System;
 using System.IO;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 
 namespace NzbDrone.Common.Serializer
 {
@@ -50,6 +52,34 @@ namespace NzbDrone.Common.Serializer
             catch (JsonException ex)
             {
                 throw DetailedJsonReaderException(ex, json);
+            }
+        }
+
+        public static async Task<object> DeserializeAsync(Stream utf8Json, Type type)
+        {
+            try
+            {
+                utf8Json.Seek(0, SeekOrigin.Begin);
+                return await JsonSerializer.DeserializeAsync(utf8Json, type, SerializerOptions);
+            }
+            catch (JsonException ex)
+            {
+                using var reader = new StreamReader(utf8Json, Encoding.UTF8);
+                throw DetailedJsonReaderException(ex, await reader.ReadToEndAsync());
+            }
+        }
+
+        public static async Task<T> DeserializeAsync<T>(Stream utf8Json) where T : new()
+        {
+            try
+            {
+                utf8Json.Seek(0, SeekOrigin.Begin);
+                return await JsonSerializer.DeserializeAsync<T>(utf8Json, SerializerOptions);
+            }
+            catch (JsonException ex)
+            {
+                using var reader = new StreamReader(utf8Json, Encoding.UTF8);
+                throw DetailedJsonReaderException(ex, await reader.ReadToEndAsync());
             }
         }
 

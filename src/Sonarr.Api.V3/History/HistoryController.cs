@@ -10,7 +10,7 @@ using Sonarr.Api.V3.Series;
 using Sonarr.Http;
 using Sonarr.Http.Attributes;
 using Sonarr.Http.Extensions;
-using Sonarr.Http.Filters;
+using Sonarr.Http.ModelBinders;
 
 namespace Sonarr.Api.V3.History
 {
@@ -33,9 +33,8 @@ namespace Sonarr.Api.V3.History
         }
 
         [HttpGet]
-        [SonarrPagingResourceFilter]
         public IActionResult GetHistory(
-            [FromQuery] PagingResource<HistoryResource> pagingResource,
+            [FromQuery] [ModelBinder(typeof(PagingResourceModelBinder))] PagingResource<HistoryResource> pagingResource,
             [FromQuery] bool includeSeries = false,
             [FromQuery] bool includeEpisode = false)
         {

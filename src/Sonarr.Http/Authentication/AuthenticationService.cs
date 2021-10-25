@@ -1,58 +1,58 @@
 ﻿using System;
-using System.Linq;
-using System.Net;
 using System.Security.Claims;
 using System.Security.Principal;
-using Nancy;
-using Nancy.Authentication.Basic;
-using Nancy.Authentication.Forms;
-using Nancy.Routing.Trie.Nodes;
-using NLog;
-using NzbDrone.Common.Extensions;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Authentication;
 using NzbDrone.Core.Configuration;
 using Sonarr.Http.Extensions;
 
 namespace Sonarr.Http.Authentication
 {
-    public interface IAuthenticationService : IUserValidator, IUserMapper
+    public interface IAuthenticationService //: IUserValidator, IUserMapper
     {
-        void SetContext(NancyContext context);
+        void SetContext(HttpContext context);
 
-        void LogUnauthorized(NancyContext context);
-        User Login(NancyContext context, string username, string password);
-        void Logout(NancyContext context);
-        bool IsAuthenticated(NancyContext context);
+        void LogUnauthorized(HttpContext context);
+        User Login(HttpContext context, string username, string password);
+        void Logout(HttpContext context);
+        bool IsAuthenticated(HttpContext context);
     }
 
     public class AuthenticationService : IAuthenticationService
     {
-        private static readonly Logger _authLogger = LogManager.GetLogger("Auth");
+        private readonly ILogger<AuthenticationService> _logger;
         private const string AnonymousUser = "Anonymous";
         private readonly IUserService _userService;
 
-        private static string API_KEY;
-        private static AuthenticationType AUTH_METHOD;
+        private const string HEADER_API_KEY_NAME = "X-Api-Key";
+        private const string QUERY_API_KEY_NAME = "ApiKey";
+        private static string _apiKey;
+        private static AuthenticationType _authenticationMethod;
 
         [ThreadStatic]
-        private static NancyContext _context; 
+        private static HttpContext _context;
 
-        public AuthenticationService(IConfigFileProvider configFileProvider, IUserService userService)
+        public AuthenticationService(
+            ILogger<AuthenticationService> logger,
+            IConfigFileProvider configFileProvider,
+            IUserService userService)
         {
+            _logger = logger;
             _userService = userService;
-            API_KEY = configFileProvider.ApiKey;
-            AUTH_METHOD = configFileProvider.AuthenticationMethod;
+            _apiKey = configFileProvider.ApiKey;
+            _authenticationMethod = configFileProvider.AuthenticationMethod;
         }
 
-        public void SetContext(NancyContext context)
+        public void SetContext(HttpContext context)
         {
             // Validate and GetUserIdentifier don't have access to the NancyContext so get it from the pipeline earlier
             _context = context;
         }
 
-        public User Login(NancyContext context, string username, string password)
+        public User Login(HttpContext context, string username, string password)
         {
-            if (AUTH_METHOD == AuthenticationType.None)
+            if (_authenticationMethod == AuthenticationType.None)
             {
                 return null;
             }
@@ -71,31 +71,25 @@ namespace Sonarr.Http.Authentication
             return null;
         }
 
-        public void Logout(NancyContext context)
+        public void Logout(HttpContext context)
         {
-            if (AUTH_METHOD == AuthenticationType.None)
-            {
+            if (_authenticationMethod == AuthenticationType.None)
                 return;
-            }
 
-            if (context.CurrentUser != null)
-            {
-                LogLogout(context, context.CurrentUser.Identity.Name);
-            }
+            if (context.User != null)
+                LogLogout(context, context.User.Identity.Name);
         }
 
         public ClaimsPrincipal Validate(string username, string password)
         {
-            if (AUTH_METHOD == AuthenticationType.None)
-            {
+            if (_authenticationMethod == AuthenticationType.None)
                 return new ClaimsPrincipal(new GenericIdentity(AnonymousUser));
-            }
 
             var user = _userService.FindUser(username, password);
 
             if (user != null)
             {
-                if (AUTH_METHOD != AuthenticationType.Basic)
+                if (_authenticationMethod != AuthenticationType.Basic)
                 {
                     // Don't log success for basic auth
                     LogSuccess(_context, username);
@@ -109,26 +103,22 @@ namespace Sonarr.Http.Authentication
             return null;
         }
 
-        public ClaimsPrincipal GetUserFromIdentifier(Guid identifier, NancyContext context)
+        public ClaimsPrincipal GetUserFromIdentifier(Guid identifier, HttpContext context)
         {
-            if (AUTH_METHOD == AuthenticationType.None)
-            {
+            if (_authenticationMethod == AuthenticationType.None)
                 return new ClaimsPrincipal(new GenericIdentity(AnonymousUser));
-            }
 
             var user = _userService.FindUser(identifier);
 
             if (user != null)
-            {
                 return new ClaimsPrincipal(new GenericIdentity(user.Username));
-            }
 
             LogInvalidated(_context);
 
             return null;
         }
 
-        public bool IsAuthenticated(NancyContext context)
+        public bool IsAuthenticated(HttpContext context)
         {
             var apiKey = GetApiKey(context);
 
@@ -137,7 +127,7 @@ namespace Sonarr.Http.Authentication
                 return ValidApiKey(apiKey);
             }
 
-            if (AUTH_METHOD == AuthenticationType.None)
+            if (_authenticationMethod == AuthenticationType.None)
             {
                 return true;
             }
@@ -175,61 +165,49 @@ namespace Sonarr.Http.Authentication
             return false;
         }
 
-        private bool ValidUser(NancyContext context)
+        private bool ValidUser(HttpContext context)
         {
-            if (context.CurrentUser != null) return true;
+            if (context.User != null) return true;
 
             return false;
         }
 
         private bool ValidApiKey(string apiKey)
         {
-            if (API_KEY.Equals(apiKey)) return true;
+            if (_apiKey.Equals(apiKey)) return true;
 
             return false;
         }
 
-        private string GetApiKey(NancyContext context)
+        private string GetApiKey(HttpContext context)
         {
-            var apiKeyHeader = context.Request.Headers["X-Api-Key"].FirstOrDefault();
-            var apiKeyQueryString = context.Request.Query["ApiKey"];
+            context.Request.Headers.TryGetValue(HEADER_API_KEY_NAME, out var apiKeyHeader);
 
-            if (!apiKeyHeader.IsNullOrWhiteSpace())
-            {
+            if (!string.IsNullOrWhiteSpace(apiKeyHeader))
                 return apiKeyHeader;
-            }
 
-            if (apiKeyQueryString.HasValue)
-            {
-                return apiKeyQueryString.Value;
-            }
+            context.Request.Query.TryGetValue(QUERY_API_KEY_NAME, out var apiKeyQueryString);
 
-            return context.Request.Headers.Authorization;
+            if (!string.IsNullOrWhiteSpace(apiKeyQueryString))
+                return apiKeyQueryString;
+
+            return null;//context.Request.Headers.Authorization;
         }
 
-        public void LogUnauthorized(NancyContext context)
-        {
-            _authLogger.Info("Auth-Unauthorized ip {0} url '{1}'", context.GetRemoteIP(), context.Request.Url.ToString());
-        }
+        public void LogUnauthorized(HttpContext context)
+            => _logger.LogInformation("Auth-Unauthorized ip {RemoteIpAddress} url '{Path}'", context.Connection.RemoteIpAddress.MapToIPv4(), context.Request.Path);
 
-        private void LogInvalidated(NancyContext context)
-        {
-            _authLogger.Info("Auth-Invalidated ip {0}", context.GetRemoteIP());
-        }
+        private void LogInvalidated(HttpContext context)
+            => _logger.LogInformation("Auth-Invalidated ip {RemoteIpAddress}", context.Connection.RemoteIpAddress.MapToIPv4());
 
-        private void LogFailure(NancyContext context, string username)
-        {
-            _authLogger.Warn("Auth-Failure ip {0} username '{1}'", context.GetRemoteIP(), username);
-        }
+        private void LogFailure(HttpContext context, string username)
+            => _logger.LogWarning("Auth-Failure ip {RemoteIpAddress} username '{Username}'", context.Connection.RemoteIpAddress.MapToIPv4(), username);
 
-        private void LogSuccess(NancyContext context, string username)
-        {
-            _authLogger.Info("Auth-Success ip {0} username '{1}'", context.GetRemoteIP(), username);
-        }
+        private void LogSuccess(HttpContext context, string username)
+            => _logger.LogInformation("Auth-Success ip {RemoteIpAddress} username '{Username}'", context.Connection.RemoteIpAddress.MapToIPv4(), username);
 
-        private void LogLogout(NancyContext context, string username)
-        {
-            _authLogger.Info("Auth-Logout ip {0} username '{1}'", context.GetRemoteIP(), username);
-        }
+        private void LogLogout(HttpContext context, string username)
+            => _logger.LogInformation("Auth-Logout ip {RemoteIpAddress} username '{Username}'", context.Connection.RemoteIpAddress.MapToIPv4(), username);
+
     }
 }

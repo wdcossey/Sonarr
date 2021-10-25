@@ -3,19 +3,17 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using NzbDrone.Core.MediaCover;
 
-namespace Sonarr.Server.Controllers
+namespace Sonarr.Http.Frontend.Mappers
 {
-    [ApiController]
-    [Route("/MediaCoverProxy")]
-    public class MediaCoverProxyController : ControllerBase
+    [Route("MediaCoverProxy")]
+    public class MediaCoverProxyMapperController : ControllerBase
     {
         private readonly IMediaCoverProxy _mediaCoverProxy;
 
-        public MediaCoverProxyController(IMediaCoverProxy mediaCoverProxy)
+        public MediaCoverProxyMapperController(IMediaCoverProxy mediaCoverProxy)
             => _mediaCoverProxy = mediaCoverProxy;
 
-        [HttpGet]
-        [Route("{hash:required:regex(\\w+)}/{filename:required:regex(((.+))\\.((jpg|png|gif)))}")]
+        [HttpGet("{hash:required:regex(\\w+)}/{filename:required:regex(((.+))\\.((jpg|png|gif)))}")]
         public IActionResult GetResponse(string hash, string filename)
         {
             var provider = new FileExtensionContentTypeProvider();

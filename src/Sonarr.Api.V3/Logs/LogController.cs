@@ -4,10 +4,11 @@ using NzbDrone.Core.Instrumentation;
 using Sonarr.Http;
 using Sonarr.Http.Attributes;
 using Sonarr.Http.Extensions;
-using Sonarr.Http.Filters;
+using Sonarr.Http.ModelBinders;
 
 namespace Sonarr.Api.V3.Logs
 {
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     [ApiController]
     [SonarrApiRoute("log", RouteVersion.V3)]
     public class LogController : ControllerBase
@@ -18,8 +19,8 @@ namespace Sonarr.Api.V3.Logs
             => _logService = logService;
 
         [HttpGet]
-        [SonarrPagingResourceFilter]
-        public IActionResult GetLogs([FromQuery] PagingResource<LogResource> pagingResource)
+        public IActionResult GetLogs(
+            [FromQuery] [ModelBinder(typeof(PagingResourceModelBinder))] PagingResource<LogResource> pagingResource)
         {
             var pageSpec = pagingResource.MapToPagingSpec<LogResource, Log>();
 

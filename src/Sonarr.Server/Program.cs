@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using NLog.Web;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Instrumentation;
+using NzbDrone.Core.Configuration;
 
 namespace Sonarr.Server
 {
@@ -35,9 +37,25 @@ namespace Sonarr.Server
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder
-                        .UseWebRoot(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UI"))
+                        .UseWebRoot(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UI")) //TODO: Should be configurable
                         .UseStartup<Startup>()
-                        .UseKestrel(options => options.AddServerHeader = false)
+                        .UseKestrel(options =>
+                        {
+                            var sonarrConfig = options.ApplicationServices.GetRequiredService<IConfigFileProvider>();
+                            options.AddServerHeader = false;
+                            //options.Listen(IPAddress.Parse(sonarrConfig.BindAddress), sonarrConfig.SslPort);
+                            options.ListenAnyIP(sonarrConfig.SslPort, listenOptions =>
+                            {
+                                listenOptions.UseHttps();
+                            });
+                        })
+                        .UseKestrel(options =>
+                        {
+                            var sonarrConfig = options.ApplicationServices.GetRequiredService<IConfigFileProvider>();
+                            options.AddServerHeader = false;
+                            //options.Listen(IPAddress.Parse(sonarrConfig.BindAddress), sonarrConfig.Port);
+                            options.ListenAnyIP(sonarrConfig.Port);
+                        })
                         .ConfigureServices(services => services.AddSingleton(_ => startupContext))
                         .UseDefaultServiceProvider(options => options.ValidateOnBuild = false);
                 });

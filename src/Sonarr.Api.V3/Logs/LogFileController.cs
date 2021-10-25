@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.StaticFiles;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
@@ -11,6 +9,7 @@ using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.Logs
 {
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     [ApiController]
     [SonarrApiRoute("log/file", RouteVersion.V3)]
     public class LogFileController : LogFileControllerBase
@@ -35,23 +34,5 @@ namespace Sonarr.Api.V3.Logs
 
         protected override string DownloadUrlRoot
             => "logfile";
-
-        //TODO: This is a replacement for `Sonarr.Http.Frontend.Mappers.LogFileMapper/UpdateLogFileMapper`
-        [Route("/logfile")]
-        [HttpGet("/logfile/{filename:required:regex([[-.a-zA-Z0-9]]+?\\.txt)}")]
-        public IActionResult DownloadLogFile(string filename)
-        {
-            var filePath = GetLogFilePath(filename);
-
-            if (!_diskProvider.FileExists(filePath))
-                return NotFound();
-
-            var provider = new FileExtensionContentTypeProvider();
-
-            if(!provider.TryGetContentType(filename, out var contentType))
-                contentType = MediaTypeNames.Application.Octet;
-
-            return new PhysicalFileResult(filePath, contentType);
-        }
     }
 }

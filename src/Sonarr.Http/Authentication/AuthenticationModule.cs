@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using Nancy;
 using Nancy.Authentication.Forms;
 using Nancy.Extensions;
@@ -48,3 +49,4 @@ namespace Sonarr.Http.Authentication
         }
     }
 }
+*/

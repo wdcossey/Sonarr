@@ -21,9 +21,7 @@ namespace Sonarr.Http.Attributes
     public class SonarrApiConfigRouteAttribute : SonarrApiRouteAttribute
     {
         public SonarrApiConfigRouteAttribute(string template, RouteVersion version)
-            : base($"config/{template}", version)
-        {
-        }
+            : base($"config/{template}", version) { }
     }
 
     public enum RouteVersion

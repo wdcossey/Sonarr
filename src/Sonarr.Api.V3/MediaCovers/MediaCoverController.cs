@@ -6,11 +6,12 @@ using Microsoft.AspNetCore.StaticFiles;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
+using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.MediaCovers
 {
     [ApiController]
-    [Route("/MediaCover")]
+    [SonarrApiRoute("MediaCover", RouteVersion.V3)]
     public class MediaCoverController : ControllerBase
     {
         private static readonly Regex RegexResizedImage = new(@"-\d+\.jpg$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -24,11 +25,10 @@ namespace Sonarr.Api.V3.MediaCovers
             _diskProvider = diskProvider;
         }
 
-        [HttpGet]
-        [HttpGet("{seriesId:int:regex(\\d+)?}/{filename:regex(((.+))\\.((jpg|png|gif)))}")]
-        public IActionResult GetMediaCover(int? seriesId, string filename)
+        [HttpGet("{seriesId:int:regex(\\d+)}/{filename:regex(((.+))\\.((jpg|png|gif)))}")]
+        public IActionResult GetMediaCover(int seriesId, string filename)
         {
-            if (seriesId is <= 0 || string.IsNullOrWhiteSpace(filename))
+            if (seriesId <= 0 || string.IsNullOrWhiteSpace(filename))
                 return NotFound();
 
             var filePath = Path.Combine(_appFolderInfo.GetAppDataPath(), "MediaCover", seriesId.ToString(), filename);

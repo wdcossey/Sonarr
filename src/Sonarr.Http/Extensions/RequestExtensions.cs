@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Net;
+using Microsoft.AspNetCore.Http;
 using Nancy;
 using NzbDrone.Common.Extensions;
 
@@ -8,20 +9,30 @@ namespace Sonarr.Http.Extensions
 {
     public static class RequestExtensions
     {
+
         public static bool IsApiRequest(this Request request)
         {
             return request.Path.StartsWith("/api/", StringComparison.InvariantCultureIgnoreCase);
         }
+
+        public static bool IsApiRequest(this HttpRequest request)
+            => request.Path.StartsWithSegments("/api/", StringComparison.InvariantCultureIgnoreCase);
 
         public static bool IsFeedRequest(this Request request)
         {
             return request.Path.StartsWith("/feed/", StringComparison.InvariantCultureIgnoreCase);
         }
 
+        public static bool IsFeedRequest(this HttpRequest request)
+            => request.Path.StartsWithSegments("/feed/", StringComparison.InvariantCultureIgnoreCase);
+
         public static bool IsSignalRRequest(this Request request)
         {
             return request.Path.StartsWith("/signalr/", StringComparison.InvariantCultureIgnoreCase);
         }
+
+        public static bool IsSignalRRequest(this HttpRequest request)
+            => request.Path.StartsWithSegments("/signalr/", StringComparison.InvariantCultureIgnoreCase);
 
         public static bool IsLocalRequest(this Request request)
         {
@@ -35,15 +46,25 @@ namespace Sonarr.Http.Extensions
             return request.Path.Equals("/login", StringComparison.InvariantCultureIgnoreCase);
         }
 
+        public static bool IsLoginRequest(this HttpRequest request)
+            => request.Path.StartsWithSegments("/login", StringComparison.InvariantCultureIgnoreCase);
+
         public static bool IsContentRequest(this Request request)
         {
             return request.Path.StartsWith("/Content/", StringComparison.InvariantCultureIgnoreCase);
         }
 
+        public static bool IsContentRequest(this HttpRequest request)
+            => request.Path.StartsWithSegments("/Content", StringComparison.InvariantCultureIgnoreCase);
+
         public static bool IsBundledJsRequest(this Request request)
         {
             return !request.Path.EqualsIgnoreCase("/initialize.js") && request.Path.EndsWith(".js", StringComparison.InvariantCultureIgnoreCase);
         }
+
+        public static bool IsBundledJsRequest(this HttpRequest request)
+            => !request.Path.Equals("/initialize.js", StringComparison.InvariantCultureIgnoreCase) &&
+               request.Path.Value.EndsWith(".js", StringComparison.InvariantCultureIgnoreCase);
 
         public static bool IsSharedContentRequest(this Request request)
         {

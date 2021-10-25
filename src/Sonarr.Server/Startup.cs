@@ -8,6 +8,9 @@ using Microsoft.Extensions.Hosting;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
 using NzbDrone.Common.Serializer;
 using Sonarr.Server.HostedServices;
@@ -50,35 +53,25 @@ namespace Sonarr.Server
                     options.JsonSerializerOptions.Converters.Add(new JsonHttpUriConverter());
                 });
 
+            services.AddResponseCaching();
             services.AddHostedService<SonarrHostedService>();
             services.AddSignalR();
+            //services.AddAuthorization();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            //if (env.IsDevelopment())
-            //{
-            //    app.UseDeveloperExceptionPage();
-            //}
-            //else
-            //{
-            //    app.UseExceptionHandler("/Error");
-            //    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-            //    app.UseHsts();
-            //}
-
             app.UseExceptionHandler("/error");
 
             if (!env.IsDevelopment())
             {
-                app.UseHsts();
+                //app.UseHsts();
             }
-            //app.UseWebSockets();
+
             app.UseSonarr();
 
-            app.UseHttpsRedirection();
-
+            //app.UseHttpsRedirection();
 
             app.UseDefaultFiles();
 
@@ -92,18 +85,21 @@ namespace Sonarr.Server
 
             app.UseRouting();
 
-            app.UseMiddleware<SonarrResponseHeaderMiddleware>();
+            //app.UseAuthentication();
+            //app.UseAuthorization();
 
-            //app.UseResponseCaching();
-            //app.UseResponseCompression();
+            app.UseMiddleware<SonarrResponseHeaderMiddleware>();
+            //app.UseMiddleware<ApiKeyAuthorizationMiddleware>();
+
+            app.UseResponseCaching();
+            app.UseResponseCompression();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapHub<SonarrHub>("/signalr");
-                endpoints.MapControllerRoute(name: "initialize", pattern: "{controller=Initialize}/initialize.js");
 
                 endpoints.MapRazorPages();
-                endpoints.MapControllers();
+                endpoints.MapControllers()/*.RequireAuthorization()*/;
                 endpoints.MapFallbackToFile("index.html");
             });
         }

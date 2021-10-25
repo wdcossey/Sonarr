@@ -12,8 +12,6 @@ using NzbDrone.Common.Processes;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Datastore.Migration.Framework;
 using NzbDrone.Core.DecisionEngine.Specifications;
-using NzbDrone.Core.Lifecycle;
-using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Notifications.Emby;
 
 // ReSharper disable once CheckNamespace
@@ -44,7 +42,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 "Sonarr.Host.dll",
                 "Sonarr.Core.dll",
-                "Sonarr.Api.dll",
+                //"Sonarr.Api.dll",
                 "Sonarr.SignalR.dll",
                 "Sonarr.Api.V3.dll",
                 "Sonarr.Http.dll"
@@ -101,7 +99,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .Where(c => !string.IsNullOrWhiteSpace(c.FullName) && !c.FullName.StartsWith("System"))
                 //.Where(c => !c.FullName.EndsWith("Module"))
                 //.Where(c => !c.FullName.EndsWith("Controller"))
-                .Except(new List<Type> { typeof(IMessage), typeof(IEvent)/*, typeof(IContainer)*/ }).Distinct() //TODO: remove `IContainer`
+                .Except(new List<Type> { typeof(IMessage), typeof(IEvent), typeof(IContainer) }).Distinct() //TODO: remove `IContainer`
                 .OrderBy(c => c.FullName);
 
             var implementations = new List<ServiceDescriptor>();

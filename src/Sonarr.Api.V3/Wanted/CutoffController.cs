@@ -7,7 +7,7 @@ using Sonarr.Api.V3.Episodes;
 using Sonarr.Http;
 using Sonarr.Http.Attributes;
 using Sonarr.Http.Extensions;
-using Sonarr.Http.Filters;
+using Sonarr.Http.ModelBinders;
 
 namespace Sonarr.Api.V3.Wanted
 {
@@ -29,9 +29,8 @@ namespace Sonarr.Api.V3.Wanted
         }
 
         [HttpGet]
-        [SonarrPagingResourceFilter]
         public IActionResult GetCutoffUnmetEpisodes(
-            [FromQuery] PagingResource<EpisodeResource> pagingResource,
+            [FromQuery] [ModelBinder(typeof(PagingResourceModelBinder))] PagingResource<EpisodeResource> pagingResource,
             [FromQuery] bool includeSeries = false,
             [FromQuery] bool includeEpisodeFile = false,
             [FromQuery] bool includeImages = false)

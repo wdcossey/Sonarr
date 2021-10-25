@@ -1,57 +1,56 @@
-﻿using System.Text;
-using System.Threading.Tasks;
+using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Core.Analytics;
 using NzbDrone.Core.Configuration;
 
-namespace Sonarr.Server.Controllers
+namespace Sonarr.Http.Frontend
 {
-    [Route("[controller]")]
-    public class InitializeController : ControllerBase
+    public class InitializeJsController : ControllerBase
     {
         private readonly IConfigFileProvider _configFileProvider;
         private readonly IAnalyticsService _analyticsService;
+        private string? _generatedContent;
 
-        private string? _generatedContent = null;
-
-        public InitializeController(IConfigFileProvider configFileProvider, IAnalyticsService analyticsService)
+        public InitializeJsController(
+            IConfigFileProvider configFileProvider,
+            IAnalyticsService analyticsService)
         {
             _configFileProvider = configFileProvider;
             _analyticsService = analyticsService;
         }
 
-        // GET
-        [HttpGet("/initialize.js")]
-        public Task Index()
+        [HttpGet("initialize.js")]
+        public IActionResult Index()
         {
-            Response.ContentType = "application/javascript";
-            return Response.WriteAsync(GetContent(), Encoding.UTF8);
+            return new ContentResult
+            {
+                Content = GetContent(),
+                ContentType = "application/javascript",
+                StatusCode = StatusCodes.Status200OK
+            };
         }
 
         private string GetContent()
         {
             if (RuntimeInfo.IsProduction && !string.IsNullOrWhiteSpace(_generatedContent))
-            {
                 return _generatedContent;
-            }
 
             var builder = new StringBuilder();
             builder.AppendLine("window.Sonarr = {");
             builder.AppendLine($"  apiRoot: '{_configFileProvider.UrlBase}/api/v3',");
             builder.AppendLine($"  apiKey: '{_configFileProvider.ApiKey}',");
             builder.AppendLine($"  release: '{BuildInfo.Release}',");
-            builder.AppendLine($"  version: '{BuildInfo.Version.ToString()}',");
+            builder.AppendLine($"  version: '{BuildInfo.Version}',");
             builder.AppendLine($"  branch: '{_configFileProvider.Branch.ToLower()}',");
             builder.AppendLine($"  analytics: {_analyticsService.IsEnabled.ToString().ToLowerInvariant()},");
             builder.AppendLine($"  urlBase: '{_configFileProvider.UrlBase}',");
             builder.AppendLine($"  isProduction: {RuntimeInfo.IsProduction.ToString().ToLowerInvariant()}");
             builder.AppendLine("};");
 
-            _generatedContent = builder.ToString();
-
-            return _generatedContent;
+            return _generatedContent = builder.ToString();
         }
     }
 }
+

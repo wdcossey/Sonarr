@@ -1,3 +1,4 @@
+/*
 using System;
 using System.Text;
 using Nancy;
@@ -142,3 +143,4 @@ namespace Sonarr.Http.Authentication
         }
     }
 }
+*/
