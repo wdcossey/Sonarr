@@ -48,13 +48,7 @@ namespace NzbDrone.Common.EnvironmentInfo
             IsDevelopment = !IsTesting && !officialBuild && !InternalIsDebug();
         }
 
-        public DateTime StartTime
-        {
-            get
-            {
-                return _startTime;
-            }
-        }
+        public DateTime StartTime => _startTime;
 
         public static bool IsUserInteractive => Environment.UserInteractive;
 

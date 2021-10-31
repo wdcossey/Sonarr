@@ -21,10 +21,12 @@ namespace Sonarr.Server
             try
             {
                 Console.WriteLine($"OsInfo.Os: {OsInfo.Os}");
+                Console.WriteLine($"OsInfo.Os: {OsInfo.Os}");
                 Console.WriteLine($"Environment.OSVersion: {Environment.OSVersion}");
                 Console.WriteLine($"Environment.OSVersion.Version: {Environment.OSVersion.Version}");
                 Console.WriteLine($"Environment.OSVersion.VersionString: {Environment.OSVersion.VersionString}");
                 Console.WriteLine($"RuntimeInformation.OSDescription: {RuntimeInformation.OSDescription}");
+                Console.WriteLine($"RuntimeInformation.OSArchitecture: {RuntimeInformation.OSArchitecture}");
 
                 NzbDroneLogger.Register(startupContext, false, true);
                 return CreateHostBuilder(startupContext, args).Build().RunAsync();

@@ -20,7 +20,7 @@ namespace NzbDrone.Core.Datastore.Migration.Framework
         public virtual IAnnouncer Announcer { get; set; }
         public SQLiteProcessor Processor { get; set; }
 
-        protected internal virtual TableDefinition ReadTableSchema(string sqlSchema)
+        protected internal virtual SqliteTableDefinition ReadTableSchema(string sqlSchema)
         {
             var reader = new SqliteSyntaxReader(sqlSchema);
 
@@ -38,9 +38,9 @@ namespace NzbDrone.Core.Datastore.Migration.Framework
             return result;
         }
 
-        protected virtual TableDefinition ParseCreateTableStatement(SqliteSyntaxReader reader)
+        protected virtual SqliteTableDefinition ParseCreateTableStatement(SqliteSyntaxReader reader)
         {
-            var table = new TableDefinition();
+            var table = new SqliteTableDefinition();
 
             while (reader.Read() != SqliteSyntaxReader.TokenType.StringToken || reader.ValueToUpper != "TABLE") ;
 
@@ -108,7 +108,7 @@ namespace NzbDrone.Core.Datastore.Migration.Framework
             var column = new ColumnDefinition();
 
             column.Name = ParseIdentifier(reader);
-            
+
             reader.TrimBuffer();
 
             reader.Read();
@@ -152,7 +152,7 @@ namespace NzbDrone.Core.Datastore.Migration.Framework
             reader.Read(); // ON
 
             index.TableName = ParseIdentifier(reader);
-            
+
             // Find Column List
             reader.SkipTillToken(SqliteSyntaxReader.TokenType.ListStart);
 
@@ -198,9 +198,9 @@ namespace NzbDrone.Core.Datastore.Migration.Framework
 
         #region ISchemaDumper Members
 
-        public virtual IList<TableDefinition> ReadDbSchema()
+        public virtual IList<SqliteTableDefinition> ReadDbSchema()
         {
-            IList<TableDefinition> tables = ReadTables();
+            IList<SqliteTableDefinition> tables = ReadTables();
             foreach (var table in tables)
             {
                 table.Indexes = ReadIndexes(table.SchemaName, table.Name);
@@ -217,12 +217,12 @@ namespace NzbDrone.Core.Datastore.Migration.Framework
             return Processor.Read(template, args);
         }
 
-        protected virtual IList<TableDefinition> ReadTables()
+        protected virtual IList<SqliteTableDefinition> ReadTables()
         {
             const string sqlCommand = @"SELECT name, sql FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name;";
             var dtTable = Read(sqlCommand).Tables[0];
 
-            var tableDefinitionList = new List<TableDefinition>();
+            var tableDefinitionList = new List<SqliteTableDefinition>();
 
             foreach (DataRow dr in dtTable.Rows)
             {

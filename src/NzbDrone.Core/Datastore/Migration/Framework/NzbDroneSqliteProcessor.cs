@@ -21,8 +21,6 @@ namespace NzbDrone.Core.Datastore.Migration.Framework
 
         }
 
-        public override bool SupportsTransactions => true;
-
         public override void Process(AlterColumnExpression expression)
         {
             var tableDefinition = GetTableSchema(expression.TableName);
@@ -105,7 +103,7 @@ namespace NzbDrone.Core.Datastore.Migration.Framework
             ProcessAlterTable(tableDefinition, oldColumnDefinitions);
         }
 
-        protected virtual TableDefinition GetTableSchema(string tableName)
+        protected virtual SqliteTableDefinition GetTableSchema(string tableName)
         {
             var schemaDumper = new  SqliteSchemaDumper(this, Announcer);
             var schema = schemaDumper.ReadDbSchema();
@@ -113,9 +111,10 @@ namespace NzbDrone.Core.Datastore.Migration.Framework
             return schema.Single(v => v.Name == tableName);
         }
 
-        protected virtual void ProcessAlterTable(TableDefinition tableDefinition, List<ColumnDefinition> oldColumnDefinitions = null)
+        protected virtual void ProcessAlterTable(SqliteTableDefinition tableDefinition, List<ColumnDefinition> oldColumnDefinitions = null)
         {
             var tableName = tableDefinition.Name;
+            var schemaName = tableDefinition.SchemaName;
             var tempTableName = tableName + "_temp";
 
             var uid = 0;
@@ -131,7 +130,7 @@ namespace NzbDrone.Core.Datastore.Migration.Framework
 
             Process(new CreateTableExpression() { TableName = tempTableName, Columns = tableDefinition.Columns.ToList() });
 
-            Process(string.Format("INSERT INTO {0} ({1}) SELECT {2} FROM {3}", quoter.QuoteTableName(tempTableName), columnsToInsert, columnsToFetch, quoter.QuoteTableName(tableName)));
+            Process(string.Format("INSERT INTO {0} ({1}) SELECT {2} FROM {3}", quoter.QuoteTableName(tempTableName, schemaName), columnsToInsert, columnsToFetch, quoter.QuoteTableName(tableName, schemaName)));
 
             Process(new DeleteTableExpression() { TableName = tableName });
 
