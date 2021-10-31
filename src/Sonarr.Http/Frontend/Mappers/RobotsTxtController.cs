@@ -9,6 +9,7 @@ namespace Sonarr.Http.Frontend.Mappers
 {
     [AllowAnonymous]
     [ResponseCache(NoStore = true, Duration = 0, Location = ResponseCacheLocation.None)]
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class RobotsTxtController : PhysicalFileControllerBase
     {
         private readonly IAppFolderInfo _appFolderInfo;

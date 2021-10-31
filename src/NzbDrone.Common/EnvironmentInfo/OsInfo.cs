@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using NLog;
 
 namespace NzbDrone.Common.EnvironmentInfo
@@ -21,33 +22,25 @@ namespace NzbDrone.Common.EnvironmentInfo
 
         static OsInfo()
         {
-            var platform = Environment.OSVersion.Platform;
-
-            switch (platform)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                case PlatformID.Win32NT:
-                    {
-                        Os = Os.Windows;
-                        break;
-                    }
-                case PlatformID.MacOSX:
-                case PlatformID.Unix:
-                    {
-                        // Sometimes Mac OS reports itself as Unix
-                        if (Directory.Exists("/System/Library/CoreServices/") &&
-                            (File.Exists("/System/Library/CoreServices/SystemVersion.plist") ||
-                            File.Exists("/System/Library/CoreServices/ServerVersion.plist"))
-                            )
-                        {
-                            Os = Os.Osx;
-                        }
-                        else
-                        {
-                            Os = Os.Linux;
-                        }
-                        break;
-                    }
+                Os = Os.Windows;
+                return;
             }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                Os = Os.Linux;
+                return;
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                Os = Os.Osx;
+                return;
+            }
+
+            throw new PlatformNotSupportedException();
         }
 
         public OsInfo(IEnumerable<IOsVersionAdapter> versionAdapters, Logger logger)

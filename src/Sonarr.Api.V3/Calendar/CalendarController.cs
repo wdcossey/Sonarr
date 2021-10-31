@@ -20,7 +20,7 @@ namespace Sonarr.Api.V3.Calendar
             : base(episodeService, seriesService, ugradableSpecification/*, signalRBroadcaster*/) { }
 
         [HttpGet]
-        public List<EpisodeResource> GetCalendar(
+        public IActionResult GetCalendar(
             [FromQuery] bool unmonitored = false,
             [FromQuery] DateTime? start = null,
             [FromQuery] DateTime? end = null,
@@ -29,7 +29,7 @@ namespace Sonarr.Api.V3.Calendar
             [FromQuery] bool includeEpisodeImages = false)
         {
             var resources = MapToResource(_episodeService.EpisodesBetweenDates(start ?? DateTime.Today, end ?? DateTime.Today.AddDays(2), unmonitored), includeSeries, includeEpisodeFile, includeEpisodeImages);
-            return resources.OrderBy(e => e.AirDateUtc).ToList();
+            return Ok(resources.OrderBy(e => e.AirDateUtc).ToList());
         }
     }
 }

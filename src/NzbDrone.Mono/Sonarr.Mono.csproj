@@ -7,14 +7,10 @@
     <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Mono.Posix" Version="7.1.0-final.1.21458.1" />
     <PackageReference Include="NLog" Version="4.6.6" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NzbDrone.Common\Sonarr.Common.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="Mono.Posix">
-      <HintPath>..\Libraries\Mono.Posix.dll</HintPath>
-    </Reference>
   </ItemGroup>
 </Project>

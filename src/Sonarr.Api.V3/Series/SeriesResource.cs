@@ -190,9 +190,9 @@ namespace Sonarr.Api.V3.Series
             return series;
         }
 
-        public static List<SeriesResource> ToResource(this IEnumerable<NzbDrone.Core.Tv.Series> series, bool includeSeasonImages = false)
+        public static IEnumerable<SeriesResource> ToResource(this IEnumerable<NzbDrone.Core.Tv.Series> series, bool includeSeasonImages = false)
         {
-            return series.Select(s => ToResource(s, includeSeasonImages)).ToList();
+            return series.Select(s => ToResource(s, includeSeasonImages));
         }
 
         public static List<NzbDrone.Core.Tv.Series> ToModel(this IEnumerable<SeriesResource> resources)

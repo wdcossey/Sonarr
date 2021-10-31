@@ -59,6 +59,7 @@ namespace Sonarr.Api.V3.System.Tasks
                    };
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         public void Handle(CommandExecutedEvent message)
         {
             //TODO: SignalR Hub

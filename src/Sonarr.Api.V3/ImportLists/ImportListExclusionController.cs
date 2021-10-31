@@ -24,6 +24,7 @@ namespace Sonarr.Api.V3.ImportLists
         public IActionResult GetImportListExclusion(int id)
             => Ok(_importListExclusionService.Get(id).ToResource());
 
+        [HttpGet]
         public IActionResult GetImportListExclusions()
             => Ok(_importListExclusionService.All().ToResource());
 

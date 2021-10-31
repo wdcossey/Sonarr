@@ -12,9 +12,9 @@ using Sonarr.Api.V3.Series;
 namespace Sonarr.Api.V3.Episodes
 {
     public abstract class EpisodeControllerBase : ControllerBase,
-                                                     IHandle<EpisodeGrabbedEvent>,
-                                                     IHandle<EpisodeImportedEvent>,
-                                                     IHandle<EpisodeFileDeletedEvent>
+        IHandle<EpisodeGrabbedEvent>,
+        IHandle<EpisodeImportedEvent>,
+        IHandle<EpisodeFileDeletedEvent>
     {
         protected readonly IEpisodeService _episodeService;
         protected readonly ISeriesService _seriesService;
@@ -103,6 +103,7 @@ namespace Sonarr.Api.V3.Episodes
             return result;
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         public void Handle(EpisodeGrabbedEvent message)
         {
             foreach (var episode in message.Episode.Episodes)
@@ -114,6 +115,7 @@ namespace Sonarr.Api.V3.Episodes
             }
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         public void Handle(EpisodeImportedEvent message)
         {
             foreach (var episode in message.EpisodeInfo.Episodes)
@@ -122,6 +124,7 @@ namespace Sonarr.Api.V3.Episodes
             }
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         public void Handle(EpisodeFileDeletedEvent message)
         {
             foreach (var episode in message.EpisodeFile.Episodes.Value)

@@ -44,7 +44,7 @@ namespace Sonarr.Api.V3.Logs
             return Ok(result?.OrderByDescending(l => l.LastWriteTime) ?? Enumerable.Empty<LogFileResource>());
         }
 
-        [Route("{filename:regex([[-.a-zA-Z0-9]]+?\\.txt)}")]
+        [HttpGet("{filename:regex([[-.a-zA-Z0-9]]+?\\.txt)}")]
         public IActionResult GetLogFileResponse(string filename)
         {
             var filePath = GetLogFilePath(filename);

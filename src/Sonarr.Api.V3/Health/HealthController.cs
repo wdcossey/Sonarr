@@ -23,6 +23,7 @@ namespace Sonarr.Api.V3.Health
         public IActionResult GetHealth()
             => Ok(_healthCheckService.Results().ToResource());
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         public void Handle(HealthCheckCompleteEvent message)
         {
             //TODO: SignalR Hub

@@ -6,6 +6,7 @@ using NzbDrone.Common.EnvironmentInfo;
 
 namespace Sonarr.Http.Frontend
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     [AllowAnonymous]
     [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
     public class ServiceWorkerController : ControllerBase

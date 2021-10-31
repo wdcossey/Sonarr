@@ -7,6 +7,8 @@ using NzbDrone.Core.Configuration;
 
 namespace Sonarr.Http.Frontend
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
+    [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
     public class InitializeJsController : ControllerBase
     {
         private readonly IConfigFileProvider _configFileProvider;

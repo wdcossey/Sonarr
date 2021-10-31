@@ -18,6 +18,7 @@ namespace Sonarr.Api.V3.Logs
         public LogController(ILogService logService)
             => _logService = logService;
 
+        [ProducesResponseType(typeof(PagingResource<LogResource>), 200)]
         [HttpGet]
         public IActionResult GetLogs(
             [FromQuery] [ModelBinder(typeof(PagingResourceModelBinder))] PagingResource<LogResource> pagingResource)

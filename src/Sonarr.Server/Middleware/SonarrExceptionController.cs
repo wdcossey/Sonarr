@@ -24,6 +24,7 @@ namespace Sonarr.Server.Middleware
         }
 
         // URL for this API - /api/error
+        [ApiExplorerSettings(IgnoreApi = true)]
         [Route("/error")]
         [Route("/api/error")]
         public IActionResult Error()

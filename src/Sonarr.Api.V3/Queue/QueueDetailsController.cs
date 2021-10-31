@@ -45,12 +45,14 @@ namespace Sonarr.Api.V3.Queue
             return Ok(fullQueue.ToResource(includeSeries, includeEpisode));
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         public void Handle(QueueUpdatedEvent message)
         {
             //TODO: SignalR
             //BroadcastResourceChange(ModelAction.Sync);
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         public void Handle(PendingReleasesUpdatedEvent message)
         {
             //TODO: SignalR

@@ -56,6 +56,7 @@ namespace Sonarr.Api.V3.Commands
             return Created($"{Request.Path}/{trackedCommand.Id}", _commandQueueManager.Get(trackedCommand.Id).ToResource());
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         public void Handle(CommandUpdatedEvent message)
         {
             if (!message.Command.Body.SendUpdatesToClient)

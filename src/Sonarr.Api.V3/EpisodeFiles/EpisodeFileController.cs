@@ -36,11 +36,13 @@ namespace Sonarr.Api.V3.EpisodeFiles
             _upgradableSpecification = upgradableSpecification;
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         public void Handle(EpisodeFileAddedEvent message)
         {
             //BroadcastResourceChange(ModelAction.Updated, message.EpisodeFile.Id); //TODO: SignalR
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         public void Handle(EpisodeFileDeletedEvent message)
         {
             //BroadcastResourceChange(ModelAction.Deleted, message.EpisodeFile.Id); //TODO: SignalR

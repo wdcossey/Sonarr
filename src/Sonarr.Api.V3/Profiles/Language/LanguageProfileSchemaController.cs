@@ -15,6 +15,7 @@ namespace NzbDrone.Api.V3.Profiles.Language
         public LanguageProfileSchemaController(LanguageProfileService languageProfileService)
             => _languageProfileService = languageProfileService;
 
+        [ProducesResponseType(typeof(LanguageProfileResource), 200)]
         [HttpGet]
         public IActionResult GetAll()
             => Ok(_languageProfileService.GetDefaultProfile(string.Empty).ToResource());

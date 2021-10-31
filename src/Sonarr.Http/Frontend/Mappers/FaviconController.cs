@@ -8,6 +8,7 @@ using NzbDrone.Core.Configuration;
 namespace Sonarr.Http.Frontend.Mappers
 {
     [AllowAnonymous]
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class FaviconController : PhysicalFileControllerBase
     {
         private readonly IAppFolderInfo _appFolderInfo;

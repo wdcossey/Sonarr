@@ -167,11 +167,13 @@ namespace Sonarr.Api.V3.Queue
         private QueueResource MapToResource(NzbDrone.Core.Queue.Queue queueItem, bool includeSeries, bool includeEpisode)
             => queueItem.ToResource(includeSeries, includeEpisode);
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         public void Handle(QueueUpdatedEvent message)
         {
             //BroadcastResourceChange(ModelAction.Sync);
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         public void Handle(PendingReleasesUpdatedEvent message)
         {
             //BroadcastResourceChange(ModelAction.Sync);

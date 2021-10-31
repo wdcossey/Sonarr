@@ -11,6 +11,7 @@ namespace Sonarr.Http.Frontend.Mappers
     [AllowAnonymous]
     [ResponseCache(NoStore = true, Duration = 0, Location = ResponseCacheLocation.None)]
     [Route("login")]
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class LoginHtmlController : PhysicalFileControllerBase
     {
         private readonly IConfigFileProvider _configFileProvider;

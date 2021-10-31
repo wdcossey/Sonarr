@@ -24,13 +24,11 @@ namespace Sonarr.Api.V3.Config
         protected abstract TResource ToResource(IConfigService model);
 
         [HttpGet]
-        [HttpGet("{id:int?}")]
-        public IActionResult GetConfig(int? id = null)
+        public IActionResult GetConfig([FromQuery] int? id = null)
             => Ok(GetConfigResource());
 
         [HttpPut]
-        [HttpGet("{id:int?}")]
-        public IActionResult SaveConfig([FromBody] TResource resource, int? id = null)
+        public IActionResult SaveConfig([FromBody] TResource resource, [FromQuery] int? id = null)
         {
             var dictionary = resource
                 .GetType()

@@ -46,6 +46,7 @@ namespace Sonarr.Api.V3.Tags
             return Ok(new object());
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         public void Handle(TagsUpdatedEvent message)
         {
             //TODO: SignalR Hub

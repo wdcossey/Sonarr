@@ -13,6 +13,7 @@
   overflow: hidden;
   background-color: $sidebarBackgroundColor;
   color: $white;
+  /*backdrop-filter: blur(4px) contrast(0.6) brightness(0.4);*/
 }
 
 @media only screen and (max-width: $breakpointSmall) {

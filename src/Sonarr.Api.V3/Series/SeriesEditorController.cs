@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
+using NzbDrone.Common.Serializer;
 using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Tv;
 using NzbDrone.Core.Tv.Commands;
@@ -20,6 +20,7 @@ namespace Sonarr.Api.V3.Series
         public SeriesEditorController(ISeriesService seriesService, IManageCommandQueue commandQueueManager)
             => (_seriesService, _commandQueueManager) = (seriesService, commandQueueManager);
 
+        [ProducesResponseType(typeof(IEnumerable<SeriesResource>), statusCode: 200)]
         [HttpPut]
         public IActionResult SaveAll([FromBody] SeriesEditorResource resource)
         {
@@ -29,29 +30,19 @@ namespace Sonarr.Api.V3.Series
             foreach (var series in seriesToUpdate)
             {
                 if (resource.Monitored.HasValue)
-                {
                     series.Monitored = resource.Monitored.Value;
-                }
 
                 if (resource.QualityProfileId.HasValue)
-                {
                     series.QualityProfileId = resource.QualityProfileId.Value;
-                }
 
                 if (resource.LanguageProfileId.HasValue)
-                {
                     series.LanguageProfileId = resource.LanguageProfileId.Value;
-                }
 
                 if (resource.SeriesType.HasValue)
-                {
                     series.SeriesType = resource.SeriesType.Value;
-                }
 
                 if (resource.SeasonFolder.HasValue)
-                {
                     series.SeasonFolder = resource.SeasonFolder.Value;
-                }
 
                 if (resource.RootFolderPath.IsNotNullOrWhiteSpace())
                 {
@@ -95,6 +86,7 @@ namespace Sonarr.Api.V3.Series
             return Accepted(_seriesService.UpdateSeries(seriesToUpdate, !resource.MoveFiles).ToResource());
         }
 
+        [ProducesResponseType(statusCode: 200)]
         [HttpDelete]
         public IActionResult DeleteSeries([FromBody] SeriesEditorResource resource)
         {
@@ -103,12 +95,12 @@ namespace Sonarr.Api.V3.Series
             return Ok(new object());
         }
 
+        [ProducesResponseType(statusCode: 200)]
         [HttpDelete]
         [Consumes("application/x-www-form-urlencoded")]
         public IActionResult DeleteSeriesFromForm() //TODO: This should be from the Body?!?
         {
-            var resource = JsonSerializer.Deserialize<SeriesEditorResource>(Request.Form.FirstOrDefault().Key,
-                new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            var resource = Json.Deserialize<SeriesEditorResource>(Request.Form.FirstOrDefault().Key);
             return DeleteSeries(resource);
         }
     }

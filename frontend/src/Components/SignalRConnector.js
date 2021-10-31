@@ -1,5 +1,6 @@
 import $ from 'jquery';
-import 'signalr';
+//import 'signalr';
+import '@microsoft/signalr';
 import PropTypes from 'prop-types';
 import { Component } from 'react';
 import { connect } from 'react-redux';
@@ -14,6 +15,7 @@ import { fetchHealth } from 'Store/Actions/systemActions';
 import { fetchQueue, fetchQueueDetails } from 'Store/Actions/queueActions';
 import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
 import { fetchTags, fetchTagDetails } from 'Store/Actions/tagActions';
+import { HubConnectionBuilder } from '@microsoft/signalr';
 
 function getState(status) {
   switch (status) {
@@ -98,14 +100,33 @@ class SignalRConnector extends Component {
 
     const url = `${window.Sonarr.urlBase}/signalr`;
 
-    this.signalRconnection = $.connection(url, { apiKey: window.Sonarr.apiKey });
+    //this.signalRconnection = $.connection(url, { apiKey: window.Sonarr.apiKey });
 
-    this.signalRconnection.stateChanged(this.onStateChanged);
-    this.signalRconnection.received(this.onReceived);
-    this.signalRconnection.reconnecting(this.onReconnecting);
-    this.signalRconnection.disconnected(this.onDisconnected);
+    this.signalRconnection = new HubConnectionBuilder()
+      .withUrl("/signalr")
+      .withAutomaticReconnect()
+      .build();
 
-    this.signalRconnection.start(this.signalRconnectionOptions);
+    let connecton = this.signalRconnection;
+
+    this.signalRconnection.start().then(function () {
+      connecton.invoke("SendMessage", "Hello", "World");
+    }).catch(function (err) {
+        return console.error(err.toString());
+    });
+
+    this.signalRconnection.on("BroadcastEvent",function (event) {
+      console.log(event.message);
+    });
+
+    //this.signalRconnection = $.connection(url, { apiKey: window.Sonarr.apiKey });
+
+    //this.signalRconnection.stateChanged(this.onStateChanged);
+    //this.signalRconnection.received(this.onReceived);
+    //this.signalRconnection.reconnecting(this.onReconnecting);
+    //this.signalRconnection.disconnected(this.onDisconnected);
+
+    //this.signalRconnection.start(this.signalRconnectionOptions);
   }
 
   componentWillUnmount() {

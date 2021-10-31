@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +20,12 @@ namespace Sonarr.Server
             var startupContext = new StartupContext(args);
             try
             {
+                Console.WriteLine($"OsInfo.Os: {OsInfo.Os}");
+                Console.WriteLine($"Environment.OSVersion: {Environment.OSVersion}");
+                Console.WriteLine($"Environment.OSVersion.Version: {Environment.OSVersion.Version}");
+                Console.WriteLine($"Environment.OSVersion.VersionString: {Environment.OSVersion.VersionString}");
+                Console.WriteLine($"RuntimeInformation.OSDescription: {RuntimeInformation.OSDescription}");
+
                 NzbDroneLogger.Register(startupContext, false, true);
                 return CreateHostBuilder(startupContext, args).Build().RunAsync();
             }

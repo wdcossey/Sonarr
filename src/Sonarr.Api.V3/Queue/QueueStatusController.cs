@@ -62,9 +62,11 @@ namespace Sonarr.Api.V3.Queue
             //BroadcastResourceChange(ModelAction.Updated, GetQueueStatus());
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         public void Handle(QueueUpdatedEvent message)
             => _broadcastDebounce.Execute();
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         public void Handle(PendingReleasesUpdatedEvent message)
             => _broadcastDebounce.Execute();
     }
