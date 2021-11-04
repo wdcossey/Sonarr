@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 using NLog;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.DataAugmentation.Scene;
@@ -79,7 +79,7 @@ namespace NzbDrone.Core.DataAugmentation.Xem
                                             .AddQueryParam("seasonNumbers", true)
                                             .Build();
 
-            var response = _httpClient.Get<XemResult<Dictionary<int, List<JObject>>>>(request).Resource;
+            var response = _httpClient.Get<XemResult<Dictionary<int, List<JsonElement>>>>(request).Resource;
 
             var result = new List<SceneMapping>();
 
@@ -87,10 +87,9 @@ namespace NzbDrone.Core.DataAugmentation.Xem
             {
                 foreach (var name in series.Value)
                 {
-                    foreach (var n in name)
+                    foreach (var n in name.EnumerateObject())
                     {
-                        int seasonNumber;
-                        if (!int.TryParse(n.Value.ToString(), out seasonNumber))
+                        if (!n.Value.TryGetInt32(out var seasonNumber))
                         {
                             continue;
                         }
@@ -103,8 +102,8 @@ namespace NzbDrone.Core.DataAugmentation.Xem
 
                         result.Add(new SceneMapping
                                    {
-                                       Title = n.Key,
-                                       SearchTerm = n.Key,
+                                       Title = n.Name,
+                                       SearchTerm = n.Name,
                                        SceneSeasonNumber = seasonNumber,
                                        TvdbId = series.Key
                                    });
