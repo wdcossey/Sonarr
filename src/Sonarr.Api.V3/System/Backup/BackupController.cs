@@ -89,7 +89,7 @@ namespace Sonarr.Api.V3.System.Backup
                 return BadRequest("file must be provided");
 
             var file = files.Single();
-            var extension = Path.GetExtension(file.Name);
+            var extension = Path.GetExtension(file.FileName);
 
             if (!ValidExtensions.Contains(extension))
                 return StatusCode(StatusCodes.Status415UnsupportedMediaType, $"Invalid extension, must be one of: {ValidExtensions.Join(", ")}");

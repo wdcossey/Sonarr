@@ -41,9 +41,8 @@ namespace Sonarr.Api.V3.Episodes
         }
 
         [HttpPut("{id:int:required}")]
-        public IActionResult SetEpisodeMonitored(int id)
+        public IActionResult SetEpisodeMonitored(int id, [FromBody] EpisodeResource resource)
         {
-            var resource = Request.Body.FromJson<EpisodeResource>();
             _episodeService.SetEpisodeMonitored(id, resource.Monitored);
 
             resource = MapToResource(_episodeService.GetEpisode(id), false, false, false);
