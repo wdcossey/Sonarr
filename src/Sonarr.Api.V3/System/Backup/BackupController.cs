@@ -9,6 +9,7 @@ using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Backup;
 using Sonarr.Http.Attributes;
+using Sonarr.Http.REST;
 
 namespace Sonarr.Api.V3.System.Backup
 {
@@ -57,7 +58,7 @@ namespace Sonarr.Api.V3.System.Backup
             var path = GetBackupPath(backup);
 
             if (!_diskProvider.FileExists(path))
-                return NotFound();
+                throw new NotFoundException();
 
             _diskProvider.DeleteFile(path);
 
@@ -71,7 +72,7 @@ namespace Sonarr.Api.V3.System.Backup
             var backup = GetBackup(id);
 
             if (backup == null)
-                return NotFound();
+                throw new NotFoundException();
 
             var path = GetBackupPath(backup);
 

@@ -4,19 +4,18 @@ using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.DecisionEngine.Specifications;
 using NzbDrone.Core.Tv;
 using Sonarr.Http.Attributes;
-using Sonarr.Http.Extensions;
 
 namespace Sonarr.Api.V3.Episodes
 {
+    [ApiController]
     [SonarrApiRoute("episode", RouteVersion.V3)]
     public class EpisodeController : EpisodeControllerBase
     {
         public EpisodeController(
             ISeriesService seriesService,
             IEpisodeService episodeService,
-            IUpgradableSpecification upgradableSpecification/*,
-            IBroadcastSignalRMessage signalRBroadcaster*/) //TODO: SignalR
-            : base(episodeService, seriesService, upgradableSpecification/*, signalRBroadcaster*/) { }
+            IUpgradableSpecification upgradableSpecification)
+            : base(episodeService, seriesService, upgradableSpecification) { }
 
         [HttpGet]
         public IActionResult GetEpisodes(

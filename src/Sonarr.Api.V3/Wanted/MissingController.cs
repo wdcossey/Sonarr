@@ -16,10 +16,8 @@ namespace Sonarr.Api.V3.Wanted
     public class MissingController : EpisodeControllerBase
     {
         public MissingController(IEpisodeService episodeService,
-                             ISeriesService seriesService,
-                             IUpgradableSpecification upgradableSpecification/*,
-                             IBroadcastSignalRMessage signalRBroadcaster*/) //TODO: SignalR Hub
-            //: base(episodeService, seriesService, upgradableSpecification, signalRBroadcaster)
+            ISeriesService seriesService,
+            IUpgradableSpecification upgradableSpecification)
             : base(episodeService, seriesService, upgradableSpecification) { }
 
         [HttpGet]
@@ -38,7 +36,7 @@ namespace Sonarr.Api.V3.Wanted
 
             var monitoredFilter = pagingResource.Filters.FirstOrDefault(f => f.Key == "monitored");
 
-            if (monitoredFilter != null && monitoredFilter.Value == "false")
+            if (monitoredFilter is {Value: "false"})
             {
                 pagingSpec.FilterExpressions.Add(v => v.Monitored == false || v.Series.Monitored == false);
             }

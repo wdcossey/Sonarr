@@ -48,7 +48,7 @@ namespace Sonarr.Api.V3.Queue
             var pendingRelease = _pendingReleaseService.FindPendingQueueItem(id);
 
             if (pendingRelease == null)
-                return NotFound();
+                throw new NotFoundException();
 
             _downloadService.DownloadReport(pendingRelease.RemoteEpisode);
 
@@ -63,7 +63,7 @@ namespace Sonarr.Api.V3.Queue
                 var pendingRelease = _pendingReleaseService.FindPendingQueueItem(id);
 
                 if (pendingRelease == null)
-                    return NotFound();
+                    throw new NotFoundException();
 
                 _downloadService.DownloadReport(pendingRelease.RemoteEpisode);
             }
@@ -71,6 +71,7 @@ namespace Sonarr.Api.V3.Queue
             return Ok(new object());
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPost("grab/bulk")]
         [Consumes("application/x-www-form-urlencoded")] //TODO: some UI (ajax) requests are broken?!?
         public IActionResult GrabFormForm([FromForm] QueueBulkResource resource)
@@ -116,6 +117,7 @@ namespace Sonarr.Api.V3.Queue
             return Ok(new object());
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         [HttpDelete("bulk")]
         [Consumes("application/x-www-form-urlencoded")] //TODO: some UI (ajax) requests are broken?!?
         public IActionResult RemoveFromForm(

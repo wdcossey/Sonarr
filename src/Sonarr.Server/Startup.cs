@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
@@ -10,17 +9,13 @@ using Microsoft.Extensions.Hosting;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
 using NzbDrone.Common.Serializer;
+using NzbDrone.SignalR;
 using Sonarr.Server.HostedServices;
-using Sonarr.Server.Hubs;
 using Sonarr.Server.Middleware;
 using Sonarr.Server.ModelConventions;
-using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Sonarr.Server
 {
@@ -45,7 +40,7 @@ namespace Sonarr.Server
                 .AddControllers(options => options.Conventions.Add(new SwaggerNamespaceConvention()))
                 .AddApplicationPart(Assembly.Load(new AssemblyName("Sonarr.Http")))
                 //.AddApplicationPart(Assembly.Load(new AssemblyName("Sonarr.Api")))
-                .AddApplicationPart(Assembly.LoadFrom("Sonarr.Api.dll"))
+                //.AddApplicationPart(Assembly.LoadFrom("Sonarr.Api.dll"))
                 .AddApplicationPart(Assembly.Load(new AssemblyName("Sonarr.Api.V3")));
 
             services
@@ -58,11 +53,22 @@ namespace Sonarr.Server
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
                     options.JsonSerializerOptions.Converters.Add(new JsonVersionConverter());
                     options.JsonSerializerOptions.Converters.Add(new JsonHttpUriConverter());
+                    options.JsonSerializerOptions.Converters.Add(new JsonTimeSpanConverter());
+                    options.JsonSerializerOptions.Converters.Add(new JsonTimeSpanNullableConverter());
                 });
 
             services.AddResponseCaching();
             services.AddHostedService<SonarrHostedService>();
-            services.AddSignalR();
+            services.AddSignalR()
+                .AddJsonProtocol(options =>
+                {
+                    options.PayloadSerializerOptions.IgnoreNullValues = true;
+                    options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+                    options.PayloadSerializerOptions.Converters.Add(new JsonVersionConverter());
+                    options.PayloadSerializerOptions.Converters.Add(new JsonHttpUriConverter());
+                    options.PayloadSerializerOptions.Converters.Add(new JsonTimeSpanConverter());
+                    options.PayloadSerializerOptions.Converters.Add(new JsonTimeSpanNullableConverter());
+                });
 
             services.AddSwaggerGen(c =>
             {

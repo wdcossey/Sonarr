@@ -8,15 +8,8 @@ namespace NzbDrone.Core.Messaging.Commands
 
         public virtual bool SendUpdatesToClient
         {
-            get
-            {
-                return _sendUpdatesToClient;
-            }
-
-            set
-            {
-                _sendUpdatesToClient = value;
-            }           
+            get => _sendUpdatesToClient;
+            set => _sendUpdatesToClient = value;
         }
 
         public virtual bool UpdateScheduledTask => true;
@@ -31,7 +24,7 @@ namespace NzbDrone.Core.Messaging.Commands
 
         public string ClientUserAgent { get; set; }
 
-        public Command()
+        protected Command()
         {
             Name = GetType().Name.Replace("Command", "");
         }

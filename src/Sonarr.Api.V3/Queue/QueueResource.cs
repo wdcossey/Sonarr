@@ -8,10 +8,12 @@ using NzbDrone.Core.Languages;
 using NzbDrone.Core.Qualities;
 using Sonarr.Api.V3.Episodes;
 using Sonarr.Api.V3.Series;
+using Sonarr.Http.Attributes;
 using Sonarr.Http.REST;
 
 namespace Sonarr.Api.V3.Queue
 {
+    [BroadcastName("Queue")]
     public class QueueResource : RestResource
     {
         public int? SeriesId { get; set; }

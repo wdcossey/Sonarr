@@ -2,10 +2,12 @@
 using System.Linq;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.RootFolders;
+using Sonarr.Http.Attributes;
 using Sonarr.Http.REST;
 
 namespace Sonarr.Api.V3.RootFolders
 {
+    [BroadcastName("RootFolder")]
     public class RootFolderResource : RestResource
     {
         public string Path { get; set; }

@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Tags;
 using Sonarr.Http.Attributes;
 
@@ -7,17 +6,12 @@ namespace Sonarr.Api.V3.Tags
 {
     [ApiController]
     [SonarrApiRoute("tag", RouteVersion.V3)]
-    public class TagController : ControllerBase, IHandle<TagsUpdatedEvent>
+    public class TagController : ControllerBase
     {
         private readonly ITagService _tagService;
 
-        public TagController(
-                //IBroadcastSignalRMessage signalRBroadcaster, //TODO: SignalR Hub
-                ITagService tagService)
-            //: base(signalRBroadcaster)
-        {
-            _tagService = tagService;
-        }
+        public TagController(ITagService tagService)
+            => _tagService = tagService;
 
         [HttpGet("{id:int:required}")]
         public IActionResult GetTag(int id)
@@ -44,13 +38,6 @@ namespace Sonarr.Api.V3.Tags
         {
             _tagService.Delete(id);
             return Ok(new object());
-        }
-
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public void Handle(TagsUpdatedEvent message)
-        {
-            //TODO: SignalR Hub
-            //BroadcastResourceChange(ModelAction.Sync);
         }
     }
 }

@@ -1,7 +1,9 @@
+using Sonarr.Http.Attributes;
 using Sonarr.Http.REST;
 
 namespace Sonarr.Api.V3.Queue
 {
+    [BroadcastName("QueueStatus")]
     public class QueueStatusResource : RestResource
     {
         public int TotalCount { get; set; }

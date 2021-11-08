@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.DataAugmentation.Scene;
+using NzbDrone.Core.Datastore.Events;
 using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.RootFolders;
@@ -11,6 +13,8 @@ using NzbDrone.Core.Tv;
 using NzbDrone.Core.Tv.Commands;
 using NzbDrone.Core.Validation;
 using NzbDrone.Core.Validation.Paths;
+using NzbDrone.Http.Extensions;
+using NzbDrone.SignalR;
 using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.Series
@@ -19,6 +23,7 @@ namespace Sonarr.Api.V3.Series
     [SonarrApiRoute("series", RouteVersion.V3)]
     public class SeriesController : ControllerBase
     {
+        private readonly IHubContext<SonarrHub, ISonarrHub> _hubContext;
         private readonly ISeriesService _seriesService;
         private readonly IAddSeriesService _addSeriesService;
         private readonly ISeriesStatisticsService _seriesStatisticsService;
@@ -27,7 +32,8 @@ namespace Sonarr.Api.V3.Series
         private readonly IManageCommandQueue _commandQueueManager;
         private readonly IRootFolderService _rootFolderService;
 
-        public SeriesController(/*IBroadcastSignalRMessage signalRBroadcaster,*/
+        public SeriesController(
+            IHubContext<SonarrHub, ISonarrHub> hubContext,
             ISeriesService seriesService,
             IAddSeriesService addSeriesService,
             ISeriesStatisticsService seriesStatisticsService,
@@ -45,6 +51,7 @@ namespace Sonarr.Api.V3.Series
             LanguageProfileExistsValidator languageProfileExistsValidator,
             SeriesFolderAsRootFolderValidator seriesFolderAsRootFolderValidator)
         {
+            _hubContext = hubContext;
             _seriesService = seriesService;
             _addSeriesService = addSeriesService;
             _seriesStatisticsService = seriesStatisticsService;
@@ -137,12 +144,12 @@ namespace Sonarr.Api.V3.Series
 
             var updateSeries = _seriesService.UpdateSeries(seriesResource.ToModel(series));
 
-            //BroadcastResourceChange(ModelAction.Updated, seriesResource);
+            _hubContext.BroadcastResourceChange(ModelAction.Updated, seriesResource);
 
             return Accepted(GetSeriesResource(updateSeries, false));
         }
 
-        [HttpDelete]
+        [HttpDelete("{id:int:required}")]
         public IActionResult DeleteSeries(int id, [FromQuery] bool deleteFiles = false, [FromQuery] bool addImportListExclusion = false)
         {
             _seriesService.DeleteSeries(id, deleteFiles, addImportListExclusion);

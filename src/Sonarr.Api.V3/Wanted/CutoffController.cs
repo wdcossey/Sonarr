@@ -21,9 +21,8 @@ namespace Sonarr.Api.V3.Wanted
             IEpisodeCutoffService episodeCutoffService,
             IEpisodeService episodeService,
             ISeriesService seriesService,
-            IUpgradableSpecification upgradableSpecification/*,
-            IBroadcastSignalRMessage signalRBroadcaster*/) //TODO: SignalR Hub
-            : base(episodeService, seriesService, upgradableSpecification/*, signalRBroadcaster*/)
+            IUpgradableSpecification upgradableSpecification) 
+            : base(episodeService, seriesService, upgradableSpecification)
         {
             _episodeCutoffService = episodeCutoffService;
         }
@@ -45,7 +44,7 @@ namespace Sonarr.Api.V3.Wanted
 
             var filter = pagingResource.Filters.FirstOrDefault(f => f.Key == "monitored");
 
-            if (filter != null && filter.Value == "false")
+            if (filter is {Value: "false"})
             {
                 pagingSpec.FilterExpressions.Add(v => v.Monitored == false || v.Series.Monitored == false);
             }

@@ -38,4 +38,37 @@ namespace Sonarr.Api.V3.Commands
 
         }
     }
+    
+    public class CommandResourceModelBinder : IModelBinder
+    {
+        public async Task BindModelAsync(ModelBindingContext bindingContext)
+        {
+            try
+            {
+                bindingContext.HttpContext.Request.EnableBuffering();
+                bindingContext.HttpContext.Request.Body.Position = 0;
+
+                var commandResource = await Json.DeserializeAsync<CommandResource>(bindingContext.HttpContext.Request.Body);
+
+                var commandFactory = bindingContext.HttpContext.RequestServices.GetRequiredService<ICommandFactory>();
+                var command = await commandFactory.CreateAsync(commandResource.Name, bindingContext.HttpContext.Request.Body);
+
+                command!.Trigger = CommandTrigger.Manual;
+                command!.SuppressMessages = !commandResource!.SendUpdatesToClient;
+                command!.SendUpdatesToClient = true;
+
+                if (bindingContext.HttpContext.Request.Headers.TryGetValue("User-Agent", out var userAgent))
+                    command!.ClientUserAgent = userAgent;
+
+                commandResource.Body = command;
+                
+                bindingContext.Result = ModelBindingResult.Success(commandResource);
+            }
+            catch (Exception ex)
+            {
+                bindingContext.ModelState.TryAddModelError(bindingContext.ModelName, ex.Message);
+            }
+
+        }
+    }
 }

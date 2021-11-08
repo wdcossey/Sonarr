@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.RootFolders;
 using NzbDrone.Core.Validation.Paths;
-using Sonarr.Api.V3;
 using Sonarr.Api.V3.RootFolders;
 using Sonarr.Http.Attributes;
 
@@ -12,21 +11,16 @@ namespace NzbDrone.Api.V3.RootFolders
     public class RootFolderController : ControllerBase
     {
         private readonly IRootFolderService _rootFolderService;
-        //private readonly IEventAggregator _eventAggregator;
 
-        public RootFolderController(IRootFolderService rootFolderService/*,
-            IBroadcastSignalRMessage signalRBroadcaster*/, //TODO: SignalR Hub
-            //IEventAggregator eventAggregator,
+        public RootFolderController(IRootFolderService rootFolderService,
             RootFolderValidator rootFolderValidator,
             PathExistsValidator pathExistsValidator,
             MappedNetworkDriveValidator mappedNetworkDriveValidator,
             StartupFolderValidator startupFolderValidator,
             SystemFolderValidator systemFolderValidator,
-            FolderWritableValidator folderWritableValidator
-            )
+            FolderWritableValidator folderWritableValidator)
         {
             _rootFolderService = rootFolderService;
-            //_eventAggregator = eventAggregator;
             /*
             SharedValidator.RuleFor(c => c.Path)
                            .Cascade(CascadeMode.StopOnFirstFailure)
@@ -39,7 +33,7 @@ namespace NzbDrone.Api.V3.RootFolders
                            .SetValidator(folderWritableValidator);*/
         }
 
-        [HttpGet("{id:int}")]
+        [HttpGet("{id:int:required}")]
         public IActionResult GetRootFolder(int id, [FromQuery] bool timeout = true)
             => Ok(_rootFolderService.Get(id, timeout).ToResource());
 
@@ -58,13 +52,6 @@ namespace NzbDrone.Api.V3.RootFolders
         public IActionResult DeleteFolder(int id)
         {
             _rootFolderService.Remove(id);
-
-            /*_eventAggregator.PublishEvent(new BroadcastMessageEvent() { Message = new SignalRMessage
-            {
-                Name = "rootFolder",
-                Body = new ResourceChangeMessage<RootFolderResource>(ModelAction.Deleted),
-                Action = ModelAction.Deleted
-            }});*/
             return Ok(new object());
         }
     }

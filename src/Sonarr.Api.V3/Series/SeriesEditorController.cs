@@ -2,7 +2,6 @@
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
-using NzbDrone.Common.Serializer;
 using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Tv;
 using NzbDrone.Core.Tv.Commands;
@@ -95,13 +94,11 @@ namespace Sonarr.Api.V3.Series
             return Ok(new object());
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         [ProducesResponseType(statusCode: 200)]
         [HttpDelete]
-        [Consumes("application/x-www-form-urlencoded")]
-        public IActionResult DeleteSeriesFromForm() //TODO: This should be from the Body?!?
-        {
-            var resource = Json.Deserialize<SeriesEditorResource>(Request.Form.FirstOrDefault().Key);
-            return DeleteSeries(resource);
-        }
+        [Consumes("application/x-www-form-urlencoded")] //TODO: some UI (ajax) requests are broken?!?
+        public IActionResult DeleteSeriesFromForm([FromForm] [ModelBinder(typeof(SeriesEditorResourceModelBinder))] SeriesEditorResource resource)  
+            => DeleteSeries(resource);
     }
 }

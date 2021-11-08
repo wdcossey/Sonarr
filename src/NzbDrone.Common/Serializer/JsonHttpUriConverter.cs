@@ -8,7 +8,7 @@ namespace NzbDrone.Common.Serializer
     public class JsonHttpUriConverter: JsonConverter<HttpUri>
     {
         public override HttpUri Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-            => new(reader.GetString());
+            => new HttpUri(reader.GetString());
 
         public override void Write(Utf8JsonWriter writer, HttpUri httpUriValue, JsonSerializerOptions options)
         {

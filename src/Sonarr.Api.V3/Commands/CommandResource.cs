@@ -5,15 +5,18 @@ using System.Text.Json.Serialization;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Messaging.Commands;
+using Sonarr.Http.Attributes;
 using Sonarr.Http.REST;
 
 namespace Sonarr.Api.V3.Commands
 {
+    [BroadcastName("Command")]
     public class CommandResource : RestResource
     {
         public string Name { get; set; }
         public string CommandName { get; set; }
         public string Message { get; set; }
+        [JsonConverter(typeof(JsonCommandConverter))]
         public Command Body { get; set; }
         public CommandPriority Priority { get; set; }
         public CommandStatus Status { get; set; }

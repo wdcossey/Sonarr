@@ -6,10 +6,12 @@ using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.Tv;
 using Sonarr.Api.V3.EpisodeFiles;
 using Sonarr.Api.V3.Series;
+using Sonarr.Http.Attributes;
 using Sonarr.Http.REST;
 
 namespace Sonarr.Api.V3.Episodes
 {
+    [BroadcastName("Episode")]
     public class EpisodeResource : RestResource
     {
         public int SeriesId { get; set; }

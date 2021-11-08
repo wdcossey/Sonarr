@@ -4,10 +4,12 @@ using NzbDrone.Core.DecisionEngine.Specifications;
 using NzbDrone.Core.Languages;
 using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.Qualities;
+using Sonarr.Http.Attributes;
 using Sonarr.Http.REST;
 
 namespace Sonarr.Api.V3.EpisodeFiles
 {
+    [BroadcastName("EpisodeFile")]
     public class EpisodeFileResource : RestResource
     {
         public int SeriesId { get; set; }

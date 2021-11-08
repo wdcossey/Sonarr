@@ -5,8 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.DecisionEngine.Specifications;
 using NzbDrone.Core.Exceptions;
 using NzbDrone.Core.MediaFiles;
-using NzbDrone.Core.MediaFiles.Events;
-using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Parser;
 using NzbDrone.Core.Tv;
 using Sonarr.Http.Attributes;
@@ -14,38 +12,23 @@ using Sonarr.Http.Attributes;
 namespace Sonarr.Api.V3.EpisodeFiles
 {
     [SonarrApiRoute("episodeFile", RouteVersion.V3)]
-    public class EpisodeFileController : ControllerBase,
-        IHandle<EpisodeFileAddedEvent>,
-        IHandle<EpisodeFileDeletedEvent>
+    public class EpisodeFileController : ControllerBase
     {
         private readonly IMediaFileService _mediaFileService;
         private readonly IDeleteMediaFiles _mediaFileDeletionService;
         private readonly ISeriesService _seriesService;
         private readonly IUpgradableSpecification _upgradableSpecification;
 
-        public EpisodeFileController(/*IBroadcastSignalRMessage signalRBroadcaster,*/ //TODO: SignalR
-                             IMediaFileService mediaFileService,
-                             IDeleteMediaFiles mediaFileDeletionService,
-                             ISeriesService seriesService,
-                             IUpgradableSpecification upgradableSpecification)
-            //: base(signalRBroadcaster)
+        public EpisodeFileController(
+                IMediaFileService mediaFileService,
+                IDeleteMediaFiles mediaFileDeletionService,
+                ISeriesService seriesService,
+                IUpgradableSpecification upgradableSpecification)
         {
             _mediaFileService = mediaFileService;
             _mediaFileDeletionService = mediaFileDeletionService;
             _seriesService = seriesService;
             _upgradableSpecification = upgradableSpecification;
-        }
-
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public void Handle(EpisodeFileAddedEvent message)
-        {
-            //BroadcastResourceChange(ModelAction.Updated, message.EpisodeFile.Id); //TODO: SignalR
-        }
-
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public void Handle(EpisodeFileDeletedEvent message)
-        {
-            //BroadcastResourceChange(ModelAction.Deleted, message.EpisodeFile.Id); //TODO: SignalR
         }
 
         [HttpGet]
@@ -81,14 +64,9 @@ namespace Sonarr.Api.V3.EpisodeFiles
         [HttpDelete("{id:int:required}")]
         public IActionResult DeleteEpisodeFile(int id)
         {
-            var episodeFile = _mediaFileService.Get(id);
-
-            if (episodeFile == null)
-            {
-                //TODO: return NotFound()?!?
-                throw new NzbDroneClientException(HttpStatusCode.NotFound, "Episode file not found");
-            }
-
+            var episodeFile = _mediaFileService.Get(id) 
+                              ?? throw new NzbDroneClientException(HttpStatusCode.NotFound, "Episode file not found");
+            
             var series = _seriesService.GetSeries(episodeFile.SeriesId);
 
             _mediaFileDeletionService.DeleteEpisodeFile(series, episodeFile);

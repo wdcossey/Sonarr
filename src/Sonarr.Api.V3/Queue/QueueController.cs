@@ -5,7 +5,6 @@ using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Download.Pending;
 using NzbDrone.Core.Languages;
-using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Profiles.Languages;
 using NzbDrone.Core.Profiles.Qualities;
 using NzbDrone.Core.Qualities;
@@ -18,7 +17,7 @@ namespace Sonarr.Api.V3.Queue
 {
     [ApiController]
     [SonarrApiRoute("queue", RouteVersion.V3)]
-    public class QueueController : ControllerBase, IHandle<QueueUpdatedEvent>, IHandle<PendingReleasesUpdatedEvent>
+    public class QueueController : ControllerBase
     {
         private readonly IQueueService _queueService;
         private readonly IPendingReleaseService _pendingReleaseService;
@@ -26,13 +25,10 @@ namespace Sonarr.Api.V3.Queue
         private readonly LanguageComparer LANGUAGE_COMPARER;
         private readonly QualityModelComparer QUALITY_COMPARER;
 
-        public QueueController(
-            //IBroadcastSignalRMessage broadcastSignalRMessage, //TODO: SignalR
-            IQueueService queueService,
+        public QueueController(IQueueService queueService,
             IPendingReleaseService pendingReleaseService,
             ILanguageProfileService languageProfileService,
             IQualityProfileService qualityProfileService)
-            //: base(broadcastSignalRMessage)
         {
             _queueService = queueService;
             _pendingReleaseService = pendingReleaseService;
@@ -166,17 +162,5 @@ namespace Sonarr.Api.V3.Queue
 
         private QueueResource MapToResource(NzbDrone.Core.Queue.Queue queueItem, bool includeSeries, bool includeEpisode)
             => queueItem.ToResource(includeSeries, includeEpisode);
-
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public void Handle(QueueUpdatedEvent message)
-        {
-            //BroadcastResourceChange(ModelAction.Sync);
-        }
-
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public void Handle(PendingReleasesUpdatedEvent message)
-        {
-            //BroadcastResourceChange(ModelAction.Sync);
-        }
     }
 }

@@ -27,6 +27,8 @@ namespace NzbDrone.Common.Serializer
             serializerSettings.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
             serializerSettings.Converters.Add(new JsonVersionConverter());
             serializerSettings.Converters.Add(new JsonHttpUriConverter());
+            serializerSettings.Converters.Add(new JsonTimeSpanConverter());
+            serializerSettings.Converters.Add(new JsonTimeSpanNullableConverter());
 
             return serializerSettings;
         }

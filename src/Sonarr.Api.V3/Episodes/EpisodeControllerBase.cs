@@ -1,9 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.DecisionEngine.Specifications;
-using NzbDrone.Core.Download;
-using NzbDrone.Core.MediaFiles.Events;
-using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Tv;
 using Sonarr.Api.V3.EpisodeFiles;
 using Sonarr.Api.V3.Series;
@@ -11,20 +8,15 @@ using Sonarr.Api.V3.Series;
 
 namespace Sonarr.Api.V3.Episodes
 {
-    public abstract class EpisodeControllerBase : ControllerBase,
-        IHandle<EpisodeGrabbedEvent>,
-        IHandle<EpisodeImportedEvent>,
-        IHandle<EpisodeFileDeletedEvent>
+    public abstract class EpisodeControllerBase : ControllerBase
     {
         protected readonly IEpisodeService _episodeService;
         protected readonly ISeriesService _seriesService;
         protected readonly IUpgradableSpecification _upgradableSpecification;
 
         protected EpisodeControllerBase(IEpisodeService episodeService,
-                                           ISeriesService seriesService,
-                                           IUpgradableSpecification upgradableSpecification/*,
-                                           IBroadcastSignalRMessage signalRBroadcaster*/) //TODO: SignalR Hub
-            //: base(signalRBroadcaster)
+            ISeriesService seriesService,
+            IUpgradableSpecification upgradableSpecification)
         {
             _episodeService = episodeService;
             _seriesService = seriesService;
@@ -38,14 +30,6 @@ namespace Sonarr.Api.V3.Episodes
             var resource = MapToResource(episode, true, true, true);
             return resource;
         }
-
-        //TODO
-        /*protected override EpisodeResource GetResourceByIdForBroadcast(int id)
-        {
-            var episode = _episodeService.GetEpisode(id);
-            var resource = MapToResource(episode, false, false, false);
-            return resource;
-        }*/
 
         protected EpisodeResource MapToResource(Episode episode, bool includeSeries, bool includeEpisodeFile, bool includeImages)
         {
@@ -101,36 +85,6 @@ namespace Sonarr.Api.V3.Episodes
             }
 
             return result;
-        }
-
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public void Handle(EpisodeGrabbedEvent message)
-        {
-            foreach (var episode in message.Episode.Episodes)
-            {
-                var resource = episode.ToResource();
-                resource.Grabbed = true;
-
-                //BroadcastResourceChange(ModelAction.Updated, resource); //TODO: SignalR Hub
-            }
-        }
-
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public void Handle(EpisodeImportedEvent message)
-        {
-            foreach (var episode in message.EpisodeInfo.Episodes)
-            {
-                //BroadcastResourceChange(ModelAction.Updated, episode.Id); //TODO: SignalR Hub
-            }
-        }
-
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public void Handle(EpisodeFileDeletedEvent message)
-        {
-            foreach (var episode in message.EpisodeFile.Episodes.Value)
-            {
-                //BroadcastResourceChange(ModelAction.Updated, episode.Id); //TODO: SignalR Hub
-            }
         }
     }
 }

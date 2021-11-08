@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.DecisionEngine.Specifications;
@@ -15,9 +14,8 @@ namespace Sonarr.Api.V3.Calendar
     {
         public CalendarController(IEpisodeService episodeService,
                               ISeriesService seriesService,
-                              IUpgradableSpecification ugradableSpecification/*,
-                              IBroadcastSignalRMessage signalRBroadcaster*/) //TODO: SignalR Hub
-            : base(episodeService, seriesService, ugradableSpecification/*, signalRBroadcaster*/) { }
+                              IUpgradableSpecification upgradableSpecification)
+            : base(episodeService, seriesService, upgradableSpecification) { }
 
         [HttpGet]
         public IActionResult GetCalendar(
