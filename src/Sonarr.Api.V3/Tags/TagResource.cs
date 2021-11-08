@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using NzbDrone.Core.Tags;
+using Sonarr.Http.Attributes;
 using Sonarr.Http.REST;
 
 namespace Sonarr.Api.V3.Tags
 {
+    [BroadcastName("Tag")]
     public class TagResource : RestResource
     {
         public string Label { get; set; }
