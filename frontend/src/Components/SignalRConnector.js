@@ -1,12 +1,10 @@
 import $ from 'jquery';
-//import 'signalr';
 import '@microsoft/signalr';
 import PropTypes from 'prop-types';
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
 import { repopulatePage } from 'Utilities/pagePopulator';
-import titleCase from 'Utilities/String/titleCase';
 import { fetchCommands, updateCommand, finishCommand } from 'Store/Actions/commandActions';
 import { setAppValue, setVersion } from 'Store/Actions/appActions';
 import { update, updateItem, removeItem } from 'Store/Actions/baseActions';
@@ -41,9 +39,6 @@ function isAppDisconnected(disconnectedTime) {
 }
 
 function getHandlerName(name) {
-  name = titleCase(name);
-  name = name.replace('/', '');
-
   return `handle${name}`;
 }
 
@@ -107,18 +102,11 @@ class SignalRConnector extends Component {
       .withAutomaticReconnect()
       .build();
 
-    let connecton = this.signalRconnection;
+    this.signalRconnection.on("BroadcastMessage",this.onReceivedBroadcastMessage);
 
-    this.signalRconnection.start().then(function () {
-      connecton.invoke("SendMessage", "Hello", "World");
-    }).catch(function (err) {
-        return console.error(err.toString());
-    });
-
-    this.signalRconnection.on("BroadcastEvent",function (event) {
-      console.log(event.message);
-    });
-
+    this.signalRconnection.onreconnected(this.onReconnected);
+    this.signalRconnection.onreconnecting(this.onReconnecting);
+    this.signalRconnection.onclose(this.onClose);
     //this.signalRconnection = $.connection(url, { apiKey: window.Sonarr.apiKey });
 
     //this.signalRconnection.stateChanged(this.onStateChanged);
@@ -127,6 +115,10 @@ class SignalRConnector extends Component {
     //this.signalRconnection.disconnected(this.onDisconnected);
 
     //this.signalRconnection.start(this.signalRconnectionOptions);
+
+    this.signalRconnection.start().catch(function (err) {
+      return console.error(err.toString());
+    });
   }
 
   componentWillUnmount() {
@@ -154,7 +146,11 @@ class SignalRConnector extends Component {
         return;
       }
 
-      this.signalRconnection.start(this.signalRconnectionOptions);
+      this.signalRconnection.start().catch(function (err) {
+        return console.error(err.toString());
+      });
+
+      //this.signalRconnection.start(this.signalRconnectionOptions);
       this.retryInterval = Math.min(this.retryInterval + 1, 10);
     }, this.retryInterval * 1000);
   }
@@ -214,7 +210,7 @@ class SignalRConnector extends Component {
     }
   }
 
-  handleEpisodefile = (body) => {
+  handleEpisodeFile = (body) => {
     const section = 'episodeFiles';
 
     if (body.action === 'updated') {
@@ -286,7 +282,7 @@ class SignalRConnector extends Component {
     this.props.dispatchFetchCommands();
   }
 
-  handleRootfolder = () => {
+  handleRootFolder = () => {
     this.props.dispatchFetchRootFolders();
   }
 
@@ -301,41 +297,39 @@ class SignalRConnector extends Component {
   //
   // Listeners
 
-  onStateChanged = (change) => {
-    const state = getState(change.newState);
-    console.log(`signalR: ${state}`);
+  onReconnected = (connectionId) => {
 
-    if (state === 'connected') {
-      // Clear disconnected time
-      this.disconnectedTime = null;
+    console.log(`signalR: Reconnected (connectionId: ${connectionId})`);
 
-      const {
-        dispatchFetchCommands,
-        dispatchFetchSeries,
-        dispatchSetAppValue
-      } = this.props;
+    // Clear disconnected time
+    this.disconnectedTime = null;
 
-      // Repopulate the page (if a repopulator is set) to ensure things
-      // are in sync after reconnecting.
+    const {
+      dispatchFetchCommands,
+      dispatchFetchSeries,
+      dispatchSetAppValue
+    } = this.props;
 
-      if (this.props.isReconnecting || this.props.isDisconnected) {
-        dispatchFetchSeries();
-        dispatchFetchCommands();
-        repopulatePage();
-      }
+    // Repopulate the page (if a repopulator is set) to ensure things
+    // are in sync after reconnecting.
 
-      dispatchSetAppValue({
-        isConnected: true,
-        isReconnecting: false,
-        isDisconnected: false,
-        isRestarting: false
-      });
+    if (this.props.isReconnecting || this.props.isDisconnected) {
+      dispatchFetchSeries();
+      dispatchFetchCommands();
+      repopulatePage();
+    }
 
-      this.retryInterval = 5;
+    dispatchSetAppValue({
+      isConnected: true,
+      isReconnecting: false,
+      isDisconnected: false,
+      isRestarting: false
+    });
 
-      if (this.retryTimeoutId) {
-        clearTimeout(this.retryTimeoutId);
-      }
+    this.retryInterval = 5;
+
+    if (this.retryTimeoutId) {
+      clearTimeout(this.retryTimeoutId);
     }
   }
 
@@ -345,7 +339,16 @@ class SignalRConnector extends Component {
     this.handleMessage(message);
   }
 
-  onReconnecting = () => {
+  onReceivedBroadcastMessage = (message) => {
+    console.debug('signalR: received', message.name, message.body);
+
+    this.handleMessage(message);
+  }
+
+  onReconnecting = (error) => {
+
+    console.warn('signalR: Reconnecting', error);
+
     if (window.Sonarr.unloading) {
       return;
     }
@@ -359,7 +362,10 @@ class SignalRConnector extends Component {
     });
   }
 
-  onDisconnected = () => {
+  onClose = (error) => {
+
+    console.log('signalR: Close', error);
+
     if (window.Sonarr.unloading) {
       return;
     }
