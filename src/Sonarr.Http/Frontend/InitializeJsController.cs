@@ -13,7 +13,7 @@ namespace Sonarr.Http.Frontend
     {
         private readonly IConfigFileProvider _configFileProvider;
         private readonly IAnalyticsService _analyticsService;
-        private string? _generatedContent;
+        private string _generatedContent;
 
         public InitializeJsController(
             IConfigFileProvider configFileProvider,

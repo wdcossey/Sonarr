@@ -1,6 +1,4 @@
-using System.Diagnostics;
 using System.Linq;
-using NLog;
 using NzbDrone.Common.Disk;
 using NzbDrone.Core.MediaFiles.Events;
 using NzbDrone.Core.RootFolders;
@@ -40,7 +38,7 @@ namespace NzbDrone.Core.HealthCheck.Checks
                     return new HealthCheck(GetType(), HealthCheckResult.Error, "Missing root folder: " + missingRootFolders.First(), "#missing-root-folder");
                 }
 
-                var message = string.Format("Multiple root folders are missing: {0}", string.Join(" | ", missingRootFolders));
+                var message = $"Multiple root folders are missing: {string.Join(" | ", missingRootFolders)}";
                 return new HealthCheck(GetType(), HealthCheckResult.Error, message, "#missing-root-folder");
             }
 

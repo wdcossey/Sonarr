@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Lifecycle;
 using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Messaging.Events;
@@ -16,11 +16,11 @@ namespace NzbDrone.Core.Jobs
     {
         private readonly ITaskManager _taskManager;
         private readonly IManageCommandQueue _commandQueueManager;
-        private readonly Logger _logger;
+        private readonly ILogger<Scheduler> _logger;
         private static readonly Timer Timer = new Timer();
         private static CancellationTokenSource _cancellationTokenSource;
 
-        public Scheduler(ITaskManager taskManager, IManageCommandQueue commandQueueManager, Logger logger)
+        public Scheduler(ITaskManager taskManager, IManageCommandQueue commandQueueManager, ILogger<Scheduler> logger)
         {
             _taskManager = taskManager;
             _commandQueueManager = commandQueueManager;
@@ -35,7 +35,7 @@ namespace NzbDrone.Core.Jobs
 
                 var tasks = _taskManager.GetPending().ToList();
 
-                _logger.Trace("Pending Tasks: {0}", tasks.Count);
+                _logger.LogTrace("Pending Tasks: {Count}", tasks.Count);
 
                 foreach (var task in tasks)
                 {
@@ -64,7 +64,7 @@ namespace NzbDrone.Core.Jobs
 
         public void Handle(ApplicationShutdownRequested message)
         {
-            _logger.Info("Shutting down scheduler");
+            _logger.LogInformation("Shutting down scheduler");
             _cancellationTokenSource.Cancel(true);
             Timer.Stop();
         }

@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Exceptions;
 
@@ -15,13 +15,13 @@ namespace NzbDrone.Common.Processes
     {
         private readonly IAppFolderInfo _appFolderInfo;
         private readonly IProcessProvider _processProvider;
-        private readonly Logger _logger;
+        private readonly ILogger<PidFileProvider> _logger;
 
-        public PidFileProvider(IAppFolderInfo appFolderInfo, IProcessProvider processProvider, Logger logger)
+        public PidFileProvider(ILogger<PidFileProvider> logger, IAppFolderInfo appFolderInfo, IProcessProvider processProvider)
         {
+            _logger = logger;
             _appFolderInfo = appFolderInfo;
             _processProvider = processProvider;
-            _logger = logger;
         }
 
         public void Write()
@@ -38,7 +38,7 @@ namespace NzbDrone.Common.Processes
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Unable to write PID file {0}", filename);
+                _logger.LogError(ex, "Unable to write PID file {FileName}", filename);
                 throw new SonarrStartupException(ex, "Unable to write PID file {0}", filename);
             }
         }

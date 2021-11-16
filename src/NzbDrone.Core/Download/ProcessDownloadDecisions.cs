@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.DecisionEngine;
 using NzbDrone.Core.Download.Clients;
 using NzbDrone.Core.Download.Pending;
@@ -21,12 +20,12 @@ namespace NzbDrone.Core.Download
         private readonly IDownloadService _downloadService;
         private readonly IPrioritizeDownloadDecision _prioritizeDownloadDecision;
         private readonly IPendingReleaseService _pendingReleaseService;
-        private readonly Logger _logger;
+        private readonly ILogger<ProcessDownloadDecisions> _logger;
 
         public ProcessDownloadDecisions(IDownloadService downloadService,
                                         IPrioritizeDownloadDecision prioritizeDownloadDecision,
                                         IPendingReleaseService pendingReleaseService,
-                                        Logger logger)
+                                        ILogger<ProcessDownloadDecisions> logger)
         {
             _downloadService = downloadService;
             _prioritizeDownloadDecision = prioritizeDownloadDecision;
@@ -73,20 +72,20 @@ namespace NzbDrone.Core.Download
 
                 try
                 {
-                    _logger.Trace("Grabbing from Indexer {0} at priority {1}.", remoteEpisode.Release.Indexer, remoteEpisode.Release.IndexerPriority);
+                    _logger.LogTrace("Grabbing from Indexer {Indexer} at priority {IndexerPriority}.", remoteEpisode.Release.Indexer, remoteEpisode.Release.IndexerPriority);
                     _downloadService.DownloadReport(remoteEpisode);
                     grabbed.Add(report);
                 }
                 catch (ReleaseUnavailableException)
                 {
-                    _logger.Warn("Failed to download release from indexer, no longer available. " + remoteEpisode);
+                    _logger.LogWarning("Failed to download release from indexer, no longer available. {RemoteEpisode}", remoteEpisode);
                     rejected.Add(report);
                 }
                 catch (Exception ex)
                 {
                     if (ex is DownloadClientUnavailableException || ex is DownloadClientAuthenticationException)
                     {
-                        _logger.Debug(ex, "Failed to send release to download client, storing until later. " + remoteEpisode);
+                        _logger.LogDebug(ex, "Failed to send release to download client, storing until later. {RemoteEpisode}", remoteEpisode);
                         PreparePending(pendingAddQueue, grabbed, pending, report, PendingReleaseReason.DownloadClientUnavailable);
 
                         if (downloadProtocol == DownloadProtocol.Usenet)
@@ -100,7 +99,7 @@ namespace NzbDrone.Core.Download
                     }
                     else
                     {
-                        _logger.Warn(ex, "Couldn't add report to download queue. " + remoteEpisode);
+                        _logger.LogWarning(ex, "Couldn't add report to download queue. {RemoteEpisode}", remoteEpisode);
                     }
                 }
             }

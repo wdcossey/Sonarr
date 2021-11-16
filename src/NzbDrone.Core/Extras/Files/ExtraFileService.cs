@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.MediaFiles;
@@ -34,13 +34,13 @@ namespace NzbDrone.Core.Extras.Files
         private readonly ISeriesService _seriesService;
         private readonly IDiskProvider _diskProvider;
         private readonly IRecycleBinProvider _recycleBinProvider;
-        private readonly Logger _logger;
+        private readonly ILogger _logger;
 
         public ExtraFileService(IExtraFileRepository<TExtraFile> repository,
                                 ISeriesService seriesService,
                                 IDiskProvider diskProvider,
                                 IRecycleBinProvider recycleBinProvider,
-                                Logger logger)
+                                ILogger logger)
         {
             _repository = repository;
             _seriesService = seriesService;
@@ -97,7 +97,7 @@ namespace NzbDrone.Core.Extras.Files
 
         public void HandleAsync(SeriesDeletedEvent message)
         {
-            _logger.Debug("Deleting Extra from database for series: {0}", message.Series);
+            _logger.LogDebug("Deleting Extra from database for series: {Series}", message.Series);
             _repository.DeleteForSeries(message.Series.Id);
         }
 
@@ -107,7 +107,7 @@ namespace NzbDrone.Core.Extras.Files
 
             if (message.Reason == DeleteMediaFileReason.NoLinkedEpisodes)
             {
-                _logger.Debug("Removing episode file from DB as part of cleanup routine, not deleting extra files from disk.");
+                _logger.LogDebug("Removing episode file from DB as part of cleanup routine, not deleting extra files from disk.");
             }
 
             else
@@ -127,7 +127,7 @@ namespace NzbDrone.Core.Extras.Files
                 }
             }
 
-            _logger.Debug("Deleting Extra from database for episode file: {0}", episodeFile);
+            _logger.LogDebug("Deleting Extra from database for episode file: {EpisodeFile}", episodeFile);
             _repository.DeleteForEpisodeFile(episodeFile.Id);
         }
     }

@@ -1,4 +1,4 @@
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.Parser.Model;
 
@@ -7,9 +7,9 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
     public class SameEpisodesGrabSpecification : IDecisionEngineSpecification
     {
         private readonly SameEpisodesSpecification _sameEpisodesSpecification;
-        private readonly Logger _logger;
+        private readonly ILogger<SameEpisodesGrabSpecification> _logger;
 
-        public SameEpisodesGrabSpecification(SameEpisodesSpecification sameEpisodesSpecification, Logger logger)
+        public SameEpisodesGrabSpecification(SameEpisodesSpecification sameEpisodesSpecification, ILogger<SameEpisodesGrabSpecification> logger)
         {
             _sameEpisodesSpecification = sameEpisodesSpecification;
             _logger = logger;
@@ -25,7 +25,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
                 return Decision.Accept();
             }
 
-            _logger.Debug("Episode file on disk contains more episodes than this release contains");
+            _logger.LogDebug("Episode file on disk contains more episodes than this release contains");
             return Decision.Reject("Episode file on disk contains more episodes than this release contains");
         }
     }

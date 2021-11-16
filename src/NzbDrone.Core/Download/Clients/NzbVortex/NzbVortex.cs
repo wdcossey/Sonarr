@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FluentValidation.Results;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
@@ -24,7 +24,7 @@ namespace NzbDrone.Core.Download.Clients.NzbVortex
                        IDiskProvider diskProvider,
                        IRemotePathMappingService remotePathMappingService,
                        IValidateNzbs nzbValidationService,
-                       Logger logger)
+                       ILogger<NzbVortex> logger)
             : base(httpClient, configService, diskProvider, remotePathMappingService, nzbValidationService, logger)
         {
             _proxy = proxy;
@@ -159,7 +159,7 @@ namespace NzbDrone.Core.Download.Clients.NzbVortex
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Unable to connect to NZBVortex");
+                _logger.LogError(ex, "Unable to connect to NZBVortex");
 
                 return new NzbDroneValidationFailure("Host", "Unable to connect to NZBVortex")
                        {
@@ -184,7 +184,7 @@ namespace NzbDrone.Core.Download.Clients.NzbVortex
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Unable to connect to NZBVortex");
+                _logger.LogError(ex, "Unable to connect to NZBVortex");
                 return new ValidationFailure("Host", "Unable to connect to NZBVortex");
             }
 
@@ -242,12 +242,12 @@ namespace NzbDrone.Core.Download.Clients.NzbVortex
 
             if (filesResponse.Count > 1)
             {
-                var message = string.Format("Download contains multiple files and is not in a job folder: {0}", outputPath);
+                var message = $"Download contains multiple files and is not in a job folder: {outputPath}";
 
                 queueItem.Status = DownloadItemStatus.Warning;
                 queueItem.Message = message;
 
-                _logger.Debug(message);
+                _logger.LogDebug("{Message}", message);
             }
 
             return new OsPath(Path.Combine(outputPath.FullPath, filesResponse.First().FileName));

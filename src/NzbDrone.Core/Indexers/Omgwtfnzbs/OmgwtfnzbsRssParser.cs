@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Indexers.Exceptions;
 
@@ -8,7 +9,7 @@ namespace NzbDrone.Core.Indexers.Omgwtfnzbs
 {
     public class OmgwtfnzbsRssParser : RssParser
     {
-        public OmgwtfnzbsRssParser()
+        public OmgwtfnzbsRssParser(ILoggerFactory loggerFactory) : base(loggerFactory)
         {
             UseEnclosureUrl = true;
             UseEnclosureLength = true;

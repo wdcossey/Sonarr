@@ -1,5 +1,5 @@
 ﻿using System;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
@@ -16,12 +16,12 @@ namespace NzbDrone.Update.UpdateEngine
         private readonly IAppFolderInfo _appFolderInfo;
         private readonly IDiskTransferService _diskTransferService;
         private readonly IDiskProvider _diskProvider;
-        private readonly Logger _logger;
+        private readonly ILogger<BackupAppData> _logger;
 
         public BackupAppData(IAppFolderInfo appFolderInfo,
                              IDiskProvider diskProvider,
                              IDiskTransferService diskTransferService,
-                             Logger logger)
+                             ILogger<BackupAppData> logger)
         {
             _appFolderInfo = appFolderInfo;
             _diskProvider = diskProvider;
@@ -31,7 +31,7 @@ namespace NzbDrone.Update.UpdateEngine
 
         public void Backup()
         {
-            _logger.Info("Backing up appdata (database/config)");
+            _logger.LogInformation("Backing up appdata (database/config)");
             var backupFolderAppData = _appFolderInfo.GetUpdateBackUpAppDataFolder();
 
             if (_diskProvider.FolderExists(backupFolderAppData))
@@ -50,7 +50,7 @@ namespace NzbDrone.Update.UpdateEngine
             }
             catch (Exception e)
             {
-                _logger.Error(e, "Couldn't create a data backup");
+                _logger.LogError(e, "Couldn't create a data backup");
             }
         }
     }

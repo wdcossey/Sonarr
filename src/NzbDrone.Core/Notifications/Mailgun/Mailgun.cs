@@ -1,16 +1,16 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using FluentValidation.Results;
-using NLog;
 
 namespace NzbDrone.Core.Notifications.Mailgun
 {
     public class MailGun : NotificationBase<MailgunSettings>
     {
         private readonly IMailgunProxy _proxy;
-        private readonly Logger _logger;
-        
-        public MailGun(IMailgunProxy proxy, Logger logger)
+        private readonly ILogger<MailGun> _logger;
+
+        public MailGun(IMailgunProxy proxy, ILogger<MailGun> logger)
         {
             _proxy = proxy;
             _logger = logger;
@@ -59,14 +59,14 @@ namespace NzbDrone.Core.Notifications.Mailgun
                 const string body = "This is a test message from Sonarr, though Mailgun.";
 
                 _proxy.SendNotification(title, body, Settings);
-                _logger.Info("Successsfully sent email though Mailgun.");
+                _logger.LogInformation("Successsfully sent email though Mailgun.");
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Unable to send test message though Mailgun.");
+                _logger.LogError(ex, "Unable to send test message though Mailgun.");
                 failures.Add(new ValidationFailure("", "Unable to send test message though Mailgun."));
             }
-            
+
             return new ValidationResult(failures);
         }
     }

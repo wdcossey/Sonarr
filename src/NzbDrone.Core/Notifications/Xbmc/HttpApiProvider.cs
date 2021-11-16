@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Notifications.Xbmc.Model;
 using NzbDrone.Core.Tv;
@@ -13,9 +13,9 @@ namespace NzbDrone.Core.Notifications.Xbmc
     public class HttpApiProvider : IApiProvider
     {
         private readonly IHttpProvider _httpProvider;
-        private readonly Logger _logger;
+        private readonly ILogger<HttpApiProvider> _logger;
 
-        public HttpApiProvider(IHttpProvider httpProvider, Logger logger)
+        public HttpApiProvider(IHttpProvider httpProvider, ILogger<HttpApiProvider> logger)
         {
             _httpProvider = httpProvider;
             _logger = logger;
@@ -28,7 +28,8 @@ namespace NzbDrone.Core.Notifications.Xbmc
 
         public void Notify(XbmcSettings settings, string title, string message)
         {
-            var notification = string.Format("Notification({0},{1},{2},{3})", title, message, settings.DisplayTime * 1000, "https://raw.github.com/Sonarr/Sonarr/develop/Logo/64.png");
+            var notification =
+                $"Notification({title},{message},{settings.DisplayTime * 1000},https://raw.github.com/Sonarr/Sonarr/develop/Logo/64.png)";
             var command = BuildExecBuiltInCommand(notification);
 
             SendCommand(settings, command);
@@ -38,12 +39,12 @@ namespace NzbDrone.Core.Notifications.Xbmc
         {
             if (!settings.AlwaysUpdate)
             {
-                _logger.Debug("Determining if there are any active players on XBMC host: {0}", settings.Address);
+                _logger.LogDebug("Determining if there are any active players on XBMC host: {0}", settings.Address);
                 var activePlayers = GetActivePlayers(settings);
 
                 if (activePlayers.Any(a => a.Type.Equals("video")))
                 {
-                    _logger.Debug("Video is currently playing, skipping library update");
+                    _logger.LogDebug("Video is currently playing, skipping library update");
                     return;
                 }
             }
@@ -55,12 +56,12 @@ namespace NzbDrone.Core.Notifications.Xbmc
         {
             if (!settings.AlwaysUpdate)
             {
-                _logger.Debug("Determining if there are any active players on XBMC host: {0}", settings.Address);
+                _logger.LogDebug("Determining if there are any active players on XBMC host: {Address}", settings.Address);
                 var activePlayers = GetActivePlayers(settings);
 
                 if (activePlayers.Any(a => a.Type.Equals("video")))
                 {
-                    _logger.Debug("Video is currently playing, skipping library cleaning");
+                    _logger.LogDebug("Video is currently playing, skipping library cleaning");
                     return;
                 }
             }
@@ -86,19 +87,17 @@ namespace NzbDrone.Core.Notifications.Xbmc
 
             catch (Exception ex)
             {
-                _logger.Debug(ex, ex.Message);
+                _logger.LogDebug(ex, "{Message}", ex.Message);
             }
 
             return new List<ActivePlayer>();
         }
-        
+
         internal string GetSeriesPath(XbmcSettings settings, Series series)
         {
             var query =
-                string.Format(
-                    "select path.strPath from path, tvshow, tvshowlinkpath where tvshow.c12 = {0} and tvshowlinkpath.idShow = tvshow.idShow and tvshowlinkpath.idPath = path.idPath",
-                    series.TvdbId);
-            var command = string.Format("QueryVideoDatabase({0})", query);
+                $"select path.strPath from path, tvshow, tvshowlinkpath where tvshow.c12 = {series.TvdbId} and tvshowlinkpath.idShow = tvshow.idShow and tvshowlinkpath.idPath = path.idPath";
+            var command = $"QueryVideoDatabase({query})";
 
             const string setResponseCommand =
                 "SetResponseFormat(webheader;false;webfooter;false;header;<xml>;footer;</xml>;opentag;<tag>;closetag;</tag>;closefinaltag;false)";
@@ -127,11 +126,11 @@ namespace NzbDrone.Core.Notifications.Xbmc
 
         internal bool CheckForError(string response)
         {
-            _logger.Debug("Looking for error in response: {0}", response);
+            _logger.LogDebug("Looking for error in response: {Response}", response);
 
             if (string.IsNullOrWhiteSpace(response))
             {
-                _logger.Debug("Invalid response from XBMC, the response is not valid JSON");
+                _logger.LogDebug("Invalid response from XBMC, the response is not valid JSON");
                 return true;
             }
 
@@ -142,7 +141,7 @@ namespace NzbDrone.Core.Notifications.Xbmc
                 var errorMessage = response.Substring(errorIndex + 6);
                 errorMessage = errorMessage.Substring(0, errorMessage.IndexOfAny(new char[] { '<', ';' }));
 
-                _logger.Debug("Error found in response: {0}", errorMessage);
+                _logger.LogDebug("Error found in response: {ErrorMessage}", errorMessage);
                 return true;
             }
 
@@ -153,13 +152,13 @@ namespace NzbDrone.Core.Notifications.Xbmc
         {
             try
             {
-                _logger.Debug("Sending Update DB Request to XBMC Host: {0}", settings.Address);
+                _logger.LogDebug("Sending Update DB Request to XBMC Host: {Address}", settings.Address);
                 var xbmcSeriesPath = GetSeriesPath(settings, series);
 
                 //If the path is found update it, else update the whole library
                 if (!string.IsNullOrEmpty(xbmcSeriesPath))
                 {
-                    _logger.Debug("Updating series [{0}] on XBMC host: {1}", series, settings.Address);
+                    _logger.LogDebug("Updating series [{Series}] on XBMC host: {Address}", series, settings.Address);
                     var command = BuildExecBuiltInCommand(string.Format("UpdateLibrary(video,{0})", xbmcSeriesPath));
                     SendCommand(settings, command);
                 }
@@ -167,7 +166,7 @@ namespace NzbDrone.Core.Notifications.Xbmc
                 else
                 {
                     //Update the entire library
-                    _logger.Debug("Series [{0}] doesn't exist on XBMC host: {1}, Updating Entire Library", series, settings.Address);
+                    _logger.LogDebug("Series [{Series}] doesn't exist on XBMC host: {Address}, Updating Entire Library", series, settings.Address);
                     var command = BuildExecBuiltInCommand("UpdateLibrary(video)");
                     SendCommand(settings, command);
                 }
@@ -175,7 +174,7 @@ namespace NzbDrone.Core.Notifications.Xbmc
 
             catch (Exception ex)
             {
-                _logger.Debug(ex, ex.Message);
+                _logger.LogDebug(ex, "{Message}",  ex.Message);
             }
         }
 

@@ -1,9 +1,8 @@
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.Parser.Model;
-using NzbDrone.Core.Profiles.Releases;
 
 namespace NzbDrone.Core.DecisionEngine.Specifications
 {
@@ -11,9 +10,11 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
     {
         private readonly UpgradableSpecification _upgradableSpecification;
         private readonly IEpisodeFilePreferredWordCalculator _episodeFilePreferredWordCalculator;
-        private readonly Logger _logger;
+        private readonly ILogger<CutoffSpecification> _logger;
 
-        public CutoffSpecification(UpgradableSpecification upgradableSpecification, IEpisodeFilePreferredWordCalculator episodeFilePreferredWordCalculator, Logger logger)
+        public CutoffSpecification(UpgradableSpecification upgradableSpecification,
+                                   IEpisodeFilePreferredWordCalculator episodeFilePreferredWordCalculator,
+                                   ILogger<CutoffSpecification> logger)
         {
             _upgradableSpecification = upgradableSpecification;
             _episodeFilePreferredWordCalculator = episodeFilePreferredWordCalculator;
@@ -32,21 +33,21 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
             {
                 if (file == null)
                 {
-                    _logger.Debug("File is no longer available, skipping this file.");
+                    _logger.LogDebug("File is no longer available, skipping this file.");
                     continue;
                 }
 
-                _logger.Debug("Comparing file quality and language with report. Existing file is {0} - {1}", file.Quality, file.Language);
+                _logger.LogDebug("Comparing file quality and language with report. Existing file is {Quality} - {Language}", file.Quality, file.Language);
 
                 if (!_upgradableSpecification.CutoffNotMet(qualityProfile,
                                                            languageProfile,
-                                                           file.Quality, 
+                                                           file.Quality,
                                                            file.Language,
                                                            _episodeFilePreferredWordCalculator.Calculate(subject.Series, file),
                                                            subject.ParsedEpisodeInfo.Quality,
                                                            subject.PreferredWordScore))
                 {
-                    _logger.Debug("Cutoff already met, rejecting.");
+                    _logger.LogDebug("Cutoff already met, rejecting.");
 
                     var qualityCutoffIndex = qualityProfile.GetIndex(qualityProfile.Cutoff);
                     var qualityCutoff = qualityProfile.Items[qualityCutoffIndex.Index];

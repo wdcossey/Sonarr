@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Instrumentation.Extensions;
@@ -39,7 +39,7 @@ namespace NzbDrone.Core.MediaFiles
         private readonly IMediaFileTableCleanupService _mediaFileTableCleanupService;
         private readonly IRootFolderService _rootFolderService;
         private readonly IEventAggregator _eventAggregator;
-        private readonly Logger _logger;
+        private readonly ILogger<DiskScanService> _logger;
 
         public DiskScanService(IDiskProvider diskProvider,
                                IMakeImportDecision importDecisionMaker,
@@ -49,7 +49,7 @@ namespace NzbDrone.Core.MediaFiles
                                IMediaFileTableCleanupService mediaFileTableCleanupService,
                                IRootFolderService rootFolderService,
                                IEventAggregator eventAggregator,
-                               Logger logger)
+                               ILogger<DiskScanService> logger)
         {
             _diskProvider = diskProvider;
             _importDecisionMaker = importDecisionMaker;
@@ -75,14 +75,14 @@ namespace NzbDrone.Core.MediaFiles
             {
                 if (!_diskProvider.FolderExists(rootFolder))
                 {
-                    _logger.Warn("Series' root folder ({0}) doesn't exist.", rootFolder);
+                    _logger.LogWarning("Series' root folder ({RootFolder}) doesn't exist.", rootFolder);
                     _eventAggregator.PublishEvent(new SeriesScanSkippedEvent(series, SeriesScanSkippedReason.RootFolderDoesNotExist));
                     return;
                 }
 
                 if (_diskProvider.FolderEmpty(rootFolder))
                 {
-                    _logger.Warn("Series' root folder ({0}) is empty.", rootFolder);
+                    _logger.LogWarning("Series' root folder ({RootFolder}) is empty.", rootFolder);
                     _eventAggregator.PublishEvent(new SeriesScanSkippedEvent(series, SeriesScanSkippedReason.RootFolderIsEmpty));
                     return;
                 }
@@ -96,19 +96,19 @@ namespace NzbDrone.Core.MediaFiles
                 {
                     if (_configService.DeleteEmptyFolders)
                     {
-                        _logger.Debug("Not creating missing series folder: {0} because delete empty series folders is enabled", series.Path);
+                        _logger.LogDebug("Not creating missing series folder: {Path} because delete empty series folders is enabled", series.Path);
                     }
                     else
                     {
-                        _logger.Debug("Creating missing series folder: {0}", series.Path);
-                        
+                        _logger.LogDebug("Creating missing series folder: {Path}", series.Path);
+
                         _diskProvider.CreateFolder(series.Path);
                         SetPermissions(series.Path);
                     }
                 }
                 else
                 {
-                    _logger.Debug("Series folder doesn't exist: {0}", series.Path);
+                    _logger.LogDebug("Series folder doesn't exist: {Path}", series.Path);
                 }
 
                 CleanMediaFiles(series, new List<string>());
@@ -120,14 +120,14 @@ namespace NzbDrone.Core.MediaFiles
             var videoFilesStopwatch = Stopwatch.StartNew();
             var mediaFileList = FilterPaths(series.Path, GetVideoFiles(series.Path)).ToList();
             videoFilesStopwatch.Stop();
-            _logger.Trace("Finished getting episode files for: {0} [{1}]", series, videoFilesStopwatch.Elapsed);
+            _logger.LogTrace("Finished getting episode files for: {Series} [{Elapsed}]", series, videoFilesStopwatch.Elapsed);
 
             CleanMediaFiles(series, mediaFileList);
 
             var decisionsStopwatch = Stopwatch.StartNew();
             var decisions = _importDecisionMaker.GetImportDecisions(mediaFileList, series);
             decisionsStopwatch.Stop();
-            _logger.Trace("Import decisions complete for: {0} [{1}]", series, decisionsStopwatch.Elapsed);
+            _logger.LogTrace("Import decisions complete for: {Series} [{Elapsed}]", series, decisionsStopwatch.Elapsed);
             _importApprovedEpisodes.Import(decisions, false);
 
             RemoveEmptySeriesFolder(series.Path);
@@ -136,19 +136,19 @@ namespace NzbDrone.Core.MediaFiles
 
         private void CleanMediaFiles(Series series, List<string> mediaFileList)
         {
-            _logger.Debug("{0} Cleaning up media files in DB", series);
+            _logger.LogDebug("{Series} Cleaning up media files in DB", series);
             _mediaFileTableCleanupService.Clean(series, mediaFileList);
         }
 
         private void CompletedScanning(Series series)
         {
-            _logger.Info("Completed scanning disk for {0}", series.Title);
+            _logger.LogInformation("Completed scanning disk for {Title}", series.Title);
             _eventAggregator.PublishEvent(new SeriesScannedEvent(series));
         }
 
         public string[] GetVideoFiles(string path, bool allDirectories = true)
         {
-            _logger.Debug("Scanning '{0}' for video files", path);
+            _logger.LogDebug("Scanning '{Path}' for video files", path);
 
             var searchOption = allDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
             var filesOnDisk = _diskProvider.GetFiles(path, searchOption).ToList();
@@ -156,15 +156,15 @@ namespace NzbDrone.Core.MediaFiles
             var mediaFileList = filesOnDisk.Where(file => MediaFileExtensions.Extensions.Contains(Path.GetExtension(file)))
                                            .ToList();
 
-            _logger.Trace("{0} files were found in {1}", filesOnDisk.Count, path);
-            _logger.Debug("{0} video files were found in {1}", mediaFileList.Count, path);
+            _logger.LogTrace("{Count} files were found in {Path}", filesOnDisk.Count, path);
+            _logger.LogDebug("{Count} video files were found in {Path}", mediaFileList.Count, path);
 
             return mediaFileList.ToArray();
         }
 
         public string[] GetNonVideoFiles(string path, bool allDirectories = true)
         {
-            _logger.Debug("Scanning '{0}' for non-video files", path);
+            _logger.LogDebug("Scanning '{Path}' for non-video files", path);
 
             var searchOption = allDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
             var filesOnDisk = _diskProvider.GetFiles(path, searchOption).ToList();
@@ -172,8 +172,8 @@ namespace NzbDrone.Core.MediaFiles
             var mediaFileList = filesOnDisk.Where(file => !MediaFileExtensions.Extensions.Contains(Path.GetExtension(file)))
                                            .ToList();
 
-            _logger.Trace("{0} files were found in {1}", filesOnDisk.Count, path);
-            _logger.Debug("{0} non-video files were found in {1}", mediaFileList.Count, path);
+            _logger.LogTrace("{Count} files were found in {Path}", filesOnDisk.Count, path);
+            _logger.LogDebug("{Count} non-video files were found in {Path}", mediaFileList.Count, path);
 
             return mediaFileList.ToArray();
         }
@@ -198,8 +198,8 @@ namespace NzbDrone.Core.MediaFiles
             }
             catch (Exception ex)
             {
-                _logger.Warn(ex, "Unable to apply permissions to: " + path);
-                _logger.Debug(ex, ex.Message);
+                _logger.LogWarning(ex, "Unable to apply permissions to: {Path}", path);
+                _logger.LogDebug(ex, "{Message}", ex.Message);
             }
         }
 

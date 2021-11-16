@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.ThingiProvider.Events;
@@ -26,13 +26,13 @@ namespace NzbDrone.Core.ThingiProvider.Status
         protected readonly IProviderStatusRepository<TModel> _providerStatusRepository;
         protected readonly IEventAggregator _eventAggregator;
         protected readonly IRuntimeInfo _runtimeInfo;
-        protected readonly Logger _logger;
+        protected readonly ILogger _logger;
 
         protected int MaximumEscalationLevel { get; set; } = EscalationBackOff.Periods.Length - 1;
         protected TimeSpan MinimumTimeSinceInitialFailure { get; set; } = TimeSpan.Zero;
         protected TimeSpan MinimumTimeSinceStartup { get; set; } = TimeSpan.FromMinutes(15);
 
-        public ProviderStatusServiceBase(IProviderStatusRepository<TModel> providerStatusRepository, IEventAggregator eventAggregator, IRuntimeInfo runtimeInfo, Logger logger)
+        public ProviderStatusServiceBase(IProviderStatusRepository<TModel> providerStatusRepository, IEventAggregator eventAggregator, IRuntimeInfo runtimeInfo, ILogger logger)
         {
             _providerStatusRepository = providerStatusRepository;
             _eventAggregator = eventAggregator;

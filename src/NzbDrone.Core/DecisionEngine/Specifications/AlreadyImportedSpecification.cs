@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.History;
 using NzbDrone.Core.Indexers;
@@ -13,11 +13,11 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
     {
         private readonly IHistoryService _historyService;
         private readonly IConfigService _configService;
-        private readonly Logger _logger;
+        private readonly ILogger<AlreadyImportedSpecification> _logger;
 
         public AlreadyImportedSpecification(IHistoryService historyService,
                                             IConfigService configService,
-                                            Logger logger)
+                                            ILogger<AlreadyImportedSpecification> logger)
         {
             _historyService = historyService;
             _configService = configService;
@@ -33,16 +33,16 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
 
             if (!cdhEnabled)
             {
-                _logger.Debug("Skipping already imported check because CDH is disabled");
+                _logger.LogDebug("Skipping already imported check because CDH is disabled");
                 return Decision.Accept();
             }
 
-            _logger.Debug("Performing already imported check on report");
+            _logger.LogDebug("Performing already imported check on report");
             foreach (var episode in subject.Episodes)
             {
                 if (!episode.HasFile)
                 {
-                    _logger.Debug("Skipping already imported check for episode without file");
+                    _logger.LogDebug("Skipping already imported check for episode without file");
                     continue;
                 }
 
@@ -79,7 +79,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
 
                     if (torrentInfo?.InfoHash != null && torrentInfo.InfoHash.ToUpper() == lastGrabbed.DownloadId)
                     {
-                        _logger.Debug("Has same torrent hash as a grabbed and imported release");
+                        _logger.LogDebug("Has same torrent hash as a grabbed and imported release");
                         return Decision.Reject("Has same torrent hash as a grabbed and imported release");
                     }
                 }
@@ -89,7 +89,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
 
                 if (release.Title.Equals(lastGrabbed.SourceTitle, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    _logger.Debug("Has same release name as a grabbed and imported release");
+                    _logger.LogDebug("Has same release name as a grabbed and imported release");
                     return Decision.Reject("Has same release name as a grabbed and imported release");
                 }
             }

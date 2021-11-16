@@ -1,9 +1,8 @@
-using NLog;
-using NzbDrone.Core.Tv;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
-using System;
+using NzbDrone.Core.Tv;
 
 namespace NzbDrone.Core.Profiles.Releases
 {
@@ -17,9 +16,11 @@ namespace NzbDrone.Core.Profiles.Releases
     {
         private readonly IReleaseProfileService _releaseProfileService;
         private readonly ITermMatcherService _termMatcherService;
-        private readonly Logger _logger;
+        private readonly ILogger<PreferredWordService> _logger;
 
-        public PreferredWordService(IReleaseProfileService releaseProfileService, ITermMatcherService termMatcherService, Logger logger)
+        public PreferredWordService(IReleaseProfileService releaseProfileService,
+                                    ITermMatcherService termMatcherService,
+                                    ILogger<PreferredWordService> logger)
         {
             _releaseProfileService = releaseProfileService;
             _termMatcherService = termMatcherService;
@@ -28,7 +29,7 @@ namespace NzbDrone.Core.Profiles.Releases
 
         public int Calculate(Series series, string title, int indexerId)
         {
-            _logger.Trace("Calculating preferred word score for '{0}'", title);
+            _logger.LogTrace("Calculating preferred word score for '{Title}'", title);
 
             var releaseProfiles = _releaseProfileService.EnabledForTags(series.Tags, indexerId);
             var matchingPairs = new List<KeyValuePair<string, int>>();
@@ -48,7 +49,7 @@ namespace NzbDrone.Core.Profiles.Releases
 
             var score = matchingPairs.Sum(p => p.Value);
 
-            _logger.Trace("Calculated preferred word score for '{0}': {1}", title, score);
+            _logger.LogTrace("Calculated preferred word score for '{Title}': {Score}", title, score);
 
             return score;
         }
@@ -59,7 +60,7 @@ namespace NzbDrone.Core.Profiles.Releases
             var profileWords = new Dictionary<string, List<KeyValuePair<string, int>>>();
             var allWords = new List<KeyValuePair<string, int>>();
 
-            _logger.Trace("Determining preferred word matches for '{0}'", title);
+            _logger.LogTrace("Determining preferred word matches for '{Title}'", title);
 
             foreach (var releaseProfile in releaseProfiles)
             {
@@ -105,7 +106,7 @@ namespace NzbDrone.Core.Profiles.Releases
                 ByReleaseProfile = profileWords.ToDictionary(item => item.Key, item => item.Value.OrderByDescending(m => m.Value).Select(m => m.Key).ToList())
             };
 
-            _logger.Trace("Determined preferred word matches for '{0}'. Count {1}", title, allWords.Count);
+            _logger.LogTrace("Determined preferred word matches for '{Title}'. Count {Count}", title, allWords.Count);
 
             return results;
         }

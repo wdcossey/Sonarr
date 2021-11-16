@@ -1,5 +1,5 @@
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Download.TrackedDownloads;
 using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.Parser.Model;
@@ -13,12 +13,12 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
         private readonly IQueueService _queueService;
         private readonly UpgradableSpecification _upgradableSpecification;
         private readonly IPreferredWordService _preferredWordServiceCalculator;
-        private readonly Logger _logger;
+        private readonly ILogger<QueueSpecification> _logger;
 
         public QueueSpecification(IQueueService queueService,
                                   UpgradableSpecification upgradableSpecification,
                                   IPreferredWordService preferredWordServiceCalculator,
-                                  Logger logger)
+                                  ILogger<QueueSpecification> logger)
         {
             _queueService = queueService;
             _upgradableSpecification = upgradableSpecification;
@@ -52,12 +52,12 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
                     continue;
                 }
 
-                _logger.Debug("Checking if existing release in queue meets cutoff. Queued: {0} - {1}", remoteEpisode.ParsedEpisodeInfo.Quality, remoteEpisode.ParsedEpisodeInfo.Language);
+                _logger.LogDebug("Checking if existing release in queue meets cutoff. Queued: {EpisodeQuality} - {Language}", remoteEpisode.ParsedEpisodeInfo.Quality, remoteEpisode.ParsedEpisodeInfo.Language);
                 var queuedItemPreferredWordScore = _preferredWordServiceCalculator.Calculate(subject.Series, queueItem.Title, subject.Release?.IndexerId ?? 0);
 
                 if (!_upgradableSpecification.CutoffNotMet(qualityProfile,
-                    languageProfile, 
-                                                           remoteEpisode.ParsedEpisodeInfo.Quality, 
+                    languageProfile,
+                                                           remoteEpisode.ParsedEpisodeInfo.Quality,
                                                            remoteEpisode.ParsedEpisodeInfo.Language,
                                                            queuedItemPreferredWordScore,
                                                            subject.ParsedEpisodeInfo.Quality,
@@ -66,11 +66,11 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
                     return Decision.Reject("Release in queue already meets cutoff: {0} - {1}", remoteEpisode.ParsedEpisodeInfo.Quality, remoteEpisode.ParsedEpisodeInfo.Language);
                 }
 
-                _logger.Debug("Checking if release is higher quality than queued release. Queued: {0} - {1}", remoteEpisode.ParsedEpisodeInfo.Quality, remoteEpisode.ParsedEpisodeInfo.Language);
+                _logger.LogDebug("Checking if release is higher quality than queued release. Queued: {EpisodeQuality} - {Language}", remoteEpisode.ParsedEpisodeInfo.Quality, remoteEpisode.ParsedEpisodeInfo.Language);
 
                 if (!_upgradableSpecification.IsUpgradable(qualityProfile,
-                                                           languageProfile, 
-                                                           remoteEpisode.ParsedEpisodeInfo.Quality, 
+                                                           languageProfile,
+                                                           remoteEpisode.ParsedEpisodeInfo.Quality,
                                                            remoteEpisode.ParsedEpisodeInfo.Language,
                                                            queuedItemPreferredWordScore,
                                                            subject.ParsedEpisodeInfo.Quality,
@@ -80,7 +80,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
                     return Decision.Reject("Release in queue is of equal or higher preference: {0} - {1}", remoteEpisode.ParsedEpisodeInfo.Quality, remoteEpisode.ParsedEpisodeInfo.Language);
                 }
 
-                _logger.Debug("Checking if profiles allow upgrading. Queued: {0} - {1}", remoteEpisode.ParsedEpisodeInfo.Quality, remoteEpisode.ParsedEpisodeInfo.Language);
+                _logger.LogDebug("Checking if profiles allow upgrading. Queued: {EpisodeQuality} - {Language}", remoteEpisode.ParsedEpisodeInfo.Quality, remoteEpisode.ParsedEpisodeInfo.Language);
 
                 if (!_upgradableSpecification.IsUpgradeAllowed(subject.Series.QualityProfile,
                                                                subject.Series.LanguageProfile,

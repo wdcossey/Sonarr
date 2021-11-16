@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
-using FluentValidation.Results;
 using Microsoft.Extensions.Logging;
+using FluentValidation.Results;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Tv;
 
@@ -18,8 +18,8 @@ namespace NzbDrone.Core.Notifications.Emby
     {
         private readonly IMediaBrowserProxy _proxy;
         private readonly ILogger<MediaBrowserService> _logger;
-
-        public MediaBrowserService(ILogger<MediaBrowserService> logger, IMediaBrowserProxy proxy)
+        
+        public MediaBrowserService(IMediaBrowserProxy proxy, ILogger<MediaBrowserService> logger)
         {
             _proxy = proxy;
             _logger = logger;

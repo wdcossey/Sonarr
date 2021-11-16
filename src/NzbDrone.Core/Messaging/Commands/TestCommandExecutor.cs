@@ -1,14 +1,14 @@
 using System.Threading;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Instrumentation.Extensions;
 
 namespace NzbDrone.Core.Messaging.Commands
 {
     public class TestCommandExecutor : IExecute<TestCommand>
     {
-        private readonly Logger _logger;
+        private readonly ILogger<TestCommandExecutor> _logger;
 
-        public TestCommandExecutor(Logger logger)
+        public TestCommandExecutor(ILogger<TestCommandExecutor> logger)
         {
             _logger = logger;
         }

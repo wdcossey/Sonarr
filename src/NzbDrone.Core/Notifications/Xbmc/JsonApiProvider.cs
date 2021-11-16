@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Notifications.Xbmc.Model;
 using NzbDrone.Core.Tv;
 
@@ -10,9 +10,9 @@ namespace NzbDrone.Core.Notifications.Xbmc
     public class JsonApiProvider : IApiProvider
     {
         private readonly IXbmcJsonApiProxy _proxy;
-        private readonly Logger _logger;
+        private readonly ILogger<JsonApiProvider> _logger;
 
-        public JsonApiProvider(IXbmcJsonApiProxy proxy, Logger logger)
+        public JsonApiProvider(IXbmcJsonApiProxy proxy, ILogger<JsonApiProvider> logger)
         {
             _proxy = proxy;
             _logger = logger;
@@ -32,29 +32,29 @@ namespace NzbDrone.Core.Notifications.Xbmc
         {
             if (!settings.AlwaysUpdate)
             {
-                _logger.Debug("Determining if there are any active players on XBMC host: {0}", settings.Address);
+                _logger.LogDebug("Determining if there are any active players on XBMC host: {Address}", settings.Address);
                 var activePlayers = GetActivePlayers(settings);
 
                 if (activePlayers.Any(a => a.Type.Equals("video")))
                 {
-                    _logger.Debug("Video is currently playing, skipping library update");
+                    _logger.LogDebug("Video is currently playing, skipping library update");
                     return;
                 }
             }
 
             UpdateLibrary(settings, series);
         }
-        
+
         public void Clean(XbmcSettings settings)
         {
             if (!settings.AlwaysUpdate)
             {
-                _logger.Debug("Determining if there are any active players on XBMC host: {0}", settings.Address);
+                _logger.LogDebug("Determining if there are any active players on XBMC host: {Address}", settings.Address);
                 var activePlayers = GetActivePlayers(settings);
 
                 if (activePlayers.Any(a => a.Type.Equals("video")))
                 {
-                    _logger.Debug("Video is currently playing, skipping library cleaning");
+                    _logger.LogDebug("Video is currently playing, skipping library cleaning");
                     return;
                 }
             }
@@ -64,7 +64,7 @@ namespace NzbDrone.Core.Notifications.Xbmc
 
         public List<ActivePlayer> GetActivePlayers(XbmcSettings settings)
         {
-            return _proxy.GetActivePlayers(settings); 
+            return _proxy.GetActivePlayers(settings);
         }
 
         public string GetSeriesPath(XbmcSettings settings, Series series)
@@ -73,7 +73,7 @@ namespace NzbDrone.Core.Notifications.Xbmc
 
             if (!allSeries.Any())
             {
-                _logger.Debug("No TV shows returned from XBMC");
+                _logger.LogDebug("No TV shows returned from XBMC");
                 return null;
             }
 
@@ -85,9 +85,7 @@ namespace NzbDrone.Core.Notifications.Xbmc
                 return tvdbId == series.TvdbId || s.Label == series.Title;
             });
 
-            if (matchingSeries != null) return matchingSeries.File;
-
-            return null;
+            return matchingSeries?.File;
         }
 
         private void UpdateLibrary(XbmcSettings settings, Series series)
@@ -98,12 +96,12 @@ namespace NzbDrone.Core.Notifications.Xbmc
 
                 if (seriesPath != null)
                 {
-                    _logger.Debug("Updating series {0} (Path: {1}) on XBMC host: {2}", series, seriesPath, settings.Address);
+                    _logger.LogDebug("Updating series {Series} (Path: {SeriesPath}) on XBMC host: {Address}", series, seriesPath, settings.Address);
                 }
 
                 else
                 {
-                    _logger.Debug("Series {0} doesn't exist on XBMC host: {1}, Updating Entire Library", series,
+                    _logger.LogDebug("Series {Series} doesn't exist on XBMC host: {Address}, Updating Entire Library", series,
                                  settings.Address);
                 }
 
@@ -111,13 +109,13 @@ namespace NzbDrone.Core.Notifications.Xbmc
 
                 if (!response.Equals("OK", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    _logger.Debug("Failed to update library for: {0}", settings.Address);
+                    _logger.LogDebug("Failed to update library for: {Address}", settings.Address);
                 }
             }
 
             catch (Exception ex)
             {
-                _logger.Debug(ex, ex.Message);
+                _logger.LogDebug(ex, "{Message}", ex.Message);
             }
         }
     }

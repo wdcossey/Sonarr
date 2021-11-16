@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Instrumentation.Extensions;
 using NzbDrone.Core.Datastore;
@@ -23,14 +22,14 @@ namespace NzbDrone.Core.IndexerSearch
         private readonly IEpisodeService _episodeService;
         private readonly IEpisodeCutoffService _episodeCutoffService;
         private readonly IQueueService _queueService;
-        private readonly Logger _logger;
+        private readonly ILogger<EpisodeSearchService> _logger;
 
         public EpisodeSearchService(ISearchForReleases releaseSearchService,
                                     IProcessDownloadDecisions processDownloadDecisions,
                                     IEpisodeService episodeService,
                                     IEpisodeCutoffService episodeCutoffService,
                                     IQueueService queueService,
-                                    Logger logger)
+                                    ILogger<EpisodeSearchService> logger)
         {
             _releaseSearchService = releaseSearchService;
             _processDownloadDecisions = processDownloadDecisions;
@@ -59,7 +58,7 @@ namespace NzbDrone.Core.IndexerSearch
                         }
                         catch (Exception ex)
                         {
-                            _logger.Error(ex, "Unable to search for episodes in season {0} of [{1}]", season.Key, series.Key);
+                            _logger.LogError(ex, "Unable to search for episodes in season {SeasonKey} of [{SeriesKey}]", season.Key, series.Key);
                             continue;
                         }
                     }
@@ -72,7 +71,7 @@ namespace NzbDrone.Core.IndexerSearch
                         }
                         catch (Exception ex)
                         {
-                            _logger.Error(ex, "Unable to search for episode: [{0}]", season.First());
+                            _logger.LogError(ex, "Unable to search for episode: [{Episode}]", season.First());
                             continue;
                         }
                     }
@@ -90,7 +89,7 @@ namespace NzbDrone.Core.IndexerSearch
         {
             return episodeMonitored && seriesMonitored;
         }
-        
+
         public void Execute(EpisodeSearchCommand message)
         {
             foreach (var episodeId in message.EpisodeIds)

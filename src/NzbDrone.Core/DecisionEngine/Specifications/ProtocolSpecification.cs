@@ -1,4 +1,4 @@
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Indexers;
 using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.Parser.Model;
@@ -9,10 +9,10 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
     public class ProtocolSpecification : IDecisionEngineSpecification
     {
         private readonly IDelayProfileService _delayProfileService;
-        private readonly Logger _logger;
+        private readonly ILogger<ProtocolSpecification> _logger;
 
         public ProtocolSpecification(IDelayProfileService delayProfileService,
-                                     Logger logger)
+            ILogger<ProtocolSpecification> logger)
         {
             _delayProfileService = delayProfileService;
             _logger = logger;
@@ -27,13 +27,13 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
 
             if (subject.Release.DownloadProtocol == DownloadProtocol.Usenet && !delayProfile.EnableUsenet)
             {
-                _logger.Debug("[{0}] Usenet is not enabled for this series", subject.Release.Title);
+                _logger.LogDebug("[{Title}] Usenet is not enabled for this series", subject.Release.Title);
                 return Decision.Reject("Usenet is not enabled for this series");
             }
 
             if (subject.Release.DownloadProtocol == DownloadProtocol.Torrent && !delayProfile.EnableTorrent)
             {
-                _logger.Debug("[{0}] Torrent is not enabled for this series", subject.Release.Title);
+                _logger.LogDebug("[{Title}] Torrent is not enabled for this series", subject.Release.Title);
                 return Decision.Reject("Torrent is not enabled for this series");
             }
 

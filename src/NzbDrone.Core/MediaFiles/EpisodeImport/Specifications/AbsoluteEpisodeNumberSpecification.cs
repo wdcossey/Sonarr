@@ -1,5 +1,5 @@
 using System;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.DecisionEngine;
 using NzbDrone.Core.Download;
@@ -12,9 +12,9 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
     public class AbsoluteEpisodeNumberSpecification : IImportDecisionEngineSpecification
     {
         private readonly IBuildFileNames _buildFileNames;
-        private readonly Logger _logger;
+        private readonly ILogger<AbsoluteEpisodeNumberSpecification> _logger;
 
-        public AbsoluteEpisodeNumberSpecification(IBuildFileNames buildFileNames, Logger logger)
+        public AbsoluteEpisodeNumberSpecification(IBuildFileNames buildFileNames, ILogger<AbsoluteEpisodeNumberSpecification> logger)
         {
             _buildFileNames = buildFileNames;
             _logger = logger;
@@ -23,13 +23,13 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
         {
             if (localEpisode.Series.SeriesType != SeriesTypes.Anime)
             {
-                _logger.Debug("Series type is not Anime, skipping check");
+                _logger.LogDebug("Series type is not Anime, skipping check");
                 return Decision.Accept();
             }
 
             if (!_buildFileNames.RequiresAbsoluteEpisodeNumber(localEpisode.Series, localEpisode.Episodes))
             {
-                _logger.Debug("File name format does not require absolute episode number, skipping check");
+                _logger.LogDebug("File name format does not require absolute episode number, skipping check");
                 return Decision.Accept();
             }
 
@@ -40,13 +40,13 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
 
                 if (airDateUtc.HasValue && airDateUtc.Value.Before(DateTime.UtcNow.AddDays(-1)))
                 {
-                    _logger.Debug("Episode aired more than 1 day ago");
+                    _logger.LogDebug("Episode aired more than 1 day ago");
                     continue;
                 }
 
                 if (!absoluteEpisodeNumber.HasValue)
                 {
-                    _logger.Debug("Episode does not have an absolute episode number and recently aired");
+                    _logger.LogDebug("Episode does not have an absolute episode number and recently aired");
 
                     return Decision.Reject("Episode does not have an absolute episode number and recently aired");
                 }

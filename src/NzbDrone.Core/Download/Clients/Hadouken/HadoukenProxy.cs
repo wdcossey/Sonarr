@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Http;
 using NzbDrone.Common.Serializer;
 using NzbDrone.Core.Download.Clients.Hadouken.Models;
@@ -22,9 +22,9 @@ namespace NzbDrone.Core.Download.Clients.Hadouken
     public class HadoukenProxy : IHadoukenProxy
     {
         private readonly IHttpClient<HadoukenProxy> _httpClient;
-        private readonly Logger _logger;
+        private readonly ILogger<HadoukenProxy> _logger;
 
-        public HadoukenProxy(IHttpClient<HadoukenProxy> httpClient, Logger logger)
+        public HadoukenProxy(IHttpClient<HadoukenProxy> httpClient, ILogger<HadoukenProxy> logger)
         {
             _httpClient = httpClient;
             _logger = logger;
@@ -153,7 +153,7 @@ namespace NzbDrone.Core.Download.Clients.Hadouken
             }
             catch(Exception ex)
             {
-                _logger.Error(ex, "Failed to map Hadouken torrent data.");
+                _logger.LogError(ex, "Failed to map Hadouken torrent data.");
             }
 
             return torrent;

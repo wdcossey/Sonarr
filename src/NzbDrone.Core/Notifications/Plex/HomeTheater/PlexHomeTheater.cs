@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Net.Sockets;
+using Microsoft.Extensions.Logging;
 using FluentValidation.Results;
-using NLog;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Notifications.Xbmc;
 
@@ -10,9 +10,9 @@ namespace NzbDrone.Core.Notifications.Plex.HomeTheater
     public class PlexHomeTheater : NotificationBase<PlexHomeTheaterSettings>
     {
         private readonly IXbmcService _xbmcService;
-        private readonly Logger _logger;
+        private readonly ILogger<PlexHomeTheater> _logger;
 
-        public PlexHomeTheater(IXbmcService xbmcService, Logger logger)
+        public PlexHomeTheater(IXbmcService xbmcService, ILogger<PlexHomeTheater> logger)
         {
             _xbmcService = xbmcService;
             _logger = logger;
@@ -51,8 +51,7 @@ namespace NzbDrone.Core.Notifications.Plex.HomeTheater
             }
             catch (SocketException ex)
             {
-                var logMessage = $"Unable to connect to PHT Host: {Settings.Host}:{Settings.Port}";
-                _logger.Debug(ex, logMessage);
+                _logger.LogDebug(ex, "Unable to connect to PHT Host: {Host}:{Port}", Settings.Host, Settings.Port);
             }
         }
     }

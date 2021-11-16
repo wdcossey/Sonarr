@@ -1,7 +1,6 @@
 using System;
 using System.IO;
-using NLog;
-using NzbDrone.Common;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Processes;
@@ -19,21 +18,23 @@ namespace NzbDrone.Update.UpdateEngine
         private readonly IServiceProvider _serviceProvider;
         private readonly IProcessProvider _processProvider;
         private readonly IStartupContext _startupContext;
-        private readonly IDiskProvider _diskProvider;
-        private readonly Logger _logger;
+        private readonly ILogger<StartNzbDrone> _logger;
 
-        public StartNzbDrone(IServiceProvider serviceProvider, IProcessProvider processProvider, IStartupContext startupContext, IDiskProvider diskProvider, Logger logger)
+        public StartNzbDrone(IServiceProvider serviceProvider,
+                             IProcessProvider processProvider,
+                             IStartupContext startupContext,
+                             IDiskProvider diskProvider,
+                             ILogger<StartNzbDrone> logger)
         {
             _serviceProvider = serviceProvider;
             _processProvider = processProvider;
             _startupContext = startupContext;
-            _diskProvider = diskProvider;
             _logger = logger;
         }
 
         public void Start(AppType appType, string installationFolder)
         {
-            _logger.Info("Starting Sonarr");
+            _logger.LogInformation("Starting Sonarr");
             if (appType == AppType.Service)
             {
                 try
@@ -43,7 +44,7 @@ namespace NzbDrone.Update.UpdateEngine
                 }
                 catch (InvalidOperationException e)
                 {
-                    _logger.Warn(e, "Couldn't start Sonarr Service (Most likely due to permission issues). falling back to console.");
+                    _logger.LogWarning(e, "Couldn't start Sonarr Service (Most likely due to permission issues). falling back to console.");
                     StartConsole(installationFolder);
                 }
             }
@@ -59,7 +60,7 @@ namespace NzbDrone.Update.UpdateEngine
 
         private void StartService()
         {
-            _logger.Info("Starting Sonarr service");
+            _logger.LogInformation("Starting Sonarr service");
             //_serviceProvider.Start(ServiceProvider.SERVICE_NAME);
         }
 
@@ -75,7 +76,7 @@ namespace NzbDrone.Update.UpdateEngine
 
         private void Start(string installationFolder, string fileName)
         {
-            _logger.Info("Starting {0}", fileName);
+            _logger.LogInformation("Starting {FileName}", fileName);
             var path = Path.Combine(installationFolder, fileName);
 
             if (!_startupContext.Flags.Contains(StartupContext.NO_BROWSER))

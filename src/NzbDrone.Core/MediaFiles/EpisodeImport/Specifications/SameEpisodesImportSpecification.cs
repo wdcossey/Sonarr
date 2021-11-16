@@ -1,4 +1,4 @@
-﻿using NLog;
+﻿using Microsoft.Extensions.Logging;
 using NzbDrone.Core.DecisionEngine;
 using NzbDrone.Core.DecisionEngine.Specifications;
 using NzbDrone.Core.Download;
@@ -9,9 +9,9 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
     public class SameEpisodesImportSpecification : IImportDecisionEngineSpecification
     {
         private readonly SameEpisodesSpecification _sameEpisodesSpecification;
-        private readonly Logger _logger;
+        private readonly ILogger<SameEpisodesImportSpecification> _logger;
 
-        public SameEpisodesImportSpecification(SameEpisodesSpecification sameEpisodesSpecification, Logger logger)
+        public SameEpisodesImportSpecification(SameEpisodesSpecification sameEpisodesSpecification, ILogger<SameEpisodesImportSpecification> logger)
         {
             _sameEpisodesSpecification = sameEpisodesSpecification;
             _logger = logger;
@@ -26,7 +26,7 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
                 return Decision.Accept();
             }
 
-            _logger.Debug("Episode file on disk contains more episodes than this file contains");
+            _logger.LogDebug("Episode file on disk contains more episodes than this file contains");
             return Decision.Reject("Episode file on disk contains more episodes than this file contains");
         }
     }

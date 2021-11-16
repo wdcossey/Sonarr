@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Datastore;
@@ -32,14 +32,14 @@ namespace NzbDrone.Core.Extras
         private readonly IDiskProvider _diskProvider;
         private readonly IConfigService _configService;
         private readonly List<IManageExtraFiles> _extraFileManagers;
-        private readonly Logger _logger;
+        private readonly ILogger<ExtraService> _logger;
 
         public ExtraService(IMediaFileService mediaFileService,
                             IEpisodeService episodeService,
                             IDiskProvider diskProvider,
                             IConfigService configService,
                             IEnumerable<IManageExtraFiles> extraFileManagers,
-                            Logger logger)
+                            ILogger<ExtraService> logger)
         {
             _mediaFileService = mediaFileService;
             _episodeService = episodeService;
@@ -117,7 +117,7 @@ namespace NzbDrone.Core.Extras
                 }
                 catch (Exception ex)
                 {
-                    _logger.Warn(ex, "Failed to import extra file: {0}", matchingFilename);
+                    _logger.LogWarning(ex, "Failed to import extra file: {MatchingFilename}", matchingFilename);
                 }
             }
         }

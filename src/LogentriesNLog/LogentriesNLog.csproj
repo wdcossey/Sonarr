@@ -13,7 +13,7 @@
   <ItemGroup>
     <PackageReference Include="fastJSON" Version="2.4.0.4" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
-    <PackageReference Include="NLog" Version="4.6.6" />
+    <PackageReference Include="NLog" Version="4.7.12" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LogentriesCore\LogentriesCore.csproj" />

@@ -1,4 +1,4 @@
-﻿using NLog;
+﻿using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Parser;
@@ -7,14 +7,15 @@ namespace NzbDrone.Core.Indexers.Fanzub
 {
     public class Fanzub : HttpIndexerBase<FanzubSettings>
     {
+        private readonly ILoggerFactory _loggerFactory;
         public override string Name => "Fanzub";
 
         public override DownloadProtocol Protocol => DownloadProtocol.Usenet;
 
-        public Fanzub(IHttpClient<Fanzub> httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, Logger logger)
-            : base(httpClient, indexerStatusService, configService, parsingService, logger)
+        public Fanzub(IHttpClient<Fanzub> httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, ILoggerFactory loggerFactory)
+            : base(httpClient, indexerStatusService, configService, parsingService, loggerFactory)
         {
-
+            _loggerFactory = loggerFactory;
         }
 
         public override IIndexerRequestGenerator GetRequestGenerator()
@@ -24,7 +25,7 @@ namespace NzbDrone.Core.Indexers.Fanzub
 
         public override IParseIndexerResponse GetParser()
         {
-            return new RssParser() { UseEnclosureUrl = true, UseEnclosureLength = true };
+            return new RssParser(_loggerFactory) { UseEnclosureUrl = true, UseEnclosureLength = true };
         }
     }
 }

@@ -1,5 +1,5 @@
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.DecisionEngine;
 using NzbDrone.Core.Download;
@@ -11,10 +11,10 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
     public class AlreadyImportedSpecification : IImportDecisionEngineSpecification
     {
         private readonly IHistoryService _historyService;
-        private readonly Logger _logger;
+        private readonly ILogger<AlreadyImportedSpecification> _logger;
 
         public AlreadyImportedSpecification(IHistoryService historyService,
-                                            Logger logger)
+                                            ILogger<AlreadyImportedSpecification> logger)
         {
             _historyService = historyService;
             _logger = logger;
@@ -26,7 +26,7 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
         {
             if (downloadClientItem == null)
             {
-                _logger.Debug("No download client information is available, skipping");
+                _logger.LogDebug("No download client information is available, skipping");
                 return Decision.Accept();
             }
 
@@ -34,7 +34,7 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
             {
                 if (!episode.HasFile)
                 {
-                    _logger.Debug("Skipping already imported check for episode without file");
+                    _logger.LogDebug("Skipping already imported check for episode without file");
                     continue;
                 }
 
@@ -44,20 +44,20 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
 
                 if (lastImported == null)
                 {
-                    _logger.Trace("Episode file has not been imported");
+                    _logger.LogTrace("Episode file has not been imported");
                     continue;
                 }
 
                 // If the release was grabbed again after importing don't reject it
                 if (lastGrabbed != null && lastGrabbed.Date.After(lastImported.Date))
                 {
-                    _logger.Trace("Episode file was grabbed again after importing");
+                    _logger.LogTrace("Episode file was grabbed again after importing");
                     continue;
                 }
 
                 if (lastImported.DownloadId == downloadClientItem.DownloadId)
                 {
-                    _logger.Debug("Episode file previously imported at {0}", lastImported.Date);
+                    _logger.LogDebug("Episode file previously imported at {Date}", lastImported.Date);
                     return Decision.Reject("Episode file already imported at {0}", lastImported.Date);
                 }
             }

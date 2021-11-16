@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentValidation.Results;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Parser;
@@ -17,13 +17,13 @@ namespace NzbDrone.Core.ImportLists
         protected readonly IImportListStatusService _importListStatusService;
         protected readonly IConfigService _configService;
         protected readonly IParsingService _parsingService;
-        protected readonly Logger _logger;
+        protected readonly ILogger _logger;
 
         public abstract string Name { get; }
 
         public abstract ImportListType ListType {get; }
 
-        public ImportListBase(IImportListStatusService importListStatusService, IConfigService configService, IParsingService parsingService, Logger logger)
+        public ImportListBase(IImportListStatusService importListStatusService, IConfigService configService, IParsingService parsingService, ILogger logger)
         {
             _importListStatusService = importListStatusService;
             _configService = configService;
@@ -82,7 +82,7 @@ namespace NzbDrone.Core.ImportLists
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Test aborted due to exception");
+                _logger.LogError(ex, "Test aborted due to exception");
                 failures.Add(new ValidationFailure(string.Empty, "Test was aborted due to an error: " + ex.Message));
             }
 

@@ -1,5 +1,5 @@
 using System;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Download.Clients;
@@ -16,7 +16,7 @@ namespace NzbDrone.Core.Download
 
     public class DownloadSeedConfigProvider : IDownloadSeedConfigProvider
     {
-        private readonly Logger _logger;
+        private readonly ILogger<DownloadSeedConfigProvider> _logger;
         private readonly ISeedConfigProvider _indexerSeedConfigProvider;
         private readonly IDownloadHistoryService _downloadHistoryService;
 
@@ -28,7 +28,7 @@ namespace NzbDrone.Core.Download
 
         private readonly ICached<CachedSeedConfiguration> _cacheDownloads;
 
-        public DownloadSeedConfigProvider(IDownloadHistoryService downloadHistoryService, ISeedConfigProvider indexerSeedConfigProvider, ICacheManager cacheManager, Logger logger)
+        public DownloadSeedConfigProvider(IDownloadHistoryService downloadHistoryService, ISeedConfigProvider indexerSeedConfigProvider, ICacheManager cacheManager, ILogger<DownloadSeedConfigProvider> logger)
         {
             _logger = logger;
             _indexerSeedConfigProvider = indexerSeedConfigProvider;
@@ -58,7 +58,7 @@ namespace NzbDrone.Core.Download
 
             if (historyItem == null)
             {
-                _logger.Debug("No download history item for infohash {0}, unable to provide seed configuration", infoHash);
+                _logger.LogDebug("No download history item for infohash {InfoHash}, unable to provide seed configuration", infoHash);
                 return null;
             }
 
@@ -70,7 +70,7 @@ namespace NzbDrone.Core.Download
 
             if (parsedEpisodeInfo == null)
             {
-                _logger.Debug("No parsed title in download history item for infohash {0}, unable to provide seed configuration", infoHash);
+                _logger.LogDebug("No parsed title in download history item for infohash {InfoHash}, unable to provide seed configuration", infoHash);
                 return null;
             }
 

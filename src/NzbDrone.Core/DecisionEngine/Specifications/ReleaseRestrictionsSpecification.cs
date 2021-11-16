@@ -1,7 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.Parser.Model;
@@ -11,11 +10,11 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
 {
     public class ReleaseRestrictionsSpecification : IDecisionEngineSpecification
     {
-        private readonly Logger _logger;
+        private readonly ILogger<ReleaseRestrictionsSpecification> _logger;
         private readonly IReleaseProfileService _releaseProfileService;
         private readonly ITermMatcherService _termMatcherService;
 
-        public ReleaseRestrictionsSpecification(ITermMatcherService termMatcherService, IReleaseProfileService releaseProfileService, Logger logger)
+        public ReleaseRestrictionsSpecification(ITermMatcherService termMatcherService, IReleaseProfileService releaseProfileService, ILogger<ReleaseRestrictionsSpecification> logger)
         {
             _logger = logger;
             _releaseProfileService = releaseProfileService;
@@ -27,7 +26,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
 
         public virtual Decision IsSatisfiedBy(RemoteEpisode subject, SearchCriteriaBase searchCriteria)
         {
-            _logger.Debug("Checking if release meets restrictions: {0}", subject);
+            _logger.LogDebug("Checking if release meets restrictions: {Subject}", subject);
 
             var title = subject.Release.Title;
             var releaseProfiles = _releaseProfileService.EnabledForTags(subject.Series.Tags, subject.Release.IndexerId);
@@ -43,7 +42,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
                 if (foundTerms.Empty())
                 {
                     var terms = string.Join(", ", requiredTerms);
-                    _logger.Debug("[{0}] does not contain one of the required terms: {1}", title, terms);
+                    _logger.LogDebug("[{Title}] does not contain one of the required terms: {Terms}", title, terms);
                     return Decision.Reject("Does not contain one of the required terms: {0}", terms);
                 }
             }
@@ -56,12 +55,12 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
                 if (foundTerms.Any())
                 {
                     var terms = string.Join(", ", foundTerms);
-                    _logger.Debug("[{0}] contains these ignored terms: {1}", title, terms);
+                    _logger.LogDebug("[{Title}] contains these ignored terms: {Terms}", title, terms);
                     return Decision.Reject("Contains these ignored terms: {0}", terms);
                 }
             }
 
-            _logger.Debug("[{0}] No restrictions apply, allowing", subject);
+            _logger.LogDebug("[{Subject}] No restrictions apply, allowing", subject);
             return Decision.Accept();
         }
 

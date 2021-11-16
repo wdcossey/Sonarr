@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.Parser.Model;
@@ -12,9 +12,9 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.RssSync
     {
         private readonly UpgradableSpecification _upgradableSpecification;
         private readonly IConfigService _configService;
-        private readonly Logger _logger;
+        private readonly ILogger<ProperSpecification> _logger;
 
-        public ProperSpecification(UpgradableSpecification upgradableSpecification, IConfigService configService, Logger logger)
+        public ProperSpecification(UpgradableSpecification upgradableSpecification, IConfigService configService, ILogger<ProperSpecification> logger)
         {
             _upgradableSpecification = upgradableSpecification;
             _configService = configService;
@@ -35,7 +35,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.RssSync
 
             if (downloadPropersAndRepacks == ProperDownloadTypes.DoNotPrefer)
             {
-                _logger.Debug("Propers are not preferred, skipping check");
+                _logger.LogDebug("Propers are not preferred, skipping check");
                 return Decision.Accept();
             }
 
@@ -45,13 +45,13 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.RssSync
                 {
                     if (downloadPropersAndRepacks == ProperDownloadTypes.DoNotUpgrade)
                     {
-                        _logger.Debug("Auto downloading of propers is disabled");
+                        _logger.LogDebug("Auto downloading of propers is disabled");
                         return Decision.Reject("Proper downloading is disabled");
                     }
 
                     if (file.DateAdded < DateTime.Today.AddDays(-7))
                     {
-                        _logger.Debug("Proper for old file, rejecting: {0}", subject);
+                        _logger.LogDebug("Proper for old file, rejecting: {Subject}", subject);
                         return Decision.Reject("Proper for old file");
                     }
                 }

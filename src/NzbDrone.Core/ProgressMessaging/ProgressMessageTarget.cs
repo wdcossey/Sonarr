@@ -1,5 +1,5 @@
-﻿using NLog.Config;
-using NLog;
+﻿using NLog;
+using NLog.Config;
 using NLog.Targets;
 using NzbDrone.Core.Lifecycle;
 using NzbDrone.Core.Messaging.Commands;
@@ -24,7 +24,7 @@ namespace NzbDrone.Core.ProgressMessaging
             var command = ProgressMessageContext.CommandModel;
 
             if (!IsClientMessage(logEvent, command)) return;
-            
+
             if (!ProgressMessageContext.LockReentrancy()) return;
             try
             {

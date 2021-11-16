@@ -1,7 +1,7 @@
 using System;
 using System.Net;
+using Microsoft.Extensions.Logging;
 using FluentValidation.Results;
-using NLog;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Http;
 
@@ -17,9 +17,9 @@ namespace NzbDrone.Core.Notifications.Prowl
     {
         private const string PUSH_URL = "https://api.prowlapp.com/publicapi/add";
         private readonly IHttpClient<ProwlProxy> _httpClient;
-        private readonly Logger _logger;
+        private readonly ILogger<ProwlProxy> _logger;
 
-        public ProwlProxy(IHttpClient<ProwlProxy> httpClient, Logger logger)
+        public ProwlProxy(IHttpClient<ProwlProxy> httpClient, ILogger<ProwlProxy> logger)
         {
             _httpClient = httpClient;
             _logger = logger;
@@ -45,7 +45,7 @@ namespace NzbDrone.Core.Notifications.Prowl
             {
                 if (ex.Response.StatusCode == HttpStatusCode.Unauthorized)
                 {
-                    _logger.Error(ex, "Apikey is invalid: {0}", settings.ApiKey);
+                    _logger.LogError(ex, "Apikey is invalid: {ApiKey}", settings.ApiKey);
                     throw new ProwlException("Apikey is invalid", ex);
                 }
 

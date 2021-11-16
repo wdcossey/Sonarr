@@ -1,5 +1,5 @@
 using System.Net;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Http;
 using NzbDrone.Common.Serializer;
@@ -15,9 +15,9 @@ namespace NzbDrone.Core.Notifications.Plex.PlexTv
     public class PlexTvProxy : IPlexTvProxy
     {
         private readonly IHttpClient<PlexTvProxy> _httpClient;
-        private readonly Logger _logger;
-
-        public PlexTvProxy(IHttpClient<PlexTvProxy> httpClient, Logger logger)
+        private readonly ILogger<PlexTvProxy> _logger;
+        
+        public PlexTvProxy(IHttpClient<PlexTvProxy> httpClient, ILogger<PlexTvProxy> logger)
         {
             _httpClient = httpClient;
             _logger = logger;
@@ -28,9 +28,7 @@ namespace NzbDrone.Core.Notifications.Plex.PlexTv
             var request = BuildRequest(clientIdentifier);
             request.ResourceUrl = $"/api/v2/pins/{pinId}";
 
-            PlexTvPinResponse response;
-
-            if (!Json.TryDeserialize<PlexTvPinResponse>(ProcessRequest(request), out response))
+            if (!Json.TryDeserialize<PlexTvPinResponse>(ProcessRequest(request), out var response))
             {
                 response = new PlexTvPinResponse();
             }
@@ -58,7 +56,7 @@ namespace NzbDrone.Core.Notifications.Plex.PlexTv
 
             HttpResponse response;
 
-            _logger.Debug("Url: {0}", httpRequest.Url);
+            _logger.LogDebug("Url: {RequestUrl}", httpRequest.Url);
 
             try
             {

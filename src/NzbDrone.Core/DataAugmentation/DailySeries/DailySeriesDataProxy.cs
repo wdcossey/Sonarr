@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cloud;
 using NzbDrone.Common.Http;
 
@@ -16,9 +16,9 @@ namespace NzbDrone.Core.DataAugmentation.DailySeries
     {
         private readonly IHttpClient<DailySeriesDataProxy> _httpClient;
         private readonly IHttpRequestBuilderFactory _requestBuilder;
-        private readonly Logger _logger;
+        private readonly ILogger<DailySeriesDataProxy> _logger;
 
-        public DailySeriesDataProxy(IHttpClient<DailySeriesDataProxy> httpClient, ISonarrCloudRequestBuilder requestBuilder, Logger logger)
+        public DailySeriesDataProxy(IHttpClient<DailySeriesDataProxy> httpClient, ISonarrCloudRequestBuilder requestBuilder, ILogger<DailySeriesDataProxy> logger)
         {
             _httpClient = httpClient;
             _requestBuilder = requestBuilder.Services;
@@ -38,7 +38,7 @@ namespace NzbDrone.Core.DataAugmentation.DailySeries
             }
             catch (Exception ex)
             {
-                _logger.Warn(ex, "Failed to get Daily Series");
+                _logger.LogWarning(ex, "Failed to get Daily Series");
                 return new List<int>();
             }
         }

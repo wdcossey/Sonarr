@@ -1,5 +1,5 @@
 using System;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Processes;
@@ -11,23 +11,23 @@ namespace NzbDrone.Host
     public class Router
     {
         private readonly INzbDroneServiceFactory _nzbDroneServiceFactory;
-        //private readonly IServiceProvider _serviceProvider;
+        //private readonly IServiceProvider _serviceProvider; //TODO: Legacy IServiceProvider
         private readonly IConsoleService _consoleService;
         private readonly IRuntimeInfo _runtimeInfo;
         private readonly IProcessProvider _processProvider;
         private readonly IRemoteAccessAdapter _remoteAccessAdapter;
-        private readonly Logger _logger;
+        private readonly ILogger<Router> _logger;
 
         public Router(INzbDroneServiceFactory nzbDroneServiceFactory,
-                      //IServiceProvider serviceProvider,
+                      //IServiceProvider serviceProvider, //TODO: Legacy IServiceProvider
                       IConsoleService consoleService,
                       IRuntimeInfo runtimeInfo,
                       IProcessProvider processProvider,
                       IRemoteAccessAdapter remoteAccessAdapter,
-                      Logger logger)
+                      ILogger<Router> logger)
         {
             _nzbDroneServiceFactory = nzbDroneServiceFactory;
-            //_serviceProvider = serviceProvider;
+            //_serviceProvider = serviceProvider; //TODO: Legacy IServiceProvider
             _consoleService = consoleService;
             _runtimeInfo = runtimeInfo;
             _processProvider = processProvider;
@@ -37,13 +37,13 @@ namespace NzbDrone.Host
 
         public void Route(ApplicationModes applicationModes)
         {
-            _logger.Info("Application mode: {0}", applicationModes);
+            _logger.LogInformation("Application mode: {0}", applicationModes);
 
             switch (applicationModes)
             {
                 case ApplicationModes.Service:
                     {
-                        _logger.Debug("Service selected");
+                        _logger.LogDebug("Service selected");
 
                         throw new NotImplementedException();
                         //_serviceProvider.Run(_nzbDroneServiceFactory.Build());
@@ -53,15 +53,14 @@ namespace NzbDrone.Host
 
                 case ApplicationModes.Interactive:
                     {
-                        _logger.Debug(_runtimeInfo.IsWindowsTray ? "Tray selected" : "Console selected");
-
+                        _logger.LogDebug("{Message}", _runtimeInfo.IsWindowsTray ? "Tray selected" : "Console selected");
                         _nzbDroneServiceFactory.Start();
 
                         break;
                     }
                 case ApplicationModes.InstallService:
                     {
-                        _logger.Debug("Install Service selected");
+                        _logger.LogDebug("Install Service selected");
                         throw new NotImplementedException();
                         /*if (_serviceProvider.ServiceExist(ServiceProvider.SERVICE_NAME))
                         {
@@ -81,7 +80,7 @@ namespace NzbDrone.Host
                     }
                 case ApplicationModes.UninstallService:
                     {
-                        _logger.Debug("Uninstall Service selected");
+                        _logger.LogDebug("Uninstall Service selected");
                         throw new NotImplementedException();
                         /*if (!_serviceProvider.ServiceExist(ServiceProvider.SERVICE_NAME))
                         {
@@ -96,7 +95,7 @@ namespace NzbDrone.Host
                     }
                 case ApplicationModes.RegisterUrl:
                     {
-                        _logger.Debug("Regiser URL selected");
+                        _logger.LogDebug("Regiser URL selected");
                         _remoteAccessAdapter.MakeAccessible(false);
 
                         break;

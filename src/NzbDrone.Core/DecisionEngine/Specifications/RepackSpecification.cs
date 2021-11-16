@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.Parser.Model;
@@ -10,9 +10,9 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
     public class RepackSpecification : IDecisionEngineSpecification
     {
         private readonly UpgradableSpecification _upgradableSpecification;
-        private readonly Logger _logger;
+        private readonly ILogger<RepackSpecification> _logger;
 
-        public RepackSpecification(UpgradableSpecification upgradableSpecification, Logger logger)
+        public RepackSpecification(UpgradableSpecification upgradableSpecification, ILogger<RepackSpecification> logger)
         {
             _upgradableSpecification = upgradableSpecification;
             _logger = logger;
@@ -47,8 +47,8 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
 
                     if (!fileReleaseGroup.Equals(releaseGroup, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        _logger.Debug(
-                            "Release is a repack for a different release group. Release Group: {0}. File release group: {1}",
+                        _logger.LogDebug(
+                            "Release is a repack for a different release group. Release Group: {ReleaseGroup}. File release group: {FileReleaseGroup}",
                             releaseGroup, fileReleaseGroup);
                         return Decision.Reject(
                             "Release is a repack for a different release group. Release Group: {0}. File release group: {1}",

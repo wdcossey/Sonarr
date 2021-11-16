@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.MediaFiles.MediaInfo;
 using NzbDrone.Core.Tv;
 
@@ -14,9 +14,9 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport
     public class DetectSample : IDetectSample
     {
         private readonly IVideoFileInfoReader _videoFileInfoReader;
-        private readonly Logger _logger;
+        private readonly ILogger<DetectSample> _logger;
 
-        public DetectSample(IVideoFileInfoReader videoFileInfoReader, Logger logger)
+        public DetectSample(IVideoFileInfoReader videoFileInfoReader, ILogger<DetectSample> logger)
         {
             _videoFileInfoReader = videoFileInfoReader;
             _logger = logger;
@@ -26,7 +26,7 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport
         {
             if (isSpecial)
             {
-                _logger.Debug("Special, skipping sample check");
+                _logger.LogDebug("Special, skipping sample check");
                 return DetectSampleResult.NotSample;
             }
 
@@ -34,13 +34,13 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport
 
             if (extension != null && extension.Equals(".flv", StringComparison.InvariantCultureIgnoreCase))
             {
-                _logger.Debug("Skipping sample check for .flv file");
+                _logger.LogDebug("Skipping sample check for .flv file");
                 return DetectSampleResult.NotSample;
             }
 
             if (extension != null && extension.Equals(".strm", StringComparison.InvariantCultureIgnoreCase))
             {
-                _logger.Debug("Skipping sample check for .strm file");
+                _logger.LogDebug("Skipping sample check for .strm file");
                 return DetectSampleResult.NotSample;
             }
 
@@ -49,7 +49,7 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport
 
             if (!runTime.HasValue)
             {
-                _logger.Error("Failed to get runtime from the file, make sure mediainfo is available");
+                _logger.LogError("Failed to get runtime from the file, make sure mediainfo is available");
                 return DetectSampleResult.Indeterminate;
             }
 
@@ -57,17 +57,17 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport
 
             if (runTime.Value.TotalMinutes.Equals(0))
             {
-                _logger.Error("[{0}] has a runtime of 0, is it a valid video file?", path);
+                _logger.LogError("[{Path}] has a runtime of 0, is it a valid video file?", path);
                 return DetectSampleResult.Sample;
             }
 
             if (runTime.Value.TotalSeconds < minimumRuntime)
             {
-                _logger.Debug("[{0}] appears to be a sample. Runtime: {1} seconds. Expected at least: {2} seconds", path, runTime, minimumRuntime);
+                _logger.LogDebug("[{Path}] appears to be a sample. Runtime: {RunTime} seconds. Expected at least: {MinimumRuntime} seconds", path, runTime, minimumRuntime);
                 return DetectSampleResult.Sample;
             }
 
-            _logger.Debug("Runtime is over 90 seconds");
+            _logger.LogDebug("Runtime is over 90 seconds");
             return DetectSampleResult.NotSample;
         }
 
@@ -75,21 +75,15 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport
         {
             //Anime short - 15 seconds
             if (series.Runtime <= 3)
-            {
                 return 15;
-            }
 
             //Webisodes - 90 seconds
             if (series.Runtime <= 10)
-            {
                 return 90;
-            }
 
             //30 minute episodes - 5 minutes
             if (series.Runtime <= 30)
-            {
                 return 300;
-            }
 
             //60 minute episodes - 10 minutes
             return 600;

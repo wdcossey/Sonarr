@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Backup;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Configuration.Events;
@@ -31,9 +31,9 @@ namespace NzbDrone.Core.Jobs
     {
         private readonly IScheduledTaskRepository _scheduledTaskRepository;
         private readonly IConfigService _configService;
-        private readonly Logger _logger;
+        private readonly ILogger<TaskManager> _logger;
 
-        public TaskManager(IScheduledTaskRepository scheduledTaskRepository, IConfigService configService, Logger logger)
+        public TaskManager(IScheduledTaskRepository scheduledTaskRepository, IConfigService configService, ILogger<TaskManager> logger)
         {
             _scheduledTaskRepository = scheduledTaskRepository;
             _configService = configService;
@@ -84,7 +84,7 @@ namespace NzbDrone.Core.Jobs
                     },
 
                     new ScheduledTask
-                    { 
+                    {
                         Interval = GetRssSyncInterval(),
                         TypeName = typeof(RssSyncCommand).FullName
                     }
@@ -92,13 +92,13 @@ namespace NzbDrone.Core.Jobs
 
             var currentTasks = _scheduledTaskRepository.All().ToList();
 
-            _logger.Trace("Initializing jobs. Available: {0} Existing: {1}", defaultTasks.Count(), currentTasks.Count());
+            _logger.LogTrace("Initializing jobs. Available: {DefaultCount} Existing: {CurrentCount}", defaultTasks.Count(), currentTasks.Count());
 
             foreach (var job in currentTasks)
             {
                 if (!defaultTasks.Any(c => c.TypeName == job.TypeName))
                 {
-                    _logger.Trace("Removing job from database '{0}'", job.TypeName);
+                    _logger.LogTrace("Removing job from database '{TypeName}'", job.TypeName);
                     _scheduledTaskRepository.Delete(job.Id);
                 }
             }
@@ -158,7 +158,7 @@ namespace NzbDrone.Core.Jobs
 
             if (scheduledTask != null && message.Command.Body.UpdateScheduledTask)
             {
-                _logger.Trace("Updating last run time for: {0}", scheduledTask.TypeName);
+                _logger.LogTrace("Updating last run time for: {TypeName}", scheduledTask.TypeName);
                 _scheduledTaskRepository.SetLastExecutionTime(scheduledTask.Id, DateTime.UtcNow);
             }
         }

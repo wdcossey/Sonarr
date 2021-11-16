@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentValidation.Results;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.ThingiProvider;
 
@@ -16,14 +16,14 @@ namespace NzbDrone.Core.ImportLists
     public class ImportListFactory : ProviderFactory<IImportList, ImportListDefinition>, IImportListFactory
     {
         private readonly IImportListStatusService _importListStatusService;
-        private readonly Logger _logger;
+        private readonly ILogger<ImportListFactory> _logger;
 
         public ImportListFactory(IImportListStatusService importListStatusService,
                               IImportListRepository providerRepository,
                               IEnumerable<IImportList> providers,
                               IServiceProvider serviceProvider,
                               IEventAggregator eventAggregator,
-                              Logger logger)
+                              ILogger<ImportListFactory> logger)
             : base(providerRepository, providers, serviceProvider, eventAggregator, logger)
         {
             _importListStatusService = importListStatusService;
@@ -63,7 +63,7 @@ namespace NzbDrone.Core.ImportLists
                 ImportListStatus blockedImportListStatus;
                 if (blockedImportLists.TryGetValue(importList.Definition.Id, out blockedImportListStatus))
                 {
-                    _logger.Debug("Temporarily ignoring import list {0} till {1} due to recent failures.", importList.Definition.Name, blockedImportListStatus.DisabledTill.Value.ToLocalTime());
+                    _logger.LogDebug("Temporarily ignoring import list {Name} till {LocalTime} due to recent failures.", importList.Definition.Name, blockedImportListStatus.DisabledTill.Value.ToLocalTime());
                     continue;
                 }
 

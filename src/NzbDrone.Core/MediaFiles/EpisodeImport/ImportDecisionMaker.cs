@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.DecisionEngine;
@@ -27,14 +27,14 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport
         private readonly IAggregationService _aggregationService;
         private readonly IDiskProvider _diskProvider;
         private readonly IDetectSample _detectSample;
-        private readonly Logger _logger;
+        private readonly ILogger<ImportDecisionMaker> _logger;
 
         public ImportDecisionMaker(IEnumerable<IImportDecisionEngineSpecification> specifications,
                                    IMediaFileService mediaFileService,
                                    IAggregationService aggregationService,
                                    IDiskProvider diskProvider,
                                    IDetectSample detectSample,
-                                   Logger logger)
+                                   ILogger<ImportDecisionMaker> logger)
         {
             _specifications = specifications;
             _mediaFileService = mediaFileService;
@@ -58,7 +58,7 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport
         {
             var newFiles = filterExistingFiles ? _mediaFileService.FilterExistingFiles(videoFiles.ToList(), series) : videoFiles.ToList();
 
-            _logger.Debug("Analyzing {0}/{1} files.", newFiles.Count, videoFiles.Count());
+            _logger.LogDebug("Analyzing {NewFilesCount}/{VideoFilesCount} files.", newFiles.Count, videoFiles.Count());
 
             ParsedEpisodeInfo downloadClientItemInfo = null;
 
@@ -139,22 +139,22 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Couldn't import file. {0}", localEpisode.Path);
+                _logger.LogError(ex, "Couldn't import file. {Path}", localEpisode.Path);
 
                 decision = new ImportDecision(localEpisode, new Rejection("Unexpected error processing file"));
             }
 
             if (decision == null)
             {
-                _logger.Error("Unable to make a decision on {0}", localEpisode.Path);
+                _logger.LogError("Unable to make a decision on {Path}", localEpisode.Path);
             }
             else if (decision.Rejections.Any())
             {
-                _logger.Debug("File rejected for the following reasons: {0}", string.Join(", ", decision.Rejections));
+                _logger.LogDebug("File rejected for the following reasons: {Rejections}", string.Join(", ", decision.Rejections));
             }
             else
             {
-                _logger.Debug("File accepted");
+                _logger.LogDebug("File accepted");
             }
 
             return decision;
@@ -175,7 +175,7 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport
             {
                 //e.Data.Add("report", remoteEpisode.Report.ToJson());
                 //e.Data.Add("parsed", remoteEpisode.ParsedEpisodeInfo.ToJson());
-                _logger.Error(e, "Couldn't evaluate decision on {0}", localEpisode.Path);
+                _logger.LogError(e, "Couldn't evaluate decision on {Path}", localEpisode.Path);
                 return new Rejection($"{spec.GetType().Name}: {e.Message}");
             }
 

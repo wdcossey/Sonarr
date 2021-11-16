@@ -13,12 +13,10 @@ namespace Sonarr.Server.HostedServices
         private readonly IHostApplicationLifetime _applicationLifetime;
         private readonly IEventAggregator _eventAggregator;
 
-        public SonarrHostedService(ILogger<SonarrHostedService> logger, IHostApplicationLifetime applicationLifetime, IEventAggregator eventAggregator)
-        {
-            _logger = logger;
-            _applicationLifetime = applicationLifetime;
-            _eventAggregator = eventAggregator;
-        }
+        public SonarrHostedService(ILogger<SonarrHostedService> logger,
+                                   IHostApplicationLifetime applicationLifetime,
+                                   IEventAggregator eventAggregator)
+            => (_logger, _applicationLifetime, _eventAggregator) = (logger, applicationLifetime, eventAggregator);
 
         public Task StartAsync(CancellationToken cancellationToken)
         {

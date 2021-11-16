@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.DecisionEngine.Specifications;
 using NzbDrone.Core.Exceptions;
@@ -31,6 +32,7 @@ namespace Sonarr.Api.V3.EpisodeFiles
             _upgradableSpecification = upgradableSpecification;
         }
 
+        [ProducesResponseType(typeof(List<EpisodeFileResource>), StatusCodes.Status200OK)]
         [HttpGet]
         public IActionResult GetEpisodeFiles(
             [FromQuery] int? seriesId = null,
@@ -53,6 +55,7 @@ namespace Sonarr.Api.V3.EpisodeFiles
                     .ConvertAll(e => e.ToResource(_seriesService.GetSeries(f.Key), _upgradableSpecification))));
         }
 
+        [ProducesResponseType(typeof(EpisodeFileResource), StatusCodes.Status200OK)]
         [HttpGet("{id:int:required}")]
         public IActionResult GetEpisodeFile(int id)
         {
@@ -61,12 +64,13 @@ namespace Sonarr.Api.V3.EpisodeFiles
             return Ok(episodeFile.ToResource(series, _upgradableSpecification));
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpDelete("{id:int:required}")]
         public IActionResult DeleteEpisodeFile(int id)
         {
-            var episodeFile = _mediaFileService.Get(id) 
+            var episodeFile = _mediaFileService.Get(id)
                               ?? throw new NzbDroneClientException(HttpStatusCode.NotFound, "Episode file not found");
-            
+
             var series = _seriesService.GetSeries(episodeFile.SeriesId);
 
             _mediaFileDeletionService.DeleteEpisodeFile(series, episodeFile);
@@ -74,6 +78,7 @@ namespace Sonarr.Api.V3.EpisodeFiles
             return Ok(new object());
         }
 
+        [ProducesResponseType(typeof(EpisodeFileResource), StatusCodes.Status202Accepted)]
         [HttpPut]
         [HttpPut("{id:int?}")]
         public IActionResult SetQuality(int? id, [FromBody] EpisodeFileResource resource)
@@ -91,6 +96,7 @@ namespace Sonarr.Api.V3.EpisodeFiles
             return Accepted(_mediaFileService.Update(episodeFile).ToResource(series, _upgradableSpecification));
         }
 
+        [ProducesResponseType(typeof(List<EpisodeFileResource>), StatusCodes.Status202Accepted)]
         [HttpPut("editor")]
         public IActionResult EditAllAsync([FromBody] EpisodeFileListResource resource)
         {
@@ -120,6 +126,7 @@ namespace Sonarr.Api.V3.EpisodeFiles
             return Accepted(episodeFiles.ConvertAll(f => f.ToResource(series, _upgradableSpecification)));
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpPut("bulk")]
         public IActionResult DeleteAllAsync([FromBody] EpisodeFileListResource resource)
         {

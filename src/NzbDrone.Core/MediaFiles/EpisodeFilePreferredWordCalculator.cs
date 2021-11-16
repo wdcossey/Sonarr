@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Profiles.Releases;
 using NzbDrone.Core.Tv;
@@ -16,9 +16,9 @@ namespace NzbDrone.Core.MediaFiles
     public class EpisodeFilePreferredWordCalculator : IEpisodeFilePreferredWordCalculator
     {
         private readonly IPreferredWordService _preferredWordService;
-        private readonly Logger _logger;
+        private readonly ILogger<EpisodeFilePreferredWordCalculator> _logger;
 
-        public EpisodeFilePreferredWordCalculator(IPreferredWordService preferredWordService, Logger logger)
+        public EpisodeFilePreferredWordCalculator(IPreferredWordService preferredWordService, ILogger<EpisodeFilePreferredWordCalculator> logger)
         {
             _preferredWordService = preferredWordService;
             _logger = logger;
@@ -34,7 +34,7 @@ namespace NzbDrone.Core.MediaFiles
             }
             else
             {
-                _logger.Trace("No stored scene name for {0}", episodeFile);
+                _logger.LogTrace("No stored scene name for {EpisodeFile}", episodeFile);
             }
 
             // The file may not have a screen name if the file/folder name contained spaces, but the original path is still store and valuable.
@@ -52,7 +52,7 @@ namespace NzbDrone.Core.MediaFiles
             }
             else
             {
-                _logger.Trace("No stored scene name for {0}", episodeFile);
+                _logger.LogTrace("No stored scene name for {EpisodeFile}", episodeFile);
             }
 
             // Calculate using RelativePath or Path, but not both

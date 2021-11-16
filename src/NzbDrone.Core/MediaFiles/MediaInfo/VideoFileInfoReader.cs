@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using MediaInfo;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 
@@ -17,12 +17,12 @@ namespace NzbDrone.Core.MediaFiles.MediaInfo
     public class VideoFileInfoReader : IVideoFileInfoReader
     {
         private readonly IDiskProvider _diskProvider;
-        private readonly Logger _logger;
+        private readonly ILogger<VideoFileInfoReader> _logger;
 
         public const int MINIMUM_MEDIA_INFO_SCHEMA_REVISION = 3;
         public const int CURRENT_MEDIA_INFO_SCHEMA_REVISION = 7;
 
-        public VideoFileInfoReader(IDiskProvider diskProvider, Logger logger)
+        public VideoFileInfoReader(IDiskProvider diskProvider, ILogger<VideoFileInfoReader> logger)
         {
             _diskProvider = diskProvider;
             _logger = logger;
@@ -43,7 +43,7 @@ namespace NzbDrone.Core.MediaFiles.MediaInfo
             try
             {
                 mediaInfo = new global::MediaInfo.MediaInfo();
-                _logger.Debug("Getting media info from {0}", filename);
+                _logger.LogDebug("Getting media info from {FileName}", filename);
 
                 if (Path.GetExtension(filename).Equals(".ts", StringComparison.OrdinalIgnoreCase))
                 {
@@ -77,7 +77,7 @@ namespace NzbDrone.Core.MediaFiles.MediaInfo
                     if (audioRuntime == 0 && videoRuntime == 0 && generalRuntime == 0)
                     {
                         // No runtime, ask mediainfo to scan the whole file
-                        _logger.Trace("No runtime value found, rescanning at 1.0 scan depth");
+                        _logger.LogTrace("No runtime value found, rescanning at 1.0 scan depth");
                         mediaInfo.Option("ParseSpeed", "1.0");
 
                         open = mediaInfo.Open(filename);
@@ -85,7 +85,7 @@ namespace NzbDrone.Core.MediaFiles.MediaInfo
                     else if (audioChannels > 2 && audioChannelPositions.IsNullOrWhiteSpace())
                     {
                         // Some files with DTS don't have ChannelPositions unless more of the file is scanned
-                        _logger.Trace("DTS audio without expected channel information, rescanning at 0.3 scan depth");
+                        _logger.LogTrace("DTS audio without expected channel information, rescanning at 0.3 scan depth");
                         mediaInfo.Option("ParseSpeed", "0.3");
 
                         open = mediaInfo.Open(filename);
@@ -187,16 +187,16 @@ namespace NzbDrone.Core.MediaFiles.MediaInfo
                 }
                 else
                 {
-                    _logger.Warn("Unable to open media info from file: " + filename);
+                    _logger.LogWarning("Unable to open media info from file: {FileName}", filename);
                 }
             }
             catch (DllNotFoundException ex)
             {
-                _logger.Error(ex, "mediainfo is required but was not found");
+                _logger.LogError(ex, "mediainfo is required but was not found");
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Unable to parse media info from file: {0}", filename);
+                _logger.LogError(ex, "Unable to parse media info from file: {FileName}", filename);
             }
             finally
             {

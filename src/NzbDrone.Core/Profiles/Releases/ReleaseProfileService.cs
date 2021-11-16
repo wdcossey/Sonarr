@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 
 namespace NzbDrone.Core.Profiles.Releases
@@ -21,14 +21,11 @@ namespace NzbDrone.Core.Profiles.Releases
     {
         private readonly ReleaseProfilePreferredComparer _preferredComparer;
         private readonly IRestrictionRepository _repo;
-        private readonly Logger _logger;
 
-        public ReleaseProfileService(IRestrictionRepository repo, Logger logger)
+        public ReleaseProfileService(IRestrictionRepository repo)
         {
             _preferredComparer = new ReleaseProfilePreferredComparer();
-
             _repo = repo;
-            _logger = logger;
         }
 
         public List<ReleaseProfile> All()

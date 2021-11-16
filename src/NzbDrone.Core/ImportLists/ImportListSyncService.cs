@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Instrumentation.Extensions;
 using NzbDrone.Core.ImportLists.Exclusions;
@@ -19,7 +19,7 @@ namespace NzbDrone.Core.ImportLists
         private readonly ISearchForNewSeries _seriesSearchService;
         private readonly ISeriesService _seriesService;
         private readonly IAddSeriesService _addSeriesService;
-        private readonly Logger _logger;
+        private readonly ILogger<ImportListSyncService> _logger;
 
         public ImportListSyncService(IImportListFactory importListFactory,
                               IImportListExclusionService importListExclusionService,
@@ -27,7 +27,7 @@ namespace NzbDrone.Core.ImportLists
                               ISearchForNewSeries seriesSearchService,
                               ISeriesService seriesService,
                               IAddSeriesService addSeriesService,
-                              Logger logger)
+                              ILogger<ImportListSyncService> logger)
         {
             _importListFactory = importListFactory;
             _importListExclusionService = importListExclusionService;
@@ -75,7 +75,7 @@ namespace NzbDrone.Core.ImportLists
 
             foreach (var report in reports)
             {
-                _logger.ProgressTrace("Processing list item {0}/{1}", reportNumber, reports.Count);
+                _logger.ProgressTrace("Processing list item {ReportNumber}/{Count}", reportNumber, reports.Count);
 
                 reportNumber++;
 
@@ -100,7 +100,7 @@ namespace NzbDrone.Core.ImportLists
                 // Break if Series Exists in DB
                 if (existingSeries != null)
                 {
-                    _logger.Debug("{0} [{1}] Rejected, Series Exists in DB", report.TvdbId, report.Title);
+                    _logger.LogDebug("{TvdbId} [{Title}] Rejected, Series Exists in DB", report.TvdbId, report.Title);
                     continue;
                 }
 
@@ -109,7 +109,7 @@ namespace NzbDrone.Core.ImportLists
 
                 if (excludedSeries != null)
                 {
-                    _logger.Debug("{0} [{1}] Rejected due to list exlcusion", report.TvdbId, report.Title);
+                    _logger.LogDebug("{TvdbId} [{Title}] Rejected due to list exlcusion", report.TvdbId, report.Title);
                     continue;
                 }
 

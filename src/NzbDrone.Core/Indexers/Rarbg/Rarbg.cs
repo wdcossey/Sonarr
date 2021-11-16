@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Configuration;
@@ -20,8 +20,8 @@ namespace NzbDrone.Core.Indexers.Rarbg
         public override DownloadProtocol Protocol => DownloadProtocol.Torrent;
         public override TimeSpan RateLimit => TimeSpan.FromSeconds(2);
 
-        public Rarbg(IRarbgTokenProvider tokenProvider, IHttpClient<Rarbg> httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, Logger logger)
-            : base(httpClient, indexerStatusService, configService, parsingService, logger)
+        public Rarbg(IRarbgTokenProvider tokenProvider, IHttpClient<Rarbg> httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, ILoggerFactory loggerFactory)
+            : base(httpClient, indexerStatusService, configService, parsingService, loggerFactory)
         {
             _tokenProvider = tokenProvider;
         }
@@ -62,7 +62,7 @@ namespace NzbDrone.Core.Indexers.Rarbg
                             siteKey = ex.CaptchaRequest.SiteKey,
                             secretToken = ex.CaptchaRequest.SecretToken,
                             responseUrl = ex.CaptchaRequest.ResponseUrl.FullUri,
-                        }                    
+                        }
                     };
                 }
 

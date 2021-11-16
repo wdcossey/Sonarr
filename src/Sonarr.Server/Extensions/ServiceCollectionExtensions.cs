@@ -10,6 +10,7 @@ using NzbDrone.Common.Messaging;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Datastore.Migration.Framework;
 using NzbDrone.Core.DecisionEngine.Specifications;
+using NzbDrone.Core.HealthCheck.Checks;
 using NzbDrone.Core.Notifications.Emby;
 
 // ReSharper disable once CheckNamespace

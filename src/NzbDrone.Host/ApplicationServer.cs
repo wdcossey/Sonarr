@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 //using System.ServiceProcess;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Composition;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Core.Configuration;
@@ -22,22 +22,22 @@ namespace NzbDrone.Host
     {
         private readonly IConfigFileProvider _configFileProvider;
         private readonly IRuntimeInfo _runtimeInfo;
-        //private readonly IHostController _hostController;
+        //private readonly IHostController _hostController; //TODO: Legacy IHostController
         private readonly IStartupContext _startupContext;
         private readonly IBrowserService _browserService;
         private readonly IServiceProvider _serviceProvider;
-        private readonly Logger _logger;
+        private readonly ILogger<NzbDroneServiceFactory> _logger;
 
         public NzbDroneServiceFactory(IConfigFileProvider configFileProvider,
-                                      //IHostController hostController,
+                                      //IHostController hostController, //TODO: Legacy IHostController
                                       IRuntimeInfo runtimeInfo,
                                       IStartupContext startupContext,
                                       IBrowserService browserService,
                                       IServiceProvider serviceProvider,
-                                      Logger logger)
+                                      ILogger<NzbDroneServiceFactory> logger)
         {
             _configFileProvider = configFileProvider;
-            //_hostController = hostController;
+            //_hostController = hostController; //TODO: Legacy IHostController
             _runtimeInfo = runtimeInfo;
             _startupContext = startupContext;
             _browserService = browserService;
@@ -54,7 +54,7 @@ namespace NzbDrone.Host
         {
             if (OsInfo.IsNotWindows)
             {
-                Console.CancelKeyPress += (sender, eventArgs) => LogManager.Configuration = null;
+                //Console.CancelKeyPress += (sender, eventArgs) => LogManager.Configuration = null;
             }
 
             _runtimeInfo.IsExiting = false;
@@ -74,7 +74,7 @@ namespace NzbDrone.Host
             {
                 _browserService.LaunchWebUI();
             }
-
+            
             _serviceProvider.GetRequiredService<IEventAggregator>().PublishEvent(new ApplicationStartedEvent());
         }
 
@@ -90,9 +90,9 @@ namespace NzbDrone.Host
 
         private void Shutdown()
         {
-            _logger.Info("Attempting to stop application.");
+            _logger.LogInformation("Attempting to stop application.");
             //_hostController.StopServer();
-            _logger.Info("Application has finished stop routine.");
+            _logger.LogInformation("Application has finished stop routine.");
             _runtimeInfo.IsExiting = true;
         }
 
@@ -105,7 +105,7 @@ namespace NzbDrone.Host
                     _runtimeInfo.RestartPending = true;
                 }
 
-                LogManager.Configuration = null;
+                //LogManager.Configuration = null;
                 Shutdown();
             }
         }

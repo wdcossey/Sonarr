@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentValidation.Results;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Configuration;
@@ -16,6 +16,7 @@ namespace NzbDrone.Core.Indexers.Torznab
     public class Torznab : HttpIndexerBase<TorznabSettings>
     {
         private readonly INewznabCapabilitiesProvider _capabilitiesProvider;
+        private readonly ILoggerFactory _loggerFactory;
 
         public override string Name => "Torznab";
 
@@ -24,7 +25,7 @@ namespace NzbDrone.Core.Indexers.Torznab
 
         public override IIndexerRequestGenerator GetRequestGenerator()
         {
-            return new NewznabRequestGenerator(_capabilitiesProvider)
+            return new NewznabRequestGenerator(_capabilitiesProvider, _loggerFactory)
             {
                 PageSize = PageSize,
                 Settings = Settings
@@ -33,7 +34,7 @@ namespace NzbDrone.Core.Indexers.Torznab
 
         public override IParseIndexerResponse GetParser()
         {
-            return new TorznabRssParser();
+            return new TorznabRssParser(_loggerFactory);
         }
 
         public override IEnumerable<ProviderDefinition> DefaultDefinitions
@@ -45,11 +46,12 @@ namespace NzbDrone.Core.Indexers.Torznab
                 yield return GetDefinition("Nyaa Pantsu", GetSettings("https://nyaa.pantsu.cat", apiPath: @"/feed/torznab", categories: new int[0], animeCategories: new[] { 5070 }));
             }
         }
-
-        public Torznab(INewznabCapabilitiesProvider capabilitiesProvider, IHttpClient<Torznab> httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, Logger logger)
-            : base(httpClient, indexerStatusService, configService, parsingService, logger)
+        
+        public Torznab(INewznabCapabilitiesProvider capabilitiesProvider, IHttpClient<Torznab> httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, ILoggerFactory loggerFactory)
+            : base(httpClient, indexerStatusService, configService, parsingService, loggerFactory)
         {
             _capabilitiesProvider = capabilitiesProvider;
+            _loggerFactory = loggerFactory;
         }
 
         private IndexerDefinition GetDefinition(string name, TorznabSettings settings)
@@ -119,7 +121,7 @@ namespace NzbDrone.Core.Indexers.Torznab
             }
             catch (Exception ex)
             {
-                _logger.Warn(ex, "Unable to connect to indexer: " + ex.Message);
+                _logger.LogWarning(ex, "Unable to connect to indexer: {Message}", ex.Message);
 
                 return new ValidationFailure(string.Empty, "Unable to connect to indexer, check the log for more details");
             }

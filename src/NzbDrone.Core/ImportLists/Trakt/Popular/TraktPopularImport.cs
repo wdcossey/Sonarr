@@ -1,4 +1,4 @@
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Parser;
@@ -12,7 +12,7 @@ namespace NzbDrone.Core.ImportLists.Trakt.Popular
                    IImportListStatusService netImportStatusService,
                    IConfigService configService,
                    IParsingService parsingService,
-                   Logger logger)
+                   ILogger<TraktPopularImport> logger)
         : base(netImportRepository, httpClient, netImportStatusService, configService, parsingService, logger)
         {
         }

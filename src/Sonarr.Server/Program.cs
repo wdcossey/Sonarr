@@ -1,11 +1,10 @@
 ﻿using System;
 using System.IO;
-using System.Net;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using NLog.Web;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Instrumentation;
@@ -18,22 +17,17 @@ namespace Sonarr.Server
         public static Task Main(string[] args)
         {
             var startupContext = new StartupContext(args);
+
+            var logger = NLog.LogManager.GetLogger(nameof(Program));
+
             try
             {
-                Console.WriteLine($"OsInfo.Os: {OsInfo.Os}");
-                Console.WriteLine($"OsInfo.Os: {OsInfo.Os}");
-                Console.WriteLine($"Environment.OSVersion: {Environment.OSVersion}");
-                Console.WriteLine($"Environment.OSVersion.Version: {Environment.OSVersion.Version}");
-                Console.WriteLine($"Environment.OSVersion.VersionString: {Environment.OSVersion.VersionString}");
-                Console.WriteLine($"RuntimeInformation.OSDescription: {RuntimeInformation.OSDescription}");
-                Console.WriteLine($"RuntimeInformation.OSArchitecture: {RuntimeInformation.OSArchitecture}");
-
                 NzbDroneLogger.Register(startupContext, false, true);
                 return CreateHostBuilder(startupContext, args).Build().RunAsync();
             }
             catch (Exception ex)
             {
-                Console.WriteLine("NLog Exception: " + ex.ToString());
+                logger.Error(ex, "NLog Exception: {Exception}", ex);
                 throw;
             }
         }
@@ -53,10 +47,7 @@ namespace Sonarr.Server
                             var sonarrConfig = options.ApplicationServices.GetRequiredService<IConfigFileProvider>();
                             options.AddServerHeader = false;
                             //options.Listen(IPAddress.Parse(sonarrConfig.BindAddress), sonarrConfig.SslPort);
-                            options.ListenAnyIP(sonarrConfig.SslPort, listenOptions =>
-                            {
-                                listenOptions.UseHttps();
-                            });
+                            options.ListenAnyIP(sonarrConfig.SslPort, listenOptions => { listenOptions.UseHttps(); });
                         })
                         .UseKestrel(options =>
                         {
@@ -67,7 +58,13 @@ namespace Sonarr.Server
                         })
                         .ConfigureServices(services => services.AddSingleton(_ => startupContext))
                         .UseDefaultServiceProvider(options => options.ValidateOnBuild = false);
-                });
+                })
+                .ConfigureLogging(logging =>
+                {
+                    logging.ClearProviders();
+                    logging.SetMinimumLevel(LogLevel.Trace);
+                })
+                .UseNLog();
         }
     }
 }

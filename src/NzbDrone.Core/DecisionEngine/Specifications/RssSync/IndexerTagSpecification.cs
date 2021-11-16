@@ -1,5 +1,5 @@
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Indexers;
@@ -10,10 +10,10 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.RssSync
 {
     public class IndexerTagSpecification : IDecisionEngineSpecification
     {
-        private readonly Logger _logger;
+        private readonly ILogger<IndexerTagSpecification> _logger;
         private readonly IIndexerFactory _indexerFactory;
 
-        public IndexerTagSpecification(Logger logger, IIndexerFactory indexerFactory)
+        public IndexerTagSpecification(ILogger<IndexerTagSpecification> logger, IIndexerFactory indexerFactory)
         {
             _logger = logger;
             _indexerFactory = indexerFactory;
@@ -36,7 +36,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.RssSync
             }
             catch (ModelNotFoundException)
             {
-                _logger.Debug("Indexer with id {0} does not exist, skipping indexer tags check", subject.Release.IndexerId);
+                _logger.LogDebug("Indexer with id {IndexerId} does not exist, skipping indexer tags check", subject.Release.IndexerId);
                 return Decision.Accept();
             }
 
@@ -45,7 +45,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.RssSync
 
             if (indexerTags.Any() && indexerTags.Intersect(subject.Series.Tags).Empty())
             {
-                _logger.Debug("Indexer {0} has tags. None of these are present on series {1}. Rejecting", subject.Release.Indexer, subject.Series);
+                _logger.LogDebug("Indexer {Indexer} has tags. None of these are present on series {Series}. Rejecting", subject.Release.Indexer, subject.Series);
 
                 return Decision.Reject("Series tags do not match any of the indexer tags");
             }

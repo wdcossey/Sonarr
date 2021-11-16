@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Crypto;
 using NzbDrone.Common.Disk;
@@ -20,12 +20,12 @@ namespace NzbDrone.Core.Download.Clients.Blackhole
 
     public class ScanWatchFolder : IScanWatchFolder
     {
-        private readonly Logger _logger;
+        private readonly ILogger<ScanWatchFolder> _logger;
         private readonly IDiskProvider _diskProvider;
         private readonly IDiskScanService _diskScanService;
         private readonly ICached<Dictionary<string, WatchFolderItem>>  _watchFolderItemCache;
 
-        public ScanWatchFolder(ICacheManager cacheManager, IDiskScanService diskScanService, IDiskProvider diskProvider, Logger logger)
+        public ScanWatchFolder(ICacheManager cacheManager, IDiskScanService diskScanService, IDiskProvider diskProvider, ILogger<ScanWatchFolder> logger)
         {
             _logger = logger;
             _diskProvider = diskProvider;
@@ -164,7 +164,7 @@ namespace NzbDrone.Core.Download.Clients.Blackhole
             }
             catch (Exception ex)
             {
-                _logger.Trace(ex, "Ignored hashing error during scan for {0}", folder);
+                _logger.LogTrace(ex, "Ignored hashing error during scan for {Folder}", folder);
             }
 
             foreach (var file in files.OrderBy(v => v))
@@ -187,7 +187,7 @@ namespace NzbDrone.Core.Download.Clients.Blackhole
             }
             catch (Exception ex)
             {
-                _logger.Trace(ex, "Ignored hashing error during scan for {0}", file);
+                _logger.LogTrace(ex, "Ignored hashing error during scan for {File}", file);
             }
 
             return HashConverter.GetHash(data.ToString()).ToHexString();

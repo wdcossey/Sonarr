@@ -5,7 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
@@ -35,7 +35,7 @@ namespace NzbDrone.Core.Backup
         private readonly IAppFolderInfo _appFolderInfo;
         private readonly IArchiveService _archiveService;
         private readonly IConfigService _configService;
-        private readonly Logger _logger;
+        private readonly ILogger<BackupService> _logger;
 
         private string _backupTempFolder;
 
@@ -48,7 +48,7 @@ namespace NzbDrone.Core.Backup
                              IAppFolderInfo appFolderInfo,
                              IArchiveService archiveService,
                              IConfigService configService,
-                             Logger logger)
+                             ILogger<BackupService> logger)
         {
             _maindDb = maindDb;
             _makeDatabaseBackup = makeDatabaseBackup;
@@ -213,7 +213,7 @@ namespace NzbDrone.Core.Backup
         {
             var retention = _configService.BackupRetention;
 
-            _logger.Debug("Cleaning up backup files older than {0} days", retention);
+            _logger.LogDebug("Cleaning up backup files older than {Retention} days", retention);
             var files = GetBackupFiles(GetBackupFolder(backupType));
 
             foreach (var file in files)
@@ -222,12 +222,12 @@ namespace NzbDrone.Core.Backup
 
                 if (lastWriteTime.AddDays(retention) < DateTime.UtcNow)
                 {
-                    _logger.Debug("Deleting old backup file: {0}", file);
+                    _logger.LogDebug("Deleting old backup file: {File}", file);
                     _diskProvider.DeleteFile(file);
                 }
             }
 
-            _logger.Debug("Finished cleaning up old backup files");
+            _logger.LogDebug("Finished cleaning up old backup files");
         }
 
         private IEnumerable<string> GetBackupFiles(string path)

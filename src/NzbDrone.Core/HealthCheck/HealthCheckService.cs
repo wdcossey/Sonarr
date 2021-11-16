@@ -1,18 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using NLog;
 using NzbDrone.Common.Cache;
-using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Messaging;
 using NzbDrone.Common.Reflection;
-using NzbDrone.Core.Configuration.Events;
-using NzbDrone.Core.Download;
-using NzbDrone.Core.Indexers;
 using NzbDrone.Core.Lifecycle;
 using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Messaging.Events;
-using NzbDrone.Core.ThingiProvider.Events;
 
 namespace NzbDrone.Core.HealthCheck
 {
@@ -32,19 +26,16 @@ namespace NzbDrone.Core.HealthCheck
         private readonly Dictionary<Type, IEventDrivenHealthCheck[]> _eventDrivenHealthChecks;
         private readonly IEventAggregator _eventAggregator;
         private readonly ICacheManager _cacheManager;
-        private readonly Logger _logger;
 
         private readonly ICached<HealthCheck> _healthCheckResults;
 
         public HealthCheckService(IEnumerable<IProvideHealthCheck> healthChecks,
                                   IEventAggregator eventAggregator,
-                                  ICacheManager cacheManager,
-                                  Logger logger)
+                                  ICacheManager cacheManager)
         {
             _healthChecks = healthChecks.ToArray();
             _eventAggregator = eventAggregator;
             _cacheManager = cacheManager;
-            _logger = logger;
 
             _healthCheckResults = _cacheManager.GetCache<HealthCheck>(GetType());
 
@@ -97,7 +88,7 @@ namespace NzbDrone.Core.HealthCheck
 
             _eventAggregator.PublishEvent(new HealthCheckCompleteEvent());
         }
-        
+
         public void Execute(CheckHealthCommand message)
         {
             if (message.Trigger == CommandTrigger.Manual)

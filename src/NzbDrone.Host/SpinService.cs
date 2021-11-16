@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using System.Threading;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Processes;
@@ -18,9 +18,13 @@ namespace NzbDrone.Host
         private readonly IProcessProvider _processProvider;
         private readonly IDiskProvider _diskProvider;
         private readonly IStartupContext _startupContext;
-        private readonly Logger _logger;
+        private readonly ILogger<SpinService> _logger;
 
-        public SpinService(IRuntimeInfo runtimeInfo, IProcessProvider processProvider, IDiskProvider diskProvider, IStartupContext startupContext, Logger logger)
+        public SpinService(IRuntimeInfo runtimeInfo,
+                           IProcessProvider processProvider,
+                           IDiskProvider diskProvider,
+                           IStartupContext startupContext,
+                           ILogger<SpinService> logger)
         {
             _runtimeInfo = runtimeInfo;
             _processProvider = processProvider;
@@ -36,7 +40,7 @@ namespace NzbDrone.Host
                 Thread.Sleep(1000);
             }
 
-            _logger.Debug("Wait loop was terminated.");
+            _logger.LogDebug("Wait loop was terminated.");
 
             if (_runtimeInfo.RestartPending)
             {
@@ -45,7 +49,7 @@ namespace NzbDrone.Host
                 var path = _runtimeInfo.ExecutingApplication;
                 var installationFolder = Path.GetDirectoryName(path);
 
-                _logger.Info("Attempting restart with arguments: {0} {1}", path, restartArgs);
+                _logger.LogInformation("Attempting restart with arguments: {Path} {RestartArgs}", path, restartArgs);
 
                 if (OsInfo.IsOsx)
                 {
@@ -65,7 +69,7 @@ namespace NzbDrone.Host
                         path = Path.GetDirectoryName(path);
                     }
                 }
-                
+
                 _processProvider.SpawnNewProcess(path, restartArgs);
             }
         }

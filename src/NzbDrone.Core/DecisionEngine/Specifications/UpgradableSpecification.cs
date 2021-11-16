@@ -1,4 +1,4 @@
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Languages;
 using NzbDrone.Core.Profiles.Languages;
@@ -20,9 +20,9 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
     public class UpgradableSpecification : IUpgradableSpecification
     {
         private readonly IConfigService _configService;
-        private readonly Logger _logger;
+        private readonly ILogger<UpgradableSpecification> _logger;
 
-        public UpgradableSpecification(IConfigService configService, Logger logger)
+        public UpgradableSpecification(IConfigService configService, ILogger<UpgradableSpecification> logger)
         {
             _configService = configService;
             _logger = logger;
@@ -30,7 +30,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
 
         private bool IsPreferredWordUpgradable(int currentScore, int newScore)
         {
-            _logger.Debug("Comparing preferred word score. Current: {0} New: {1}", currentScore, newScore);
+            _logger.LogDebug("Comparing preferred word score. Current: {CurrentScore} New: {NewScore}", currentScore, newScore);
 
             return newScore > currentScore;
         }
@@ -43,13 +43,13 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
 
             if (qualityCompare > 0)
             {
-                _logger.Debug("New item has a better quality");
+                _logger.LogDebug("New item has a better quality");
                 return true;
             }
 
             if (qualityCompare < 0)
             {
-                _logger.Debug("Existing item has better quality, skipping");
+                _logger.LogDebug("Existing item has better quality, skipping");
                 return false;
             }
 
@@ -60,7 +60,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
             if (downloadPropersAndRepacks != ProperDownloadTypes.DoNotPrefer &&
                 qualityRevisionComapre > 0)
             {
-                _logger.Debug("New item has a better quality revision");
+                _logger.LogDebug("New item has a better quality revision");
                 return true;
             }
 
@@ -68,7 +68,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
             if (downloadPropersAndRepacks != ProperDownloadTypes.DoNotPrefer &&
                 qualityRevisionComapre < 0)
             {
-                _logger.Debug("Existing item has a better quality revision, skipping");
+                _logger.LogDebug("Existing item has a better quality revision, skipping");
                 return false;
             }
 
@@ -76,23 +76,23 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
 
             if (languageCompare > 0)
             {
-                _logger.Debug("New item has a more preferred language");
+                _logger.LogDebug("New item has a more preferred language");
                 return true;
             }
 
             if (languageCompare < 0)
             {
-                _logger.Debug("Existing item has better language, skipping");
-                return false;
-            }
-            
-            if (!IsPreferredWordUpgradable(currentScore, newScore))
-            {
-                _logger.Debug("Existing item has an equal or better preferred word score, skipping");
+                _logger.LogDebug("Existing item has better language, skipping");
                 return false;
             }
 
-            _logger.Debug("New item has a better preferred word score");
+            if (!IsPreferredWordUpgradable(currentScore, newScore))
+            {
+                _logger.LogDebug("Existing item has an equal or better preferred word score, skipping");
+                return false;
+            }
+
+            _logger.LogDebug("New item has a better preferred word score");
             return true;
         }
 
@@ -139,7 +139,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
                 return true;
             }
 
-            _logger.Debug("Existing item meets cut-off. skipping.");
+            _logger.LogDebug("Existing item meets cut-off. skipping.");
 
             return false;
         }
@@ -151,7 +151,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
             // Comparing the quality directly because we don't want to upgrade to a proper for a webrip from a webdl or vice versa
             if (currentQuality.Quality == newQuality.Quality && compare > 0)
             {
-                _logger.Debug("New quality is a better revision for existing quality");
+                _logger.LogDebug("New quality is a better revision for existing quality");
                 return true;
             }
 
@@ -166,19 +166,19 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
             if (isQualityUpgrade && qualityProfile.UpgradeAllowed ||
                 isLanguageUpgrade && languageProfile.UpgradeAllowed)
             {
-                _logger.Debug("At least one profile allows upgrading");
+                _logger.LogDebug("At least one profile allows upgrading");
                 return true;
             }
 
             if (isQualityUpgrade && !qualityProfile.UpgradeAllowed)
             {
-                _logger.Debug("Quality profile does not allow upgrades, skipping");
+                _logger.LogDebug("Quality profile does not allow upgrades, skipping");
                 return false;
             }
 
             if (isLanguageUpgrade && !languageProfile.UpgradeAllowed)
             {
-                _logger.Debug("Language profile does not allow upgrades, skipping");
+                _logger.LogDebug("Language profile does not allow upgrades, skipping");
                 return false;
             }
 

@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Mono.Interop;
 using Mono.Unix.Native;
@@ -18,10 +14,10 @@ namespace NzbDrone.Mono.Disk
 
     public class RefLinkCreator : ICreateRefLink
     {
-        private readonly Logger _logger;
+        private readonly ILogger<RefLinkCreator> _logger;
         private readonly bool _supported;
 
-        public RefLinkCreator(Logger logger)
+        public RefLinkCreator(ILogger<RefLinkCreator> logger)
         {
             _logger = logger;
 
@@ -42,7 +38,7 @@ namespace NzbDrone.Mono.Disk
                 {
                     if (srcHandle.IsInvalid)
                     {
-                        _logger.Trace("Failed to create reflink at '{0}' to '{1}': Couldn't open source file", linkPath, srcPath);
+                        _logger.LogTrace("Failed to create reflink at '{LinkPath}' to '{SrcPath}': Couldn't open source file", linkPath, srcPath);
                         return false;
                     }
 
@@ -50,7 +46,7 @@ namespace NzbDrone.Mono.Disk
                     {
                         if (linkHandle.IsInvalid)
                         {
-                            _logger.Trace("Failed to create reflink at '{0}' to '{1}': Couldn't create new link file", linkPath, srcPath);
+                            _logger.LogTrace("Failed to create reflink at '{LinkPath}' to '{SrcPath}': Couldn't create new link file", linkPath, srcPath);
                             return false;
                         }
 
@@ -59,11 +55,11 @@ namespace NzbDrone.Mono.Disk
                             var error = new UnixIOException();
                             linkHandle.Dispose();
                             Syscall.unlink(linkPath);
-                            _logger.Trace("Failed to create reflink at '{0}' to '{1}': {2}", linkPath, srcPath, error.Message);
+                            _logger.LogTrace("Failed to create reflink at '{LinkPath}' to '{SrcPath}': {Message}", linkPath, srcPath, error.Message);
                             return false;
                         }
 
-                        _logger.Trace("Created reflink at '{0}' to '{1}'", linkPath, srcPath);
+                        _logger.LogTrace("Created reflink at '{LinkPath}' to '{SrcPath}'", linkPath, srcPath);
                         return true;
                     }
                 }
@@ -71,7 +67,7 @@ namespace NzbDrone.Mono.Disk
             catch (Exception ex)
             {
                 Syscall.unlink(linkPath);
-                _logger.Trace(ex, "Failed to create reflink at '{0}' to '{1}'", linkPath, srcPath);
+                _logger.LogTrace(ex, "Failed to create reflink at '{LinkPath}' to '{SrcPath}'", linkPath, srcPath);
                 return false;
             }
         }

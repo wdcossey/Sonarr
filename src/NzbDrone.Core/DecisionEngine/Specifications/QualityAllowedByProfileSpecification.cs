@@ -1,5 +1,4 @@
-﻿using System;
-using NLog;
+﻿using Microsoft.Extensions.Logging;
 using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.Parser.Model;
 
@@ -7,9 +6,9 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
 {
     public class QualityAllowedByProfileSpecification : IDecisionEngineSpecification
     {
-        private readonly Logger _logger;
+        private readonly ILogger<QualityAllowedByProfileSpecification> _logger;
 
-        public QualityAllowedByProfileSpecification(Logger logger)
+        public QualityAllowedByProfileSpecification(ILogger<QualityAllowedByProfileSpecification> logger)
         {
             _logger = logger;
         }
@@ -19,7 +18,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
 
         public virtual Decision IsSatisfiedBy(RemoteEpisode subject, SearchCriteriaBase searchCriteria)
         {
-            _logger.Debug("Checking if report meets quality requirements. {0}", subject.ParsedEpisodeInfo.Quality);
+            _logger.LogDebug("Checking if report meets quality requirements. {Quality}", subject.ParsedEpisodeInfo.Quality);
 
             var profile = subject.Series.QualityProfile.Value;
             var qualityIndex = profile.GetIndex(subject.ParsedEpisodeInfo.Quality.Quality);
@@ -27,7 +26,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
 
             if (!qualityOrGroup.Allowed)
             {
-                _logger.Debug("Quality {0} rejected by Series' quality profile", subject.ParsedEpisodeInfo.Quality);
+                _logger.LogDebug("Quality {Quality} rejected by Series' quality profile", subject.ParsedEpisodeInfo.Quality);
                 return Decision.Reject("{0} is not wanted in profile", subject.ParsedEpisodeInfo.Quality.Quality);
             }
 

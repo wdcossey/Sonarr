@@ -1,4 +1,4 @@
-﻿using NLog;
+﻿using Microsoft.Extensions.Logging;
 using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.Parser.Model;
 
@@ -6,9 +6,9 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
 {
     public class MultiSeasonSpecification : IDecisionEngineSpecification
     {
-        private readonly Logger _logger;
+        private readonly ILogger<MultiSeasonSpecification> _logger;
 
-        public MultiSeasonSpecification(Logger logger)
+        public MultiSeasonSpecification(ILogger<MultiSeasonSpecification> logger)
         {
             _logger = logger;
         }
@@ -20,7 +20,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
         {
             if (subject.ParsedEpisodeInfo.IsMultiSeason)
             {
-                _logger.Debug("Multi-season release {0} rejected. Not supported", subject.Release.Title);
+                _logger.LogDebug("Multi-season release {Title} rejected. Not supported", subject.Release.Title);
                 return Decision.Reject("Multi-season releases are not supported");
             }
 

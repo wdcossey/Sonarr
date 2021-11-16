@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
@@ -25,13 +25,13 @@ namespace NzbDrone.Core.MediaFiles
         private readonly IDiskProvider _diskProvider;
         private readonly IConfigService _configService;
         private readonly IEpisodeService _episodeService;
-        private readonly Logger _logger;
+        private readonly ILogger<UpdateEpisodeFileService> _logger;
         private static readonly DateTime EpochTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         public UpdateEpisodeFileService(IDiskProvider diskProvider,
                                         IConfigService configService,
                                         IEpisodeService episodeService,
-                                        Logger logger)
+                                        ILogger<UpdateEpisodeFileService> logger)
         {
             _diskProvider = diskProvider;
             _configService = configService;
@@ -90,7 +90,7 @@ namespace NzbDrone.Core.MediaFiles
 
                 if (OsInfo.IsNotWindows && airDate < EpochTime)
                 {
-                    _logger.Debug("Setting date of file to 1970-01-01 as actual airdate is before that time and will not be set properly");
+                    _logger.LogDebug("Setting date of file to 1970-01-01 as actual airdate is before that time and will not be set properly");
                     airDate = EpochTime;
                 }
 
@@ -99,21 +99,21 @@ namespace NzbDrone.Core.MediaFiles
                     try
                     {
                         _diskProvider.FileSetLastWriteTime(filePath, airDate);
-                        _logger.Debug("Date of file [{0}] changed from '{1}' to '{2}'", filePath, oldDateTime, airDate);
+                        _logger.LogDebug("Date of file [{FilePath}] changed from '{OldDateTime}' to '{AirDate}'", filePath, oldDateTime, airDate);
 
                         return true;
                     }
 
                     catch (Exception ex)
                     {
-                        _logger.Warn(ex, "Unable to set date of file [" + filePath + "]");
+                        _logger.LogWarning(ex, "Unable to set date of file [{FilePath}]", filePath);
                     }
                 }
             }
 
             else
             {
-                _logger.Debug("Could not create valid date to change file [{0}]", filePath);
+                _logger.LogDebug("Could not create valid date to change file [{FilePath}]", filePath);
             }
 
             return false;
@@ -125,7 +125,7 @@ namespace NzbDrone.Core.MediaFiles
 
             if (OsInfo.IsNotWindows && airDateUtc < EpochTime)
             {
-                _logger.Debug("Setting date of file to 1970-01-01 as actual airdate is before that time and will not be set properly");
+                _logger.LogDebug("Setting date of file to 1970-01-01 as actual airdate is before that time and will not be set properly");
                 airDateUtc = EpochTime;
             }
 
@@ -134,14 +134,14 @@ namespace NzbDrone.Core.MediaFiles
                 try
                 {
                     _diskProvider.FileSetLastWriteTime(filePath, airDateUtc);
-                    _logger.Debug("Date of file [{0}] changed from '{1}' to '{2}'", filePath, oldLastWrite, airDateUtc);
+                    _logger.LogDebug("Date of file [{FilePath}] changed from '{OldLastWrite}' to '{AirDateUtc}'", filePath, oldLastWrite, airDateUtc);
 
                     return true;
                 }
 
                 catch (Exception ex)
                 {
-                    _logger.Warn(ex, "Unable to set date of file [" + filePath + "]");
+                    _logger.LogWarning(ex, "Unable to set date of file [{FilePath}]", filePath);
                 }
             }
 

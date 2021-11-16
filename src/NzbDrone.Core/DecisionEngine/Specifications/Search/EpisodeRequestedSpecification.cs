@@ -1,16 +1,15 @@
 ﻿using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.Parser.Model;
-
 
 namespace NzbDrone.Core.DecisionEngine.Specifications.Search
 {
     public class EpisodeRequestedSpecification : IDecisionEngineSpecification
     {
-        private readonly Logger _logger;
+        private readonly ILogger<EpisodeRequestedSpecification> _logger;
 
-        public EpisodeRequestedSpecification(Logger logger)
+        public EpisodeRequestedSpecification(ILogger<EpisodeRequestedSpecification> logger)
         {
             _logger = logger;
         }
@@ -30,7 +29,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.Search
 
             if (!criteriaEpisodes.Intersect(remoteEpisodes).Any())
             {
-                _logger.Debug("Release rejected since the episode wasn't requested: {0}", remoteEpisode.ParsedEpisodeInfo);
+                _logger.LogDebug("Release rejected since the episode wasn't requested: {ParsedEpisodeInfo}", remoteEpisode.ParsedEpisodeInfo);
 
                 if (remoteEpisodes.Any())
                 {

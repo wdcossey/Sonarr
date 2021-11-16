@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using Newtonsoft.Json.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq; //TODO Remove Newtonsoft.Json
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Http;
 using NzbDrone.Common.Serializer;
@@ -34,11 +34,11 @@ namespace NzbDrone.Core.Download.Clients.Deluge
         private static readonly string[] requiredProperties = new string[] { "hash", "name", "state", "progress", "eta", "message", "is_finished", "save_path", "total_size", "total_done", "time_added", "active_time", "ratio", "is_auto_managed", "stop_at_ratio", "remove_at_ratio", "stop_ratio" };
 
         private readonly IHttpClient<DelugeProxy> _httpClient;
-        private readonly Logger _logger;
+        private readonly ILogger<DelugeProxy> _logger;
 
         private readonly ICached<Dictionary<string, string>> _authCookieCache;
 
-        public DelugeProxy(ICacheManager cacheManager, IHttpClient<DelugeProxy> httpClient, Logger logger)
+        public DelugeProxy(ICacheManager cacheManager, IHttpClient<DelugeProxy> httpClient, ILogger<DelugeProxy> logger)
         {
             _httpClient = httpClient;
             _logger = logger;
@@ -250,7 +250,7 @@ namespace NzbDrone.Core.Download.Clients.Deluge
             {
                 if (ex.Response.StatusCode == HttpStatusCode.RequestTimeout)
                 {
-                    _logger.Debug("Deluge timeout during request, daemon connection may have been broken. Attempting to reconnect.");
+                    _logger.LogDebug("Deluge timeout during request, daemon connection may have been broken. Attempting to reconnect.");
                     return new JsonRpcResponse<TResult>()
                     {
                         Error = JToken.Parse("{ Code = 2 }")
@@ -296,10 +296,10 @@ namespace NzbDrone.Core.Download.Clients.Deluge
                 var result = Json.Deserialize<JsonRpcResponse<bool>>(response.Content);
                 if (!result.Result)
                 {
-                    _logger.Debug("Deluge authentication failed.");
+                    _logger.LogDebug("Deluge authentication failed.");
                     throw new DownloadClientAuthenticationException("Failed to authenticate with Deluge.");
                 }
-                _logger.Debug("Deluge authentication succeeded.");
+                _logger.LogDebug("Deluge authentication succeeded.");
 
                 cookies = response.GetCookies();
 

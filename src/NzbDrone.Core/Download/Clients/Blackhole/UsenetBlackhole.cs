@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using FluentValidation.Results;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
@@ -25,7 +25,7 @@ namespace NzbDrone.Core.Download.Clients.Blackhole
                                IDiskProvider diskProvider,
                                IRemotePathMappingService remotePathMappingService,
                                IValidateNzbs nzbValidationService,
-                               Logger logger)
+                               ILogger<UsenetBlackhole> logger)
             : base(httpClient, configService, diskProvider, remotePathMappingService, nzbValidationService, logger)
         {
             _scanWatchFolder = scanWatchFolder;
@@ -46,7 +46,7 @@ namespace NzbDrone.Core.Download.Clients.Blackhole
                 stream.Write(fileContent, 0, fileContent.Length);
             }
 
-            _logger.Debug("NZB Download succeeded, saved to: {0}", filepath);
+            _logger.LogDebug("NZB Download succeeded, saved to: {FilePath}", filepath);
 
             return null;
         }

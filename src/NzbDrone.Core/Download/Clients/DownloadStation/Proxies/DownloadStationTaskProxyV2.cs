@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
@@ -10,7 +10,7 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation.Proxies
 {
     public class DownloadStationTaskProxyV2 : DiskStationProxyBase, IDownloadStationTaskProxy
     {
-        public DownloadStationTaskProxyV2(IHttpClient<DownloadStationTaskProxyV2> httpClient, ICacheManager cacheManager, Logger logger)
+        public DownloadStationTaskProxyV2(IHttpClient<DownloadStationTaskProxyV2> httpClient, ICacheManager cacheManager, ILogger<DownloadStationTaskProxyV2> logger)
             : base(DiskStationApi.DownloadStation2Task, "SYNO.DownloadStation2.Task", httpClient, cacheManager, logger)
         {
         }
@@ -100,7 +100,7 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation.Proxies
             }
             catch (DownloadClientException e)
             {
-                _logger.Error(e);
+                _logger.LogError(e,"{Message}", e.Message);
                 return new List<DownloadStationTask>();
             }
         }

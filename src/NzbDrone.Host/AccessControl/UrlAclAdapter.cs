@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Exceptions;
 using NzbDrone.Common.Extensions;
@@ -22,7 +22,7 @@ namespace NzbDrone.Host.AccessControl
         private readonly IConfigFileProvider _configFileProvider;
         private readonly IRuntimeInfo _runtimeInfo;
         private readonly IOsInfo _osInfo;
-        private readonly Logger _logger;
+        private readonly ILogger<UrlAclAdapter> _logger;
 
         public List<string> Urls
         {
@@ -33,7 +33,7 @@ namespace NzbDrone.Host.AccessControl
         }
 
         private List<UrlAcl> InternalUrls { get; }
-        private List<UrlAcl> RegisteredUrls { get; set; } 
+        private List<UrlAcl> RegisteredUrls { get; set; }
 
         private static readonly Regex UrlAclRegex = new Regex(@"(?<scheme>https?)\:\/\/(?<address>.+?)\:(?<port>\d+)/(?<urlbase>.+)?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
@@ -41,7 +41,7 @@ namespace NzbDrone.Host.AccessControl
                              IConfigFileProvider configFileProvider,
                              IRuntimeInfo runtimeInfo,
                              IOsInfo osInfo,
-                             Logger logger)
+                             ILogger<UrlAclAdapter> logger)
         {
             _netshProvider = netshProvider;
             _configFileProvider = configFileProvider;
@@ -134,7 +134,7 @@ namespace NzbDrone.Host.AccessControl
                 RegisterUrl(urlAcl);
             }
         }
-        
+
         private bool IsRegistered(UrlAcl urlAcl)
         {
             return RegisteredUrls.Any(c => c.Scheme == urlAcl.Scheme &&
@@ -201,9 +201,9 @@ namespace NzbDrone.Host.AccessControl
 
         private void UnregisterUrl(UrlAcl urlAcl)
         {
-            _logger.Trace("Removing URL ACL {0}", urlAcl.Url);
+            _logger.LogTrace("Removing URL ACL {Url}", urlAcl.Url);
 
-            var arguments = string.Format("http delete urlacl {0}", urlAcl.Url);
+            var arguments = $"http delete urlacl {urlAcl.Url}";
             _netshProvider.Run(arguments);
         }
 

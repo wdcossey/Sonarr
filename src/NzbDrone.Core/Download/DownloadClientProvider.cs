@@ -1,8 +1,8 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Indexers;
 using NzbDrone.Common.Cache;
-using NLog;
 
 namespace NzbDrone.Core.Download
 {
@@ -15,12 +15,12 @@ namespace NzbDrone.Core.Download
 
     public class DownloadClientProvider : IProvideDownloadClient
     {
-        private readonly Logger _logger;
+        private readonly ILogger<DownloadClientProvider> _logger;
         private readonly IDownloadClientFactory _downloadClientFactory;
         private readonly IDownloadClientStatusService _downloadClientStatusService;
         private readonly ICached<int> _lastUsedDownloadClient;
 
-        public DownloadClientProvider(IDownloadClientStatusService downloadClientStatusService, IDownloadClientFactory downloadClientFactory, ICacheManager cacheManager, Logger logger)
+        public DownloadClientProvider(IDownloadClientStatusService downloadClientStatusService, IDownloadClientFactory downloadClientFactory, ICacheManager cacheManager, ILogger<DownloadClientProvider> logger)
         {
             _logger = logger;
             _downloadClientFactory = downloadClientFactory;
@@ -46,7 +46,7 @@ namespace NzbDrone.Core.Download
                 }
                 else
                 {
-                    _logger.Trace("No non-blocked Download Client available, retrying blocked one.");
+                    _logger.LogTrace("No non-blocked Download Client available, retrying blocked one.");
                 }
             }
 

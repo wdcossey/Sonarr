@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Instrumentation.Extensions;
 using NzbDrone.Core.DecisionEngine;
 using NzbDrone.Core.Download;
@@ -18,7 +18,7 @@ namespace NzbDrone.Core.Indexers
         private readonly IProcessDownloadDecisions _processDownloadDecisions;
         private readonly IPendingReleaseService _pendingReleaseService;
         private readonly IEventAggregator _eventAggregator;
-        private readonly Logger _logger;
+        private readonly ILogger<RssSyncService> _logger;
 
         public RssSyncService(IIndexerStatusService indexerStatusService,
                               IIndexerFactory indexerFactory,
@@ -27,7 +27,7 @@ namespace NzbDrone.Core.Indexers
                               IProcessDownloadDecisions processDownloadDecisions,
                               IPendingReleaseService pendingReleaseService,
                               IEventAggregator eventAggregator,
-                              Logger logger)
+                              ILogger<RssSyncService> logger)
         {
             _indexerStatusService = indexerStatusService;
             _indexerFactory = indexerFactory;
@@ -51,7 +51,8 @@ namespace NzbDrone.Core.Indexers
             var decisions = _downloadDecisionMaker.GetRssDecision(reports);
             var processed = _processDownloadDecisions.ProcessDecisions(decisions);
 
-            var message = string.Format("RSS Sync Completed. Reports found: {0}, Reports grabbed: {1}", reports.Count, processed.Grabbed.Count);
+            var message =
+                $"RSS Sync Completed. Reports found: {reports.Count}, Reports grabbed: {processed.Grabbed.Count}";
 
             if (processed.Pending.Any())
             {

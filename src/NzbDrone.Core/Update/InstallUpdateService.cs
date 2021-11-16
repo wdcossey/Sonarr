@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
@@ -23,7 +23,7 @@ namespace NzbDrone.Core.Update
     public class InstallUpdateService : IExecute<ApplicationUpdateCommand>, IExecute<ApplicationUpdateCheckCommand>, IHandle<ApplicationStartingEvent>
     {
         private readonly ICheckUpdateService _checkUpdateService;
-        private readonly Logger _logger;
+        private readonly ILogger<InstallUpdateService> _logger;
         private readonly IAppFolderInfo _appFolderInfo;
         private readonly IManageCommandQueue _commandQueueManager;
         private readonly IDiskProvider _diskProvider;
@@ -53,7 +53,7 @@ namespace NzbDrone.Core.Update
                                     IConfigFileProvider configFileProvider,
                                     IRuntimeInfo runtimeInfo,
                                     IBackupService backupService,
-                                    Logger logger)
+                                    ILogger<InstallUpdateService> logger)
         {
             if (configFileProvider == null)
             {
@@ -108,27 +108,27 @@ namespace NzbDrone.Core.Update
 
             if (_diskProvider.FolderExists(updateSandboxFolder))
             {
-                _logger.Info("Deleting old update files");
+                _logger.LogInformation("Deleting old update files");
                 _diskProvider.DeleteFolder(updateSandboxFolder, true);
             }
 
             _logger.ProgressInfo("Downloading update {0}", updatePackage.Version);
-            _logger.Debug("Downloading update package from [{0}] to [{1}]", updatePackage.Url, packageDestination);
+            _logger.LogDebug("Downloading update package from [{Url}] to [{PackageDestination}]", updatePackage.Url, packageDestination);
             _httpClient.DownloadFile(updatePackage.Url, packageDestination);
 
             _logger.ProgressInfo("Verifying update package");
 
             if (!_updateVerifier.Verify(updatePackage, packageDestination))
             {
-                _logger.Error("Update package is invalid");
+                _logger.LogError("Update package is invalid");
                 throw new UpdateVerificationFailedException("Update file '{0}' is invalid", packageDestination);
             }
 
-            _logger.Info("Update package verified successfully");
+            _logger.LogInformation("Update package verified successfully");
 
             _logger.ProgressInfo("Extracting Update package");
             _archiveService.Extract(packageDestination, updateSandboxFolder);
-            _logger.Info("Update package extracted successfully");
+            _logger.LogInformation("Update package extracted successfully");
 
             EnsureValidBranch(updatePackage);
 
@@ -140,18 +140,18 @@ namespace NzbDrone.Core.Update
                 return true;
             }
 
-            _logger.Info("Preparing client");
+            _logger.LogInformation("Preparing client");
             _diskTransferService.TransferFolder(_appFolderInfo.GetUpdateClientFolder(), updateSandboxFolder, TransferMode.Move);
 
             var updateClientExePath = _appFolderInfo.GetUpdateClientExePath();
 
             if (!_diskProvider.FileExists(updateClientExePath))
             {
-                _logger.Warn("Update client {0} does not exist, aborting update.", updateClientExePath);
+                _logger.LogWarning("Update client {UpdateClientExePath} does not exist, aborting update.", updateClientExePath);
                 return false;
             }
 
-            _logger.Info("Starting update client {0}", updateClientExePath);
+            _logger.LogInformation("Starting update client {UpdateClientExePath}", updateClientExePath);
             _logger.ProgressInfo("Sonarr will restart shortly.");
 
             _processProvider.Start(updateClientExePath, GetUpdaterArgs(updateSandboxFolder));
@@ -166,14 +166,14 @@ namespace NzbDrone.Core.Update
             {
                 try
                 {
-                    _logger.Info("Branch [{0}] is being redirected to [{1}]]", currentBranch, package.Branch);
+                    _logger.LogInformation("Branch [{CurrentBranch}] is being redirected to [{PackageBranch}]]", currentBranch, package.Branch);
                     var config = new Dictionary<string, object>();
                     config["Branch"] = package.Branch;
                     _configFileProvider.SaveConfigDictionary(config);
                 }
                 catch (Exception e)
                 {
-                    _logger.Error(e, "Couldn't change the branch from [{0}] to [{1}].", currentBranch, package.Branch);
+                    _logger.LogError(e, "Couldn't change the branch from [{CurrentBranch}] to [{PackageBranch}].", currentBranch, package.Branch);
                 }
             }
         }
@@ -192,7 +192,7 @@ namespace NzbDrone.Core.Update
                 throw new UpdateFailedException("Update Script: '{0}' does not exist", scriptPath);
             }
 
-            _logger.Info("Removing Sonarr.Update");
+            _logger.LogInformation("Removing Sonarr.Update");
             _diskProvider.DeleteFolder(_appFolderInfo.GetUpdateClientFolder(), true);
 
             _logger.ProgressInfo("Starting update script: {0}", _configFileProvider.UpdateScriptPath);
@@ -271,17 +271,17 @@ namespace NzbDrone.Core.Update
                 }
                 catch (UpdateFolderNotWritableException ex)
                 {
-                    _logger.Error(ex, "Update process failed");
+                    _logger.LogError(ex, "Update process failed");
                     throw new CommandFailedException("Startup folder not writable by user '{0}'", ex, Environment.UserName);
                 }
                 catch (UpdateVerificationFailedException ex)
                 {
-                    _logger.Error(ex, "Update process failed");
+                    _logger.LogError(ex, "Update process failed");
                     throw new CommandFailedException("Downloaded update package is corrupt", ex);
                 }
                 catch (UpdateFailedException ex)
                 {
-                    _logger.Error(ex, "Update process failed");
+                    _logger.LogError(ex, "Update process failed");
                     throw new CommandFailedException(ex);
                 }
             }
@@ -299,34 +299,34 @@ namespace NzbDrone.Core.Update
                     return;
                 }
 
-                _logger.Debug("Post-install update check requested");
+                _logger.LogDebug("Post-install update check requested");
 
                 // Don't do a prestartup update check unless BuiltIn update is enabled
                 if (!_configFileProvider.UpdateAutomatically ||
                     _configFileProvider.UpdateMechanism != UpdateMechanism.BuiltIn ||
                     _deploymentInfoProvider.IsExternalUpdateMechanism)
                 {
-                    _logger.Debug("Built-in updater disabled, skipping post-install update check");
+                    _logger.LogDebug("Built-in updater disabled, skipping post-install update check");
                     return;
                 }
 
                 var latestAvailable = _checkUpdateService.AvailableUpdate();
                 if (latestAvailable == null)
                 {
-                    _logger.Debug("No post-install update available");
+                    _logger.LogDebug("No post-install update available");
                     _diskProvider.DeleteFile(updateMarker);
                     return;
                 }
 
 
-                _logger.Info("Installing post-install update from {0} to {1}", BuildInfo.Version, latestAvailable.Version);
+                _logger.LogInformation("Installing post-install update from {BuildInfoVersion} to {LatestVersion}", BuildInfo.Version, latestAvailable.Version);
                 _diskProvider.DeleteFile(updateMarker);
 
                 var installing = InstallUpdate(latestAvailable);
 
                 if (installing)
                 {
-                    _logger.Debug("Install in progress, giving installer 30 seconds.");
+                    _logger.LogDebug("Install in progress, giving installer 30 seconds.");
 
                     var watch = Stopwatch.StartNew();
 
@@ -335,16 +335,16 @@ namespace NzbDrone.Core.Update
                         Thread.Sleep(1000);
                     }
 
-                    _logger.Error("Post-install update not completed within 30 seconds. Attempting to continue normal operation.");
+                    _logger.LogError("Post-install update not completed within 30 seconds. Attempting to continue normal operation.");
                 }
                 else
                 {
-                    _logger.Debug("Post-install update cancelled for unknown reason. Attempting to continue normal operation.");
+                    _logger.LogDebug("Post-install update cancelled for unknown reason. Attempting to continue normal operation.");
                 }
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failed to perform the post-install update check. Attempting to continue normal operation.");
+                _logger.LogError(ex, "Failed to perform the post-install update check. Attempting to continue normal operation.");
             }
         }
     }

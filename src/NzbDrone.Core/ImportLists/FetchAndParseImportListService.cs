@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Common.TPL;
 using System;
@@ -18,9 +18,9 @@ namespace NzbDrone.Core.ImportLists
     public class FetchAndParseImportListService : IFetchAndParseImportList
     {
         private readonly IImportListFactory _importListFactory;
-        private readonly Logger _logger;
+        private readonly ILogger<FetchAndParseImportListService> _logger;
 
-        public FetchAndParseImportListService(IImportListFactory importListFactory, Logger logger)
+        public FetchAndParseImportListService(IImportListFactory importListFactory, ILogger<FetchAndParseImportListService> logger)
         {
             _importListFactory = importListFactory;
             _logger = logger;
@@ -34,11 +34,11 @@ namespace NzbDrone.Core.ImportLists
 
             if (!importLists.Any())
             {
-                _logger.Debug("No enabled import lists, skipping.");
+                _logger.LogDebug("No enabled import lists, skipping.");
                 return result;
             }
 
-            _logger.Debug("Available import lists {0}", importLists.Count);
+            _logger.LogDebug("Available import lists {Count}", importLists.Count);
 
             var taskList = new List<Task>();
             var taskFactory = new TaskFactory(TaskCreationOptions.LongRunning, TaskContinuationOptions.None);
@@ -55,14 +55,14 @@ namespace NzbDrone.Core.ImportLists
 
                              lock (result)
                              {
-                                 _logger.Debug("Found {0} from {1}", importListReports.Count, importList.Name);
+                                 _logger.LogDebug("Found {Count} from {Name}", importListReports.Count, importList.Name);
 
                                  result.AddRange(importListReports);
                              }
                          }
                          catch (Exception e)
                          {
-                             _logger.Error(e, "Error during Import List Sync");
+                             _logger.LogError(e, "Error during Import List Sync");
                          }
                      }).LogExceptions();
 
@@ -73,7 +73,7 @@ namespace NzbDrone.Core.ImportLists
 
             result = result.DistinctBy(r => new {r.TvdbId, r.Title}).ToList();
 
-            _logger.Debug("Found {0} reports", result.Count);
+            _logger.LogDebug("Found {Count} reports", result.Count);
 
             return result;
         }
@@ -86,7 +86,7 @@ namespace NzbDrone.Core.ImportLists
 
             if (importList == null || !definition.EnableAutomaticAdd)
             {
-                _logger.Debug("Import list not enabled, skipping.");
+                _logger.LogDebug("Import list not enabled, skipping.");
                 return result;
             }
 
@@ -103,14 +103,14 @@ namespace NzbDrone.Core.ImportLists
 
                     lock (result)
                     {
-                        _logger.Debug("Found {0} from {1}", importListReports.Count, importList.Name);
+                        _logger.LogDebug("Found {Count} from {Name}", importListReports.Count, importList.Name);
 
                         result.AddRange(importListReports);
                     }
                 }
                 catch (Exception e)
                 {
-                    _logger.Error(e, "Error during Import List Sync");
+                    _logger.LogError(e, "Error during Import List Sync");
                 }
             }).LogExceptions();
 

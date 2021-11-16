@@ -1,10 +1,10 @@
 ﻿using FluentValidation.Results;
-using NLog;
 using System;
 using System.Net;
 using System.Collections.Specialized;
 using System.IO;
 using System.Web;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 using NzbDrone.Common.OAuth;
@@ -22,9 +22,9 @@ namespace NzbDrone.Core.Notifications.Twitter
     public class TwitterService : ITwitterService
     {
         private readonly IHttpClient<TwitterService> _httpClient;
-        private readonly Logger _logger;
+        private readonly ILogger<TwitterService> _logger;
 
-        public TwitterService(IHttpClient<TwitterService> httpClient, Logger logger)
+        public TwitterService(IHttpClient<TwitterService> httpClient, ILogger<TwitterService> logger)
         {
             _httpClient = httpClient;
             _logger = logger;
@@ -33,7 +33,7 @@ namespace NzbDrone.Core.Notifications.Twitter
         private NameValueCollection OAuthQuery(OAuthRequest oAuthRequest)
         {
             var auth = oAuthRequest.GetAuthorizationHeader();
-            var request = new Common.Http.HttpRequest(oAuthRequest.RequestUrl);
+            var request = new HttpRequest(oAuthRequest.RequestUrl);
             request.Headers.Add("Authorization", auth);
             var response = _httpClient.Get(request);
 
@@ -46,7 +46,7 @@ namespace NzbDrone.Core.Notifications.Twitter
             var oAuthRequest = OAuthRequest.ForAccessToken(consumerKey, consumerSecret, oauthToken, "", oauthVerifier);
             oAuthRequest.RequestUrl = "https://api.twitter.com/oauth/access_token";
             var qscoll = OAuthQuery(oAuthRequest);
-            
+
             return new OAuthToken
             {
                 AccessToken = qscoll["oauth_token"],
@@ -90,7 +90,7 @@ namespace NzbDrone.Core.Notifications.Twitter
                         message += string.Format(" @{0}", settings.Mention);
                     }
 
-                    twitter.UpdateStatus(message);                    
+                    twitter.UpdateStatus(message);
                 }
             }
             catch (WebException ex)
@@ -103,14 +103,14 @@ namespace NzbDrone.Core.Notifications.Twitter
                     {
                         if (responseStream == null)
                         {
-                            _logger.Trace("Status Code: {0}", httpResponse.StatusCode);
+                            _logger.LogTrace("Status Code: {StatusCode}", httpResponse.StatusCode);
                             throw new TwitterException("Error received from Twitter: " + httpResponse.StatusCode, ex);
                         }
 
                         using (var reader = new StreamReader(responseStream))
                         {
                             var responseBody = reader.ReadToEnd();
-                            _logger.Trace("Reponse: {0} Status Code: {1}", responseBody, httpResponse.StatusCode);
+                            _logger.LogTrace("Response: {ResponseBody} Status Code: {StatusCode}", responseBody, httpResponse.StatusCode);
                             throw new TwitterException("Error received from Twitter: " + responseBody, ex);
                         }
                     }
@@ -128,7 +128,7 @@ namespace NzbDrone.Core.Notifications.Twitter
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Unable to send test message");
+                _logger.LogError(ex, "Unable to send test message");
                 return new ValidationFailure("Host", "Unable to send test message");
             }
             return null;

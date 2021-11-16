@@ -2,11 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using NLog;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Cache;
-using NzbDrone.Core.Download;
 
 namespace NzbDrone.Core.RemotePathMappings
 {
@@ -26,19 +24,15 @@ namespace NzbDrone.Core.RemotePathMappings
     {
         private readonly IRemotePathMappingRepository _remotePathMappingRepository;
         private readonly IDiskProvider _diskProvider;
-        private readonly Logger _logger;
 
         private readonly ICached<List<RemotePathMapping>> _cache;
 
-        public RemotePathMappingService(IDownloadClientRepository downloadClientRepository,
-                                        IRemotePathMappingRepository remotePathMappingRepository,
+        public RemotePathMappingService(IRemotePathMappingRepository remotePathMappingRepository,
                                         IDiskProvider diskProvider,
-                                        ICacheManager cacheManager,
-                                        Logger logger)
+                                        ICacheManager cacheManager)
         {
             _remotePathMappingRepository = remotePathMappingRepository;
             _diskProvider = diskProvider;
-            _logger = logger;
 
             _cache = cacheManager.GetCache<List<RemotePathMapping>>(GetType());
         }

@@ -1,9 +1,8 @@
 using System;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
-using NzbDrone.Common.Instrumentation;
 
 namespace NzbDrone.Core.Datastore
 {
@@ -14,12 +13,13 @@ namespace NzbDrone.Core.Datastore
 
     public class DatabaseRestorationService : IRestoreDatabase
     {
+        private readonly ILogger<DatabaseRestorationService> _logger;
         private readonly IDiskProvider _diskProvider;
         private readonly IAppFolderInfo _appFolderInfo;
-        private static readonly Logger Logger = NzbDroneLogger.GetLogger(typeof(DatabaseRestorationService));
 
-        public DatabaseRestorationService(IDiskProvider diskProvider, IAppFolderInfo appFolderInfo)
+        public DatabaseRestorationService(ILogger<DatabaseRestorationService> logger, IDiskProvider diskProvider, IAppFolderInfo appFolderInfo)
         {
+            _logger = logger;
             _diskProvider = diskProvider;
             _appFolderInfo = appFolderInfo;
         }
@@ -35,7 +35,7 @@ namespace NzbDrone.Core.Datastore
 
             try
             {
-                Logger.Info("Restoring Database");
+                _logger.LogInformation("Restoring Database");
 
                 var dbPath = _appFolderInfo.GetDatabase();
 
@@ -48,7 +48,7 @@ namespace NzbDrone.Core.Datastore
             }
             catch (Exception e)
             {
-                Logger.Error(e, "Failed to restore database");
+                _logger.LogError(e, "Failed to restore database");
                 throw;
             }
         }

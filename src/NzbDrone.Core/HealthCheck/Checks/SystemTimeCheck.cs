@@ -1,5 +1,5 @@
 ﻿using System;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cloud;
 using NzbDrone.Common.Http;
 using NzbDrone.Common.Serializer;
@@ -10,9 +10,9 @@ namespace NzbDrone.Core.HealthCheck.Checks
     {
         private readonly IHttpClient<SystemTimeCheck> _client;
         private readonly IHttpRequestBuilderFactory _cloudRequestBuilder;
-        private readonly Logger _logger;
+        private readonly ILogger<SystemTimeCheck> _logger;
 
-        public SystemTimeCheck(IHttpClient<SystemTimeCheck> client, ISonarrCloudRequestBuilder cloudRequestBuilder, Logger logger)
+        public SystemTimeCheck(IHttpClient<SystemTimeCheck> client, ISonarrCloudRequestBuilder cloudRequestBuilder, ILogger<SystemTimeCheck> logger)
         {
             _client = client;
             _cloudRequestBuilder = cloudRequestBuilder.Services;
@@ -32,7 +32,7 @@ namespace NzbDrone.Core.HealthCheck.Checks
             // +/- more than 1 day
             if (Math.Abs(result.DateTimeUtc.Subtract(systemTime).TotalDays) >= 1)
             {
-                _logger.Error("System time mismatch. SystemTime: {0} Expected Time: {1}. Update system time", systemTime, result.DateTimeUtc);
+                _logger.LogError("System time mismatch. SystemTime: {SystemTime} Expected Time: {DateTimeUtc}. Update system time", systemTime, result.DateTimeUtc);
                 return new HealthCheck(GetType(), HealthCheckResult.Error, $"System time is off by more than 1 day. Scheduled tasks may not run correctly until the time is corrected");
             }
 

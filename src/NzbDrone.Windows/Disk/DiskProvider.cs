@@ -4,17 +4,14 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Principal;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnsureThat;
-using NzbDrone.Common.Instrumentation;
 
 namespace NzbDrone.Windows.Disk
 {
     public class DiskProvider : DiskProviderBase
     {
-        private static readonly Logger Logger = NzbDroneLogger.GetLogger(typeof(DiskProvider));
-
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool GetDiskFreeSpaceEx(string lpDirectoryName,
@@ -25,6 +22,10 @@ namespace NzbDrone.Windows.Disk
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool CreateHardLink(string lpFileName, string lpExistingFileName, IntPtr lpSecurityAttributes);
+
+        // ReSharper disable once SuggestBaseTypeForParameterInConstructor
+        public DiskProvider(ILogger<DiskProvider> logger)
+            : base(logger) { }
 
         public override long? GetAvailableSpace(string path)
         {
@@ -82,7 +83,7 @@ namespace NzbDrone.Windows.Disk
             }
             catch (Exception e)
             {
-                Logger.Warn(e, "Couldn't set permission for {0}. account:{1} rights:{2} accessControlType:{3}", filename, accountSid, rights, controlType);
+                Logger.LogWarning(e, "Couldn't set permission for {Filename}. account:{AccountSid} rights:{Rights} accessControlType:{ControlType}", filename, accountSid, rights, controlType);
                 throw;
             }
 
@@ -157,7 +158,7 @@ namespace NzbDrone.Windows.Disk
             return 0;
         }
 
-        
+
         public override bool TryCreateHardLink(string source, string destination)
         {
             try
@@ -166,7 +167,7 @@ namespace NzbDrone.Windows.Disk
             }
             catch (Exception ex)
             {
-                Logger.Debug(ex, string.Format("Hardlink '{0}' to '{1}' failed.", source, destination));
+                Logger.LogDebug(ex, "Hardlink '{Source}' to '{Destination}' failed.", source, destination);
                 return false;
             }
         }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Tv.Events;
@@ -17,9 +17,9 @@ namespace NzbDrone.Core.Tv
     {
         private readonly IEpisodeService _episodeService;
         private readonly IEventAggregator _eventAggregator;
-        private readonly Logger _logger;
+        private readonly ILogger<RefreshEpisodeService> _logger;
 
-        public RefreshEpisodeService(IEpisodeService episodeService, IEventAggregator eventAggregator, Logger logger)
+        public RefreshEpisodeService(IEpisodeService episodeService, IEventAggregator eventAggregator, ILogger<RefreshEpisodeService> logger)
         {
             _episodeService = episodeService;
             _eventAggregator = eventAggregator;
@@ -28,7 +28,7 @@ namespace NzbDrone.Core.Tv
 
         public void RefreshEpisodeInfo(Series series, IEnumerable<Episode> remoteEpisodes)
         {
-            _logger.Info("Starting episode info refresh for: {0}", series);
+            _logger.LogInformation("Starting episode info refresh for: {Series}", series);
             var successCount = 0;
             var failCount = 0;
 
@@ -81,7 +81,7 @@ namespace NzbDrone.Core.Tv
                 }
                 catch (Exception e)
                 {
-                    _logger.Fatal(e, "An error has occurred while updating episode info for series {0}. {1}", series, episode);
+                    _logger.LogCritical(e, "An error has occurred while updating episode info for series {Series}. {Episode}", series, episode);
                     failCount++;
                 }
             }
@@ -103,12 +103,12 @@ namespace NzbDrone.Core.Tv
 
             if (failCount != 0)
             {
-                _logger.Info("Finished episode refresh for series: {0}. Successful: {1} - Failed: {2} ",
+                _logger.LogInformation("Finished episode refresh for series: {Title}. Successful: {SuccessCount} - Failed: {FailCount} ",
                     series.Title, successCount, failCount);
             }
             else
             {
-                _logger.Info("Finished episode refresh for series: {0}.", series);
+                _logger.LogInformation("Finished episode refresh for series: {Series}.", series);
             }
         }
 
@@ -139,7 +139,7 @@ namespace NzbDrone.Core.Tv
             {
                 if (hasExisting)
                 {
-                    _logger.Warn("Show {0} ({1}) had {2} old episodes appear, please check monitored status.", series.TvdbId, series.Title, oldEpisodes.Count);
+                    _logger.LogWarning("Show {TvDbId} ({Title}) had {Count} old episodes appear, please check monitored status.", series.TvdbId, series.Title, oldEpisodes.Count);
                 }
                 else
                 {
@@ -153,7 +153,7 @@ namespace NzbDrone.Core.Tv
                         }
                     }
 
-                    _logger.Warn("Show {0} ({1}) had {2} old episodes appear, unmonitored aired episodes to prevent unexpected downloads.", series.TvdbId, series.Title, oldEpisodes.Count);
+                    _logger.LogWarning("Show {TvDbId} ({Title}) had {Count} old episodes appear, unmonitored aired episodes to prevent unexpected downloads.", series.TvdbId, series.Title, oldEpisodes.Count);
                 }
             }
         }
@@ -169,7 +169,7 @@ namespace NzbDrone.Core.Tv
             {
                 if (group.Key.SeasonNumber != 0 && group.Count() > 3)
                 {
-                    _logger.Debug("Not adjusting multi-episode air times for series {0} season {1} since more than 3 episodes 'aired' on the same day", series.Title, group.Key.SeasonNumber);
+                    _logger.LogDebug("Not adjusting multi-episode air times for series {Title} season {SeasonNumber} since more than 3 episodes 'aired' on the same day", series.Title, group.Key.SeasonNumber);
                     continue;
                 }
 

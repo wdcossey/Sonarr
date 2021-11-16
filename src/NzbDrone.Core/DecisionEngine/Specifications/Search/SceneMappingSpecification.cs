@@ -1,7 +1,5 @@
-using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
-using NzbDrone.Core.DataAugmentation.Scene;
 using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.Parser.Model;
 
@@ -9,9 +7,9 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.Search
 {
     public class SceneMappingSpecification : IDecisionEngineSpecification
     {
-        private readonly Logger _logger;
+        private readonly ILogger<SceneMappingSpecification> _logger;
 
-        public SceneMappingSpecification(Logger logger)
+        public SceneMappingSpecification(ILogger<SceneMappingSpecification> logger)
         {
             _logger = logger;
         }
@@ -23,13 +21,13 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.Search
         {
             if (remoteEpisode.SceneMapping == null)
             {
-                _logger.Debug("No applicable scene mapping, skipping.");
+                _logger.LogDebug("No applicable scene mapping, skipping.");
                 return Decision.Accept();
             }
 
             if (remoteEpisode.SceneMapping.SceneOrigin.IsNullOrWhiteSpace())
             {
-                _logger.Debug("No explicit scene origin in scene mapping.");
+                _logger.LogDebug("No explicit scene origin in scene mapping.");
                 return Decision.Accept();
             }
 
@@ -40,16 +38,16 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.Search
 
             if (remoteEpisode.SceneMapping.Comment.IsNotNullOrWhiteSpace())
             {
-                _logger.Debug("SceneMapping has origin {0} with comment '{1}'.", remoteEpisode.SceneMapping.SceneOrigin, remoteEpisode.SceneMapping.Comment);
+                _logger.LogDebug("SceneMapping has origin {SceneOrigin} with comment '{Comment}'.", remoteEpisode.SceneMapping.SceneOrigin, remoteEpisode.SceneMapping.Comment);
             }
             else
             {
-                _logger.Debug("SceneMapping has origin {0}.", remoteEpisode.SceneMapping.SceneOrigin);
+                _logger.LogDebug("SceneMapping has origin {SceneOrigin}.", remoteEpisode.SceneMapping.SceneOrigin);
             }
 
             if (split[0] == "mixed")
             {
-                _logger.Debug("SceneMapping origin is explicitly mixed, this means these were released with multiple unidentifiable numbering schemes.");
+                _logger.LogDebug("SceneMapping origin is explicitly mixed, this means these were released with multiple unidentifiable numbering schemes.");
 
                 if (remoteEpisode.SceneMapping.Comment.IsNotNullOrWhiteSpace())
                 {
@@ -65,7 +63,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.Search
             {
                 var type = split.Length >= 2 ? split[1] : "scene";
 
-                _logger.Debug("SceneMapping origin is explicitly unknown, unsure what numbering scheme it uses but '{0}' will be assumed. Provide full release title to Sonarr/TheXEM team.", type);
+                _logger.LogDebug("SceneMapping origin is explicitly unknown, unsure what numbering scheme it uses but '{Type}' will be assumed. Provide full release title to Sonarr/TheXEM team.", type);
             }
 
             return Decision.Accept();

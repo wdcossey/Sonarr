@@ -8,9 +8,9 @@ using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.MediaFiles.TorrentInfo;
-using NLog;
 using NzbDrone.Core.Validation;
 using FluentValidation.Results;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Download.Clients.rTorrent;
 using NzbDrone.Core.Exceptions;
 using NzbDrone.Core.Parser.Model;
@@ -34,7 +34,7 @@ namespace NzbDrone.Core.Download.Clients.RTorrent
                         IRemotePathMappingService remotePathMappingService,
                         IDownloadSeedConfigProvider downloadSeedConfigProvider,
                         IRTorrentDirectoryValidator rTorrentDirectoryValidator,
-                        Logger logger)
+                        ILogger<RTorrent> logger)
             : base(torrentFileInfoReader, httpClient, configService, diskProvider, remotePathMappingService, logger)
         {
             _proxy = proxy;
@@ -54,7 +54,7 @@ namespace NzbDrone.Core.Download.Clients.RTorrent
                 }
                 catch (Exception ex)
                 {
-                    _logger.Warn(ex, "Failed to set torrent post-import label \"{0}\" for {1} in rTorrent. Does the label exist?",
+                    _logger.LogWarning(ex, "Failed to set torrent post-import label \"{TvImportedCategory}\" for {Title} in rTorrent. Does the label exist?",
                         Settings.TvImportedCategory, downloadClientItem.Title);
                 }
             }
@@ -66,7 +66,7 @@ namespace NzbDrone.Core.Download.Clients.RTorrent
             }
             catch (Exception ex)
             {
-                _logger.Warn(ex, "Failed to set torrent post-import view \"{0}\" for {1} in rTorrent.",
+                _logger.LogWarning(ex, "Failed to set torrent post-import view \"{ImportedView}\" for {Title} in rTorrent.",
                     _imported_view, downloadClientItem.Title);
             }
         }
@@ -83,7 +83,7 @@ namespace NzbDrone.Core.Download.Clients.RTorrent
             // Wait a bit for the magnet to be resolved.
             if (!WaitForTorrent(hash, tries, retryDelay))
             {
-                _logger.Warn("rTorrent could not resolve magnet within {0} seconds, download may remain stuck: {1}.", tries * retryDelay / 1000, magnetLink);
+                _logger.LogWarning("rTorrent could not resolve magnet within {SecondsValue} seconds, download may remain stuck: {MagnetLink}.", tries * retryDelay / 1000, magnetLink);
 
                 return hash;
             }
@@ -101,7 +101,7 @@ namespace NzbDrone.Core.Download.Clients.RTorrent
             var retryDelay = 500;
             if (!WaitForTorrent(hash, tries, retryDelay))
             {
-                _logger.Debug("rTorrent didn't add the torrent within {0} seconds: {1}.", tries * retryDelay / 1000, filename);
+                _logger.LogDebug("rTorrent didn't add the torrent within {SecondsValue} seconds: {Filename}.", tries * retryDelay / 1000, filename);
 
                 throw new ReleaseDownloadException(remoteEpisode.Release, "Downloading torrent failed");
             }
@@ -117,7 +117,7 @@ namespace NzbDrone.Core.Download.Clients.RTorrent
         {
             var torrents = _proxy.GetTorrents(Settings);
 
-            _logger.Debug("Retrieved metadata of {0} torrents in client", torrents.Count);
+            _logger.LogDebug("Retrieved metadata of {Count} torrents in client", torrents.Count);
 
             var items = new List<DownloadClientItem>();
             foreach (RTorrentTorrent torrent in torrents)
@@ -223,8 +223,8 @@ namespace NzbDrone.Core.Download.Clients.RTorrent
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failed to test rTorrent");
-                
+                _logger.LogError(ex, "Failed to test rTorrent");
+
                 return new NzbDroneValidationFailure("Host", "Unable to connect to rTorrent")
                        {
                            DetailedDescription = ex.Message
@@ -242,7 +242,7 @@ namespace NzbDrone.Core.Download.Clients.RTorrent
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failed to get torrents");
+                _logger.LogError(ex, "Failed to get torrents");
                 return new NzbDroneValidationFailure(string.Empty, "Failed to get the list of torrents: " + ex.Message);
             }
 
@@ -273,7 +273,7 @@ namespace NzbDrone.Core.Download.Clients.RTorrent
                 Thread.Sleep(retryDelay);
             }
 
-            _logger.Debug("Could not find hash {0} in {1} tries at {2} ms intervals.", hash, tries, retryDelay);
+            _logger.LogDebug("Could not find hash {Hash} in {Tries} tries at {RetryDelay} ms intervals.", hash, tries, retryDelay);
 
             return false;
         }

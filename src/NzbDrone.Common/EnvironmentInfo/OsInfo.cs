@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using NLog;
+using Microsoft.Extensions.Logging;
 
 namespace NzbDrone.Common.EnvironmentInfo
 {
@@ -43,7 +42,7 @@ namespace NzbDrone.Common.EnvironmentInfo
             throw new PlatformNotSupportedException();
         }
 
-        public OsInfo(IEnumerable<IOsVersionAdapter> versionAdapters, Logger logger)
+        public OsInfo(IEnumerable<IOsVersionAdapter> versionAdapters, ILogger<OsInfo> logger)
         {
             OsVersionModel osInfo = null;
 
@@ -55,7 +54,7 @@ namespace NzbDrone.Common.EnvironmentInfo
                 }
                 catch (Exception e)
                 {
-                    logger.Error(e, "Couldn't get OS Version info");
+                    logger.LogError(e, "Couldn't get OS Version info");
                 }
 
                 if (osInfo != null)

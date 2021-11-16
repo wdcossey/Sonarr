@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Http;
 using NzbDrone.Common.Serializer;
 using System.Net;
@@ -25,11 +25,11 @@ namespace NzbDrone.Core.Download.Clients.Nzbget
     public class NzbgetProxy : INzbgetProxy
     {
         private readonly IHttpClient<NzbgetProxy> _httpClient;
-        private readonly Logger _logger;
+        private readonly ILogger<NzbgetProxy> _logger;
 
         private readonly ICached<string> _versionCache;
 
-        public NzbgetProxy(IHttpClient<NzbgetProxy> httpClient, ICacheManager cacheManager, Logger logger)
+        public NzbgetProxy(IHttpClient<NzbgetProxy> httpClient, ICacheManager cacheManager, ILogger<NzbgetProxy> logger)
         {
             _httpClient = httpClient;
             _logger = logger;
@@ -97,7 +97,7 @@ namespace NzbDrone.Core.Download.Clients.Nzbget
             var editResult = EditQueue("GroupSetParameter", 0, "drone=" + droneId, item.NzbId, settings);
             if (editResult)
             {
-                _logger.Debug("Nzbget download drone parameter set to: {0}", droneId);
+                _logger.LogDebug("Nzbget download drone parameter set to: {DroneId}", droneId);
             }
 
             return droneId;
@@ -123,7 +123,7 @@ namespace NzbDrone.Core.Download.Clients.Nzbget
 
             if (editResult)
             {
-                _logger.Debug("Nzbget download drone parameter set to: {0}", droneId);
+                _logger.LogDebug("Nzbget download drone parameter set to: {DroneId}", droneId);
             }
 
             return droneId;
@@ -184,7 +184,7 @@ namespace NzbDrone.Core.Download.Clients.Nzbget
             {
                 if (!EditQueue("GroupFinalDelete", 0, "", queueItem.NzbId, settings))
                 {
-                    _logger.Warn("Failed to remove item from nzbget queue, {0} [{1}]", queueItem.NzbName, queueItem.NzbId);
+                    _logger.LogWarning("Failed to remove item from nzbget queue, {NzbName} [{NzbId}]", queueItem.NzbName, queueItem.NzbId);
                 }
             }
 
@@ -192,13 +192,13 @@ namespace NzbDrone.Core.Download.Clients.Nzbget
             {
                 if (!EditQueue("HistoryDelete", 0, "", historyItem.Id, settings))
                 {
-                    _logger.Warn("Failed to remove item from nzbget history, {0} [{1}]", historyItem.Name, historyItem.Id);
+                    _logger.LogWarning("Failed to remove item from nzbget history, {Name} [{Id}]", historyItem.Name, historyItem.Id);
                 }
             }
 
             else
             {
-                _logger.Warn("Unable to remove item from nzbget, Unknown ID: {0}", id);
+                _logger.LogWarning("Unable to remove item from nzbget, Unknown ID: {Id}", id);
                 return;
             }
         }
@@ -210,13 +210,13 @@ namespace NzbDrone.Core.Download.Clients.Nzbget
 
             if (item == null)
             {
-                _logger.Warn("Unable to return item to queue, Unknown ID: {0}", id);
+                _logger.LogWarning("Unable to return item to queue, Unknown ID: {Id}", id);
                 return;
             }
 
             if (!EditQueue("HistoryRedownload", 0, "", item.Id, settings))
             {
-                _logger.Warn("Failed to return item to queue from history, {0} [{1}]", item.Name, item.Id);
+                _logger.LogWarning("Failed to return item to queue from history, {Name} [{Id}]", item.Name, item.Id);
             }
         }
 

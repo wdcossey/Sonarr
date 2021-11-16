@@ -4,7 +4,7 @@ using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.GZip;
 using ICSharpCode.SharpZipLib.Tar;
 using ICSharpCode.SharpZipLib.Zip;
-using NLog;
+using Microsoft.Extensions.Logging;
 
 namespace NzbDrone.Common
 {
@@ -16,16 +16,16 @@ namespace NzbDrone.Common
 
     public class ArchiveService : IArchiveService
     {
-        private readonly Logger _logger;
+        private readonly ILogger<ArchiveService> _logger;
 
-        public ArchiveService(Logger logger)
+        public ArchiveService(ILogger<ArchiveService> logger)
         {
             _logger = logger;
         }
 
         public void Extract(string compressedFile, string destination)
         {
-            _logger.Debug("Extracting archive [{0}] to [{1}]", compressedFile, destination);
+            _logger.LogDebug("Extracting archive [{CompressedFile}] to [{Destination}]", compressedFile, destination);
 
             if (compressedFile.EndsWith(".zip", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -36,7 +36,7 @@ namespace NzbDrone.Common
                 ExtractTgz(compressedFile, destination);
             }
 
-            _logger.Debug("Extraction complete.");
+            _logger.LogDebug("Extraction complete.");
         }
 
         public void CreateZip(string path, params string[] files)
@@ -60,7 +60,7 @@ namespace NzbDrone.Common
             {
                 var zipFile = new ZipFile(fileStream);
 
-                _logger.Debug("Validating Archive {0}", compressedFile);
+                _logger.LogDebug("Validating Archive {CompressedFile}", compressedFile);
 
                 if (!zipFile.TestArchive(true, TestStrategy.FindFirstError, OnZipError))
                 {
@@ -115,7 +115,7 @@ namespace NzbDrone.Common
         {
             if (!string.IsNullOrWhiteSpace(message))
             {
-                _logger.Error("File {0} failed zip validation. {1}", status.File.Name, message);
+                _logger.LogError("File {FileName} failed zip validation. {Message}", status.File.Name, message);
             }
         }
     }

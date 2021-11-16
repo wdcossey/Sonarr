@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.IndexerSearch;
 using NzbDrone.Core.Messaging;
@@ -14,12 +14,12 @@ namespace NzbDrone.Core.Download
         private readonly IConfigService _configService;
         private readonly IEpisodeService _episodeService;
         private readonly IManageCommandQueue _commandQueueManager;
-        private readonly Logger _logger;
+        private readonly ILogger<RedownloadFailedDownloadService> _logger;
 
         public RedownloadFailedDownloadService(IConfigService configService,
                                                IEpisodeService episodeService,
                                                IManageCommandQueue commandQueueManager,
-                                               Logger logger)
+                                               ILogger<RedownloadFailedDownloadService> logger)
         {
             _configService = configService;
             _episodeService = episodeService;
@@ -32,13 +32,13 @@ namespace NzbDrone.Core.Download
         {
             if (!_configService.AutoRedownloadFailed)
             {
-                _logger.Debug("Auto redownloading failed episodes is disabled");
+                _logger.LogDebug("Auto redownloading failed episodes is disabled");
                 return;
             }
 
             if (message.EpisodeIds.Count == 1)
             {
-                _logger.Debug("Failed download only contains one episode, searching again");
+                _logger.LogDebug("Failed download only contains one episode, searching again");
 
                 _commandQueueManager.Push(new EpisodeSearchCommand(message.EpisodeIds));
 
@@ -50,7 +50,7 @@ namespace NzbDrone.Core.Download
 
             if (message.EpisodeIds.Count == episodesInSeason.Count)
             {
-                _logger.Debug("Failed download was entire season, searching again");
+                _logger.LogDebug("Failed download was entire season, searching again");
 
                 _commandQueueManager.Push(new SeasonSearchCommand
                 {
@@ -61,7 +61,7 @@ namespace NzbDrone.Core.Download
                 return;
             }
 
-            _logger.Debug("Failed download contains multiple episodes, probably a double episode, searching again");
+            _logger.LogDebug("Failed download contains multiple episodes, probably a double episode, searching again");
 
             _commandQueueManager.Push(new EpisodeSearchCommand(message.EpisodeIds));
         }

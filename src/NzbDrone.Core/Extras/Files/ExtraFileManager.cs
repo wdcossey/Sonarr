@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Configuration;
@@ -29,12 +29,12 @@ namespace NzbDrone.Core.Extras.Files
         private readonly IConfigService _configService;
         private readonly IDiskProvider _diskProvider;
         private readonly IDiskTransferService _diskTransferService;
-        private readonly Logger _logger;
+        private readonly ILogger _logger;
 
         public ExtraFileManager(IConfigService configService,
                                 IDiskProvider diskProvider,
                                 IDiskTransferService diskTransferService,
-                                Logger logger)
+                                ILogger logger)
         {
             _configService = configService;
             _diskProvider = diskProvider;
@@ -108,7 +108,7 @@ namespace NzbDrone.Core.Extras.Files
                 }
                 catch (Exception ex)
                 {
-                    _logger.Warn(ex, "Unable to move file after rename: {0}", existingFileName);
+                    _logger.LogWarning(ex, "Unable to move file after rename: {ExistingFileName}", existingFileName);
                 }
             }
 

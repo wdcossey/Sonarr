@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Net;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.EnvironmentInfo;
 
 namespace NzbDrone.Common.Http
@@ -16,12 +16,12 @@ namespace NzbDrone.Common.Http
     [Obsolete("Use HttpProvider")]
     public class HttpProvider : IHttpProvider
     {
-        private readonly Logger _logger;
+        private readonly ILogger<HttpProvider> _logger;
 
 
         private readonly string _userAgent;
 
-        public HttpProvider(Logger logger)
+        public HttpProvider(ILogger<HttpProvider> logger)
         {
             _logger = logger;
             _userAgent = $"{BuildInfo.AppName}/{BuildInfo.Version.ToString(2)}";
@@ -48,16 +48,16 @@ namespace NzbDrone.Common.Http
             }
             catch (WebException e)
             {
-                _logger.Warn("Failed to get response from: {0} {1}", url, e.Message);
+                _logger.LogWarning("Failed to get response from: {Url} {Message}", url, e.Message);
                 throw;
             }
             catch (Exception e)
             {
-                _logger.Warn(e, "Failed to get response from: " + url);
+                _logger.LogWarning(e, "Failed to get response from: {Url}", url);
                 throw;
             }
         }
 
-    
+
     }
 }

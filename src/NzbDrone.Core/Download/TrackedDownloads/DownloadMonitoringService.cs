@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.TPL;
 using NzbDrone.Core.Configuration;
@@ -26,7 +26,7 @@ namespace NzbDrone.Core.Download.TrackedDownloads
         private readonly IFailedDownloadService _failedDownloadService;
         private readonly ICompletedDownloadService _completedDownloadService;
         private readonly ITrackedDownloadService _trackedDownloadService;
-        private readonly Logger _logger;
+        private readonly ILogger<DownloadMonitoringService> _logger;
         private readonly Debouncer _refreshDebounce;
 
         public DownloadMonitoringService(IDownloadClientStatusService downloadClientStatusService,
@@ -37,7 +37,7 @@ namespace NzbDrone.Core.Download.TrackedDownloads
                                          IFailedDownloadService failedDownloadService,
                                          ICompletedDownloadService completedDownloadService,
                                          ITrackedDownloadService trackedDownloadService,
-                                         Logger logger)
+                                         ILogger<DownloadMonitoringService> logger)
         {
             _downloadClientStatusService = downloadClientStatusService;
             _downloadClientFactory = downloadClientFactory;
@@ -99,7 +99,7 @@ namespace NzbDrone.Core.Download.TrackedDownloads
                 // TODO: Stop tracking items for the offline client
 
                 _downloadClientStatusService.RecordFailure(downloadClient.Definition.Id);
-                _logger.Warn(ex, "Unable to retrieve queue and history items from " + downloadClient.Definition.Name);
+                _logger.LogWarning(ex, "Unable to retrieve queue and history items from {DefinitionName}", downloadClient.Definition.Name);
             }
 
             foreach (var downloadItem in downloadClientItems)
@@ -127,7 +127,7 @@ namespace NzbDrone.Core.Download.TrackedDownloads
             }
             catch (Exception e)
             {
-                _logger.Error(e, "Couldn't process tracked download {0}", downloadItem.Title);
+                _logger.LogError(e, "Couldn't process tracked download {Title}", downloadItem.Title);
             }
 
             return null;
@@ -136,8 +136,8 @@ namespace NzbDrone.Core.Download.TrackedDownloads
         private bool DownloadIsTrackable(TrackedDownload trackedDownload)
         {
             // If the download has already been imported, failed or the user ignored it don't track it
-            if (trackedDownload.State == TrackedDownloadState.Imported || 
-                trackedDownload.State == TrackedDownloadState.Failed || 
+            if (trackedDownload.State == TrackedDownloadState.Imported ||
+                trackedDownload.State == TrackedDownloadState.Failed ||
                 trackedDownload.State == TrackedDownloadState.Ignored)
             {
                 return false;
@@ -159,7 +159,7 @@ namespace NzbDrone.Core.Download.TrackedDownloads
 
         public void Execute(CheckForFinishedDownloadCommand message)
         {
-            _logger.Warn("A third party app used the deprecated CheckForFinishedDownload command, it should be updated RefreshMonitoredDownloads instead");
+            _logger.LogWarning("A third party app used the deprecated CheckForFinishedDownload command, it should be updated RefreshMonitoredDownloads instead");
             Refresh();
         }
 

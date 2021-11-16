@@ -1,6 +1,6 @@
 using System;
+using Microsoft.Extensions.Logging;
 using FluentValidation.Results;
-using NLog;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 using NzbDrone.Common.Serializer;
@@ -16,10 +16,11 @@ namespace NzbDrone.Core.Notifications.Join
     public class JoinProxy : IJoinProxy
     {
         private readonly IHttpClient<JoinProxy> _httpClient;
-        private readonly Logger _logger;
-        private const string URL = "https://joinjoaomgcd.appspot.com/_ah/api/messaging/v1/sendPush?";
-
-        public JoinProxy(IHttpClient<JoinProxy> httpClient, Logger logger)
+        private readonly ILogger<JoinProxy> _logger;
+        private readonly Logger _logger; 
+        private const string JoinProxyUrl = "https://joinjoaomgcd.appspot.com/_ah/api/messaging/v1/sendPush?";
+        
+        public JoinProxy(IHttpClient<JoinProxy> httpClient, ILogger<JoinProxy> logger)
         {
             _httpClient = httpClient;
             _logger = logger;
@@ -35,7 +36,7 @@ namespace NzbDrone.Core.Notifications.Join
             }
             catch (JoinException ex)
             {
-                _logger.Error(ex, "Unable to send Join message.");
+                _logger.LogError(ex, "Unable to send Join message.");
                 throw;
             }
         }
@@ -52,29 +53,29 @@ namespace NzbDrone.Core.Notifications.Join
             }
             catch (JoinInvalidDeviceException ex)
             {
-                _logger.Error(ex, "Unable to send test Join message. Invalid Device IDs supplied.");
+                _logger.LogError(ex, "Unable to send test Join message. Invalid Device IDs supplied.");
                 return new ValidationFailure("DeviceIds", "Device IDs appear invalid.");
             }
             catch (JoinException ex)
             {
-                _logger.Error(ex, "Unable to send test Join message.");
+                _logger.LogError(ex, "Unable to send test Join message.");
                 return new ValidationFailure("ApiKey", ex.Message);
             }
             catch (HttpException ex)
             {
-                _logger.Error(ex, "Unable to send test Join message. Server connection failed.");
+                _logger.LogError(ex, "Unable to send test Join message. Server connection failed.");
                 return new ValidationFailure("ApiKey", "Unable to connect to Join API. Please try again later.");
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Unable to send test Join message. Unknown error.");
+                _logger.LogError(ex, "Unable to send test Join message. Unknown error.");
                 return new ValidationFailure("ApiKey", ex.Message);
             }
         }
 
         private void SendNotification(string title, string message, HttpMethod method, JoinSettings settings)
         {
-            var requestBuilder = new HttpRequestBuilder(URL);
+            var requestBuilder = new HttpRequestBuilder(JoinProxyUrl);
 
             if (settings.DeviceNames.IsNotNullOrWhiteSpace())
             {

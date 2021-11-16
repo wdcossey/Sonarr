@@ -8,9 +8,9 @@ using NzbDrone.Core.MediaFiles.TorrentInfo;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Validation;
-using NLog;
 using FluentValidation.Results;
 using System.Net;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.RemotePathMappings;
 
 namespace NzbDrone.Core.Download.Clients.Deluge
@@ -25,7 +25,7 @@ namespace NzbDrone.Core.Download.Clients.Deluge
                       IConfigService configService,
                       IDiskProvider diskProvider,
                       IRemotePathMappingService remotePathMappingService,
-                      Logger logger)
+                      ILogger<Deluge> logger)
             : base(torrentFileInfoReader, httpClient, configService, diskProvider, remotePathMappingService, logger)
         {
             _proxy = proxy;
@@ -43,7 +43,7 @@ namespace NzbDrone.Core.Download.Clients.Deluge
                 }
                 catch (DownloadClientUnavailableException)
                 {
-                    _logger.Warn("Failed to set torrent post-import label \"{0}\" for {1} in Deluge. Does the label exist?",
+                    _logger.LogWarning("Failed to set torrent post-import label \"{TvImportedCategory}\" for {Title} in Deluge. Does the label exist?",
                         Settings.TvImportedCategory, downloadClientItem.Title);
                 }
             }
@@ -142,7 +142,7 @@ namespace NzbDrone.Core.Download.Clients.Deluge
                 }
                 catch (OverflowException ex)
                 {
-                    _logger.Debug(ex, "ETA for {0} is too long: {1}", torrent.Name, torrent.Eta);
+                    _logger.LogDebug(ex, "ETA for {Name} is too long: {Eta}", torrent.Name, torrent.Eta);
                     item.RemainingTime = TimeSpan.MaxValue;
                 }
 
@@ -229,13 +229,13 @@ namespace NzbDrone.Core.Download.Clients.Deluge
             }
             catch (DownloadClientAuthenticationException ex)
             {
-                _logger.Error(ex, ex.Message);
+                _logger.LogError(ex, "{Message}", ex.Message);
 
                 return new NzbDroneValidationFailure("Password", "Authentication failed");
             }
             catch (WebException ex)
             {
-                _logger.Error(ex, "Unable to test connection");
+                _logger.LogError(ex, "Unable to test connection");
                 switch (ex.Status)
                 {
                     case WebExceptionStatus.ConnectFailure:
@@ -259,7 +259,7 @@ namespace NzbDrone.Core.Download.Clients.Deluge
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failed to test connection");
+                _logger.LogError(ex, "Failed to test connection");
 
                 return new NzbDroneValidationFailure("Host", "Unable to connect to Deluge")
                        {
@@ -328,7 +328,7 @@ namespace NzbDrone.Core.Download.Clients.Deluge
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Unable to get torrents");
+                _logger.LogError(ex, "Unable to get torrents");
                 return new NzbDroneValidationFailure(string.Empty, "Failed to get the list of torrents: " + ex.Message);
             }
 

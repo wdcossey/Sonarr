@@ -39,5 +39,7 @@ namespace NzbDrone.Core.IndexerSearch.Definitions
             cleanTitle = cleanTitle.RemoveAccent();
             return cleanTitle.Trim('+', ' ');
         }
+
+        public abstract override string ToString();
     }
 }

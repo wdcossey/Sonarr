@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Core.Extras.Files;
 using NzbDrone.Core.MediaFiles;
@@ -15,12 +15,12 @@ namespace NzbDrone.Core.Extras
         private readonly IDiskProvider _diskProvider;
         private readonly IDiskScanService _diskScanService;
         private readonly List<IImportExistingExtraFiles> _existingExtraFileImporters;
-        private readonly Logger _logger;
+        private readonly ILogger<ExistingExtraFileService> _logger;
 
         public ExistingExtraFileService(IDiskProvider diskProvider,
                                         IDiskScanService diskScanService,
                                         IEnumerable<IImportExistingExtraFiles> existingExtraFileImporters,
-                                        Logger logger)
+                                        ILogger<ExistingExtraFileService> logger)
         {
             _diskProvider = diskProvider;
             _diskScanService = diskScanService;
@@ -38,7 +38,7 @@ namespace NzbDrone.Core.Extras
                 return;
             }
 
-            _logger.Debug("Looking for existing extra files in {0}", series.Path);
+            _logger.LogDebug("Looking for existing extra files in {Path}", series.Path);
 
             var filesOnDisk = _diskScanService.GetNonVideoFiles(series.Path);
             var possibleExtraFiles = _diskScanService.FilterPaths(series.Path, filesOnDisk);
@@ -53,7 +53,7 @@ namespace NzbDrone.Core.Extras
                 importedFiles.AddRange(imported.Select(f => Path.Combine(series.Path, f.RelativePath)));
             }
 
-            _logger.Info("Found {0} extra files", extraFiles.Count);
+            _logger.LogInformation("Found {Count} extra files", extraFiles.Count);
         }
     }
 }

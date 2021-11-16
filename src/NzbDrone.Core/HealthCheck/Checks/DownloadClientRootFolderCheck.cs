@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Datastore.Events;
 using NzbDrone.Core.Download;
@@ -20,11 +20,11 @@ namespace NzbDrone.Core.HealthCheck.Checks
     {
         private readonly IProvideDownloadClient _downloadClientProvider;
         private readonly IRootFolderService _rootFolderService;
-        private readonly Logger _logger;
+        private readonly ILogger<DownloadClientRootFolderCheck> _logger;
 
         public DownloadClientRootFolderCheck(IProvideDownloadClient downloadClientProvider,
                                       IRootFolderService rootFolderService,
-                                      Logger logger)
+                                      ILogger<DownloadClientRootFolderCheck> logger)
         {
             _downloadClientProvider = downloadClientProvider;
             _rootFolderService = rootFolderService;
@@ -53,11 +53,11 @@ namespace NzbDrone.Core.HealthCheck.Checks
                 }
                 catch (DownloadClientException ex)
                 {
-                    _logger.Debug(ex, "Unable to communicate with {0}", client.Definition.Name);
+                    _logger.LogDebug(ex, "Unable to communicate with {DefinitionName}", client.Definition.Name);
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error(ex, "Unknown error occured in DownloadClientRootFolderCheck HealthCheck");
+                    _logger.LogError(ex, "Unknown error occured in DownloadClientRootFolderCheck HealthCheck");
                 }
             }
 

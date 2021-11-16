@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using NLog;
-using NzbDrone.Common;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.EnsureThat;
 using NzbDrone.Common.Messaging;
 using NzbDrone.Common.TPL;
@@ -14,7 +13,7 @@ namespace NzbDrone.Core.Messaging.Events
 {
     public class EventAggregator : IEventAggregator
     {
-        private readonly Logger _logger;
+        private readonly ILogger<EventAggregator> _logger;
         private readonly IServiceProvider _serviceProvider;
         private readonly TaskFactory _taskFactory;
         private readonly Dictionary<string, object> _eventSubscribers;
@@ -39,7 +38,7 @@ namespace NzbDrone.Core.Messaging.Events
             }
         }
 
-        public EventAggregator(Logger logger, IServiceProvider serviceProvider)
+        public EventAggregator(ILogger<EventAggregator> logger, IServiceProvider serviceProvider)
         {
             _logger = logger;
             _serviceProvider = serviceProvider;
@@ -70,13 +69,12 @@ namespace NzbDrone.Core.Messaging.Events
                         _logger.Warn("Thread pool state WT:{0} PT:{1}  MAXWT:{2} MAXPT:{3} MINWT:{4} MINPT:{5}", workerThreads, completionPortThreads, maxWorkerThreads, maxCompletionPortThreads, minWorkerThreads, minCompletionPortThreads);
             */
 
-            _logger.Trace("Publishing {0}", eventName);
+            _logger.LogTrace("Publishing {EventName}", eventName);
 
             EventSubscribers<TEvent> subscribers;
             lock (_eventSubscribers)
             {
-                object target;
-                if (!_eventSubscribers.TryGetValue(eventName, out target))
+                if (!_eventSubscribers.TryGetValue(eventName, out var target))
                 {
                     _eventSubscribers[eventName] = target = new EventSubscribers<TEvent>(_serviceProvider);
                 }
@@ -90,14 +88,13 @@ namespace NzbDrone.Core.Messaging.Events
             {
                 try
                 {
-                    _logger.Trace("{0} -> {1}", eventName, handler.GetType().Name);
+                    _logger.LogTrace("{EventName} -> {TypeName}", eventName, handler.GetType().Name);
                     handler.Handle(@event);
-                    
-                    _logger.Trace("{0} <- {1}", eventName, handler.GetType().Name);
+                    _logger.LogTrace("{EventName} <- {TypeName}", eventName, handler.GetType().Name);
                 }
                 catch (Exception e)
                 {
-                    _logger.Error(e, "{0} failed while processing [{1}]", handler.GetType().Name, eventName);
+                    _logger.LogError(e, "{TypeName} failed while processing [{EventName}]", handler.GetType().Name, eventName);
                 }
             }
 
@@ -118,9 +115,9 @@ namespace NzbDrone.Core.Messaging.Events
 
                 _taskFactory.StartNew(() =>
                 {
-                    _logger.Trace("{0} ~> {1}", eventName, handlerLocal.GetType().Name);
+                    _logger.LogTrace("{EventName} ~> {TypeName}", eventName, handlerLocal.GetType().Name);
                     handlerLocal.HandleAsync(@event);
-                    _logger.Trace("{0} <~ {1}", eventName, handlerLocal.GetType().Name);
+                    _logger.LogTrace("{EventName} <~ {TypeName}", eventName, handlerLocal.GetType().Name);
                 }, TaskCreationOptions.PreferFairness)
                 .LogExceptions();
             }
@@ -133,7 +130,7 @@ namespace NzbDrone.Core.Messaging.Events
                 return eventType.Name;
             }
 
-            return string.Format("{0}<{1}>", eventType.Name.Remove(eventType.Name.IndexOf('`')), eventType.GetGenericArguments()[0].Name);
+            return $"{eventType.Name.Remove(eventType.Name.IndexOf('`'))}<{eventType.GetGenericArguments()[0].Name}>";
         }
 
         internal static int GetEventHandleOrder<TEvent>(IHandle<TEvent> eventHandler) where TEvent : class, IEvent
@@ -145,9 +142,7 @@ namespace NzbDrone.Core.Messaging.Events
                 return (int) EventHandleOrder.Any;
             }
 
-            var attribute = method.GetCustomAttributes(typeof(EventHandleOrderAttribute), true).FirstOrDefault() as EventHandleOrderAttribute;
-
-            if (attribute == null)
+            if (method.GetCustomAttributes(typeof(EventHandleOrderAttribute), true).FirstOrDefault() is not EventHandleOrderAttribute attribute)
             {
                 return (int) EventHandleOrder.Any;
             }

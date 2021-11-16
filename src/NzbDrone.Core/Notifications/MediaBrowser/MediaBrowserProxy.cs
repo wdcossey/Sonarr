@@ -17,7 +17,7 @@ namespace NzbDrone.Core.Notifications.Emby
         private readonly IHttpClient<MediaBrowserProxy> _httpClient;
         private readonly ILogger<MediaBrowserProxy> _logger;
 
-        public MediaBrowserProxy(ILogger<MediaBrowserProxy> logger, IHttpClient<MediaBrowserProxy> httpClient)
+        public MediaBrowserProxy(IHttpClient<MediaBrowserProxy> httpClient, ILogger<MediaBrowserProxy> logger)
         {
             _httpClient = httpClient;
             _logger = logger;
@@ -76,7 +76,7 @@ namespace NzbDrone.Core.Notifications.Emby
         {
             var scheme = settings.UseSsl ? "https" : "http";
             var url = $@"{scheme}://{settings.Address}/mediabrowser";
-            
+
             return new HttpRequestBuilder(url).Resource(path).Build();
         }
 

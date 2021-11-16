@@ -1,10 +1,10 @@
-﻿using NLog;
-using NzbDrone.Common.Http;
-using NzbDrone.Core.Configuration;
-using System;
+﻿using System;
 using System.Linq;
 using System.Net;
+using Microsoft.Extensions.Logging;
+using NzbDrone.Common.Http;
 using NzbDrone.Common.Cloud;
+using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Configuration.Events;
 
 namespace NzbDrone.Core.HealthCheck.Checks
@@ -12,13 +12,13 @@ namespace NzbDrone.Core.HealthCheck.Checks
     [CheckOn(typeof(ConfigSavedEvent))]
     public class ProxyCheck : HealthCheckBase
     {
-        private readonly Logger _logger;
+        private readonly ILogger<ProxyCheck> _logger;
         private readonly IConfigService _configService;
         private readonly IHttpClient<ProxyCheck> _client;
 
         private readonly IHttpRequestBuilderFactory _cloudRequestBuilder;
 
-        public ProxyCheck(ISonarrCloudRequestBuilder cloudRequestBuilder, IConfigService configService, IHttpClient<ProxyCheck> client, Logger logger)
+        public ProxyCheck(ISonarrCloudRequestBuilder cloudRequestBuilder, IConfigService configService, IHttpClient<ProxyCheck> client, ILogger<ProxyCheck> logger)
         {
             _configService = configService;
             _client = client;
@@ -48,13 +48,13 @@ namespace NzbDrone.Core.HealthCheck.Checks
                     // We only care about 400 responses, other error codes can be ignored
                     if (response.StatusCode == HttpStatusCode.BadRequest)
                     {
-                        _logger.Error("Proxy Health Check failed: {0}", response.StatusCode);
+                        _logger.LogError("Proxy Health Check failed: {StatusCode}", response.StatusCode);
                         return new HealthCheck(GetType(), HealthCheckResult.Error, $"Failed to test proxy. StatusCode: {response.StatusCode}");
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error(ex, "Proxy Health Check failed");
+                    _logger.LogError(ex, "Proxy Health Check failed");
                     return new HealthCheck(GetType(), HealthCheckResult.Error, $"Failed to test proxy: {request.Url}");
                 }
             }

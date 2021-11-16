@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using FluentValidation.Results;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
@@ -26,7 +26,7 @@ namespace NzbDrone.Core.Download.Clients.Sabnzbd
                        IDiskProvider diskProvider,
                        IRemotePathMappingService remotePathMappingService,
                        IValidateNzbs nzbValidationService,
-                       Logger logger)
+                       ILogger<Sabnzbd> logger)
             : base(httpClient, configService, diskProvider, remotePathMappingService, nzbValidationService, logger)
         {
             _proxy = proxy;
@@ -383,7 +383,7 @@ namespace NzbDrone.Core.Download.Clients.Sabnzbd
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, ex.Message);
+                _logger.LogError(ex, "{Message}", ex.Message);
                 return new NzbDroneValidationFailure("Host", "Unable to connect to SABnzbd")
                        {
                            DetailedDescription = ex.Message

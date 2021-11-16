@@ -1,9 +1,9 @@
 using System;
 using System.Net;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
-using NLog;
-using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq; //TODO: Remove Newtonsoft
 using NzbDrone.Common.Http;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Serializer;
@@ -26,11 +26,11 @@ namespace NzbDrone.Core.Download.Clients.Transmission
     public class TransmissionProxy: ITransmissionProxy
     {
         private readonly IHttpClient<TransmissionProxy> _httpClient;
-        private readonly Logger _logger;
+        private readonly ILogger<TransmissionProxy> _logger;
 
         private ICached<string> _authSessionIDCache;
-
-        public TransmissionProxy(ICacheManager cacheManager, IHttpClient<TransmissionProxy> httpClient, Logger logger)
+        
+        public TransmissionProxy(ICacheManager cacheManager, IHttpClient<TransmissionProxy> httpClient, ILogger<TransmissionProxy> logger)
         {
             _httpClient = httpClient;
             _logger = logger;
@@ -237,7 +237,7 @@ namespace NzbDrone.Core.Download.Clients.Transmission
                     throw new DownloadClientAuthenticationException("Failed to authenticate with Transmission.");
                 }
 
-                _logger.Debug("Transmission authentication succeeded.");
+                _logger.LogDebug("Transmission authentication succeeded.");
 
                 _authSessionIDCache.Set(authKey, sessionId);
             }

@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cache;
-using NzbDrone.Common.Http;
 
 namespace NzbDrone.Core.Download.Clients.DownloadStation.Proxies
 {
@@ -23,12 +22,12 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation.Proxies
     public class DownloadStationTaskProxySelector : IDownloadStationTaskProxySelector
     {
         private readonly ICached<IDownloadStationTaskProxy> _proxyCache;
-        private readonly Logger _logger;
+        private readonly ILogger<DownloadStationTaskProxySelector> _logger;
 
         private readonly IDownloadStationTaskProxy _proxyV1;
         private readonly IDownloadStationTaskProxy _proxyV2;
 
-        public DownloadStationTaskProxySelector(DownloadStationTaskProxyV1 proxyV1, DownloadStationTaskProxyV2 proxyV2, ICacheManager cacheManager, Logger logger)
+        public DownloadStationTaskProxySelector(DownloadStationTaskProxyV1 proxyV1, DownloadStationTaskProxyV2 proxyV2, ICacheManager cacheManager, ILogger<DownloadStationTaskProxySelector> logger)
         {
             _proxyCache = cacheManager.GetCache<IDownloadStationTaskProxy>(GetType(), "taskProxy");
             _logger = logger;
@@ -53,13 +52,13 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation.Proxies
         {
             if (_proxyV2.IsApiSupported(settings))
             {
-                _logger.Trace("Using DownloadStation Task API v2");
+                _logger.LogTrace("Using DownloadStation Task API v2");
                 return _proxyV2;
             }
 
             if (_proxyV1.IsApiSupported(settings))
             {
-                _logger.Trace("Using DownloadStation Task API v1");
+                _logger.LogTrace("Using DownloadStation Task API v1");
                 return _proxyV1;
             }
 

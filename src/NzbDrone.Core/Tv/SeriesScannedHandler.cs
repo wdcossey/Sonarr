@@ -1,4 +1,4 @@
-﻿using NLog;
+﻿using Microsoft.Extensions.Logging;
 using NzbDrone.Core.IndexerSearch;
 using NzbDrone.Core.MediaFiles.Events;
 using NzbDrone.Core.Messaging.Commands;
@@ -14,13 +14,13 @@ namespace NzbDrone.Core.Tv
         private readonly IManageCommandQueue _commandQueueManager;
         private readonly IEpisodeAddedService _episodeAddedService;
 
-        private readonly Logger _logger;
+        private readonly ILogger<SeriesScannedHandler> _logger;
 
         public SeriesScannedHandler(IEpisodeMonitoredService episodeMonitoredService,
                                     ISeriesService seriesService,
                                     IManageCommandQueue commandQueueManager,
                                     IEpisodeAddedService episodeAddedService,
-                                    Logger logger)
+                                    ILogger<SeriesScannedHandler> logger)
         {
             _episodeMonitoredService = episodeMonitoredService;
             _seriesService = seriesService;
@@ -39,7 +39,7 @@ namespace NzbDrone.Core.Tv
                 return;
             }
 
-            _logger.Info("[{0}] was recently added, performing post-add actions", series.Title);
+            _logger.LogInformation("[{Title}] was recently added, performing post-add actions", series.Title);
             _episodeMonitoredService.SetEpisodeMonitoredStatus(series, addOptions);
 
             // If both options are enabled search for the whole series, which will only include monitored episodes.

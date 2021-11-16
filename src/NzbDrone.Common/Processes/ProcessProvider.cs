@@ -6,7 +6,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Model;
 
@@ -33,14 +33,16 @@ namespace NzbDrone.Common.Processes
 
     public class ProcessProvider : IProcessProvider
     {
-        private readonly Logger _logger;
+        private readonly ILoggerFactory _loggerFactory;
+        private readonly ILogger<ProcessProvider> _logger;
 
         public const string SONARR_PROCESS_NAME = "Sonarr";
         public const string SONARR_CONSOLE_PROCESS_NAME = "Sonarr.Console";
 
-        public ProcessProvider(Logger logger)
+        public ProcessProvider(ILoggerFactory loggerFactory)
         {
-            _logger = logger;
+            _loggerFactory = loggerFactory;
+            _logger = loggerFactory.CreateLogger<ProcessProvider>();
         }
 
         public int GetCurrentProcessId()
@@ -70,17 +72,17 @@ namespace NzbDrone.Common.Processes
 
         public ProcessInfo GetProcessById(int id)
         {
-            _logger.Debug("Finding process with Id:{0}", id);
+            _logger.LogDebug("Finding process with Id:{Id}", id);
 
             var processInfo = ConvertToProcessInfo(Process.GetProcesses().FirstOrDefault(p => p.Id == id));
 
             if (processInfo == null)
             {
-                _logger.Warn("Unable to find process with ID {0}", id);
+                _logger.LogWarning("Unable to find process with ID {Id}", id);
             }
             else
             {
-                _logger.Debug("Found process {0}", processInfo.ToString());
+                _logger.LogDebug("Found process {ProcessInfo}", processInfo.ToString());
             }
 
             return processInfo;
@@ -93,7 +95,7 @@ namespace NzbDrone.Common.Processes
 
         public void OpenDefaultBrowser(string url)
         {
-            _logger.Info("Opening URL [{0}]", url);
+            _logger.LogInformation("Opening URL [{Url}]", url);
 
             var process = new Process
             {
@@ -110,7 +112,7 @@ namespace NzbDrone.Common.Processes
         {
             (path, args) = GetPathAndArgs(path, args);
 
-            var logger = LogManager.GetLogger(new FileInfo(path).Name);
+            var logger = _loggerFactory.CreateLogger(new FileInfo(path).Name);
 
             var startInfo = new ProcessStartInfo(path, args)
             {
@@ -127,19 +129,19 @@ namespace NzbDrone.Common.Processes
                 {
                     try
                     {
-                        _logger.Trace("Setting environment variable '{0}' to '{1}'", environmentVariable.Key, environmentVariable.Value);
+                        _logger.LogTrace("Setting environment variable '{Key}' to '{Value}'", environmentVariable.Key, environmentVariable.Value);
                         startInfo.EnvironmentVariables.Add(environmentVariable.Key.ToString(), environmentVariable.Value.ToString());
                     }
                     catch (Exception e)
                     {
                         if (environmentVariable.Value == null)
                         {
-                            _logger.Error(e, "Unable to set environment variable '{0}', value is null", environmentVariable.Key);
+                            _logger.LogError(e, "Unable to set environment variable '{Key}', value is null", environmentVariable.Key);
                         }
 
                         else
                         {
-                            _logger.Error(e, "Unable to set environment variable '{0}'", environmentVariable.Key);
+                            _logger.LogError(e, "Unable to set environment variable '{Key}'", environmentVariable.Key);
                         }
 
                         throw;
@@ -147,7 +149,7 @@ namespace NzbDrone.Common.Processes
                 }
             }
 
-            logger.Debug("Starting {0} {1}", path, args);
+            logger.LogDebug("Starting {Path} {Args}", path, args);
 
             var process = new Process
             {
@@ -158,7 +160,7 @@ namespace NzbDrone.Common.Processes
             {
                 if (string.IsNullOrWhiteSpace(eventArgs.Data)) return;
 
-                logger.Debug(eventArgs.Data);
+                logger.LogDebug("{Data}", eventArgs.Data);
 
                 if (onOutputDataReceived != null)
                 {
@@ -170,7 +172,7 @@ namespace NzbDrone.Common.Processes
             {
                 if (string.IsNullOrWhiteSpace(eventArgs.Data)) return;
 
-                logger.Error(eventArgs.Data);
+                logger.LogError("{Data}", eventArgs.Data);
 
                 if (onErrorDataReceived != null)
                 {
@@ -190,7 +192,7 @@ namespace NzbDrone.Common.Processes
         {
             (path, args) = GetPathAndArgs(path, args);
 
-            _logger.Debug("Starting {0} {1}", path, args);
+            _logger.LogDebug("Starting {Path} {Args}", path, args);
 
             var startInfo = new ProcessStartInfo(path, args);
             startInfo.CreateNoWindow = noWindow;
@@ -220,7 +222,7 @@ namespace NzbDrone.Common.Processes
 
         public void WaitForExit(Process process)
         {
-            _logger.Debug("Waiting for process {0} to exit.", process.ProcessName);
+            _logger.LogDebug("Waiting for process {ProcessName} to exit.", process.ProcessName);
 
             process.WaitForExit();
         }
@@ -229,7 +231,7 @@ namespace NzbDrone.Common.Processes
         {
             var process = Process.GetProcessById(processId);
 
-            _logger.Info("Updating [{0}] process priority from {1} to {2}",
+            _logger.LogInformation("Updating [{ProcessName}] process priority from {PriorityClass} to {Priority}",
                         process.ProcessName,
                         process.PriorityClass,
                         priority);
@@ -243,7 +245,7 @@ namespace NzbDrone.Common.Processes
 
             if (process == null)
             {
-                _logger.Warn("Cannot find process with id: {0}", processId);
+                _logger.LogWarning("Cannot find process with id: {ProcessId}", processId);
                 return;
             }
 
@@ -251,32 +253,32 @@ namespace NzbDrone.Common.Processes
 
             if (process.Id != Process.GetCurrentProcess().Id && process.HasExited)
             {
-                _logger.Debug("Process has already exited");
+                _logger.LogDebug("Process has already exited");
                 return;
             }
 
-            _logger.Info("[{0}]: Killing process", process.Id);
+            _logger.LogInformation("[{ProcessId}]: Killing process", process.Id);
             process.Kill();
-            _logger.Info("[{0}]: Waiting for exit", process.Id);
+            _logger.LogInformation("[{ProcessId}]: Waiting for exit", process.Id);
             process.WaitForExit();
-            _logger.Info("[{0}]: Process terminated successfully", process.Id);
+            _logger.LogInformation("[{ProcessId}]: Process terminated successfully", process.Id);
         }
 
         public void KillAll(string processName)
         {
             var processes = GetProcessesByName(processName);
 
-            _logger.Debug("Found {0} processes to kill", processes.Count);
+            _logger.LogDebug("Found {Count} processes to kill", processes.Count);
 
             foreach (var processInfo in processes)
             {
                 if (processInfo.Id == Process.GetCurrentProcess().Id)
                 {
-                    _logger.Debug("Tried killing own process, skipping: {0} [{1}]", processInfo.Id, processInfo.ProcessName);
+                    _logger.LogDebug("Tried killing own process, skipping: {ProcessId} [{ProcessName}]", processInfo.Id, processInfo.ProcessName);
                     continue;
                 }
 
-                _logger.Debug("Killing process: {0} [{1}]", processInfo.Id, processInfo.ProcessName);
+                _logger.LogDebug("Killing process: {ProcessId} [{ProcessName}]", processInfo.Id, processInfo.ProcessName);
                 Kill(processInfo.Id);
             }
         }
@@ -305,7 +307,7 @@ namespace NzbDrone.Common.Processes
             }
             catch (Win32Exception e)
             {
-                _logger.Warn(e, "Couldn't get process info for " + process.ProcessName);
+                _logger.LogWarning(e, "Couldn't get process info for {ProcessName}", process.ProcessName);
             }
 
             return processInfo;
@@ -336,13 +338,13 @@ namespace NzbDrone.Common.Processes
             var processes = Process.GetProcessesByName(name)
                                    .Union(monoProcesses).ToList();
 
-            _logger.Debug("Found {0} processes with the name: {1}", processes.Count, name);
+            _logger.LogDebug("Found {ProcessCount} processes with the name: {Name}", processes.Count, name);
 
             try
             {
                 foreach (var process in processes)
                 {
-                    _logger.Debug(" - [{0}] {1}", process.Id, process.ProcessName);
+                    _logger.LogDebug(" - [{ProcessId}] {ProcessName}", process.Id, process.ProcessName);
                 }
             }
             catch
@@ -355,10 +357,11 @@ namespace NzbDrone.Common.Processes
 
         private (string Path, string Args) GetPathAndArgs(string path, string args)
         {
-            if (PlatformInfo.IsMono && path.EndsWith(".exe", StringComparison.InvariantCultureIgnoreCase))
+            //TODO: IsLinux?
+            /*if (PlatformInfo.IsMono && path.EndsWith(".exe", StringComparison.InvariantCultureIgnoreCase))
             {
                 return ("mono", $"--debug {path} {args}");
-            }
+            }*/
             if (OsInfo.IsOsx && path.EndsWith(".app", StringComparison.InvariantCultureIgnoreCase))
             {
                 return ("/usr/bin/open", $"--new {path} --args {args}");

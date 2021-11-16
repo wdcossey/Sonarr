@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using Microsoft.Extensions.Logging;
 using FluentValidation.Results;
-using NLog;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 using NzbDrone.Common.Serializer;
@@ -20,11 +20,11 @@ namespace NzbDrone.Core.Notifications.PushBullet
     public class PushBulletProxy : IPushBulletProxy
     {
         private const string PUSH_URL = "https://api.pushbullet.com/v2/pushes";
-        private const string DEVICE_URL = "https://api.pushbullet.com/v2/devices";
+        private const string DEVICE_URL = "https://api.pushbullet.com/v2/devices"; 
         private readonly IHttpClient<PushBulletProxy> _httpClient;
-        private readonly Logger _logger;
+        private readonly ILogger<PushBulletProxy> _logger;
 
-        public PushBulletProxy(IHttpClient<PushBulletProxy> httpClient, Logger logger)
+        public PushBulletProxy(IHttpClient<PushBulletProxy> httpClient, ILogger<PushBulletProxy> logger)
         {
             _httpClient = httpClient;
             _logger = logger;
@@ -46,7 +46,7 @@ namespace NzbDrone.Core.Notifications.PushBullet
                     }
                     catch (PushBulletException ex)
                     {
-                        _logger.Error(ex, "Unable to send test message to {0}", channelTag);
+                        _logger.LogError(ex, "Unable to send test message to {ChannelTag}", channelTag);
                         error = true;
                     }
                 }
@@ -65,7 +65,7 @@ namespace NzbDrone.Core.Notifications.PushBullet
                         }
                         catch (PushBulletException ex)
                         {
-                            _logger.Error(ex, "Unable to send test message to {0}", deviceId);
+                            _logger.LogError(ex, "Unable to send test message to {DeviceId}", deviceId);
                             error = true;
                         }
                     }
@@ -80,7 +80,7 @@ namespace NzbDrone.Core.Notifications.PushBullet
                     }
                     catch (PushBulletException ex)
                     {
-                        _logger.Error(ex, "Unable to send test message to all devices");
+                        _logger.LogError(ex, "Unable to send test message to all devices");
                         error = true;
                     }
                 }
@@ -111,7 +111,7 @@ namespace NzbDrone.Core.Notifications.PushBullet
             {
                 if (ex.Response.StatusCode == HttpStatusCode.Unauthorized)
                 {
-                    _logger.Error(ex, "Access token is invalid");
+                    _logger.LogError(ex, "Access token is invalid");
                     throw;
                 }
             }
@@ -132,16 +132,16 @@ namespace NzbDrone.Core.Notifications.PushBullet
             {
                 if (ex.Response.StatusCode == HttpStatusCode.Unauthorized)
                 {
-                    _logger.Error(ex, "API Key is invalid");
+                    _logger.LogError(ex, "API Key is invalid");
                     return new ValidationFailure("ApiKey", "API Key is invalid");
                 }
 
-                _logger.Error(ex, "Unable to send test message");
+                _logger.LogError(ex, "Unable to send test message");
                 return new ValidationFailure("ApiKey", "Unable to send test message");
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Unable to send test message");
+                _logger.LogError(ex, "Unable to send test message");
                 return new ValidationFailure("", "Unable to send test message");
             }
 
@@ -206,7 +206,7 @@ namespace NzbDrone.Core.Notifications.PushBullet
             {
                 if (ex.Response.StatusCode == HttpStatusCode.Unauthorized)
                 {
-                    _logger.Error(ex, "Access token is invalid");
+                    _logger.LogError(ex, "Access token is invalid");
                     throw;
                 }
 

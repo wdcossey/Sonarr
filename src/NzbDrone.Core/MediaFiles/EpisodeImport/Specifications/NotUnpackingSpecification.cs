@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Core.Configuration;
@@ -14,9 +14,9 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
     {
         private readonly IDiskProvider _diskProvider;
         private readonly IConfigService _configService;
-        private readonly Logger _logger;
+        private readonly ILogger<NotUnpackingSpecification> _logger;
 
-        public NotUnpackingSpecification(IDiskProvider diskProvider, IConfigService configService, Logger logger)
+        public NotUnpackingSpecification(IDiskProvider diskProvider, IConfigService configService, ILogger<NotUnpackingSpecification> logger)
         {
             _diskProvider = diskProvider;
             _configService = configService;
@@ -27,7 +27,7 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
         {
             if (localEpisode.ExistingFile)
             {
-                _logger.Debug("{0} is in series folder, skipping unpacking check", localEpisode.Path);
+                _logger.LogDebug("{Path} is in series folder, skipping unpacking check", localEpisode.Path);
                 return Decision.Accept();
             }
 
@@ -40,13 +40,13 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
                     {
                         if (OsInfo.IsNotWindows)
                         {
-                            _logger.Debug("{0} is still being unpacked", localEpisode.Path);
+                            _logger.LogDebug("{Path} is still being unpacked", localEpisode.Path);
                             return Decision.Reject("File is still being unpacked");
                         }
 
                         if (_diskProvider.FileGetLastWrite(localEpisode.Path) > DateTime.UtcNow.AddMinutes(-5))
                         {
-                            _logger.Debug("{0} appears to be unpacking still", localEpisode.Path);
+                            _logger.LogDebug("{Path} appears to be unpacking still", localEpisode.Path);
                             return Decision.Reject("File is still being unpacked");
                         }
                     }

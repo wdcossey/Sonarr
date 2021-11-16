@@ -1,5 +1,5 @@
 ﻿using System;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Processes;
 
 namespace NzbDrone.Host.AccessControl
@@ -12,9 +12,9 @@ namespace NzbDrone.Host.AccessControl
     public class NetshProvider : INetshProvider
     {
         private readonly IProcessProvider _processProvider;
-        private readonly Logger _logger;
+        private readonly ILogger<NetshProvider> _logger;
 
-        public NetshProvider(IProcessProvider processProvider, Logger logger)
+        public NetshProvider(IProcessProvider processProvider, ILogger<NetshProvider> logger)
         {
             _processProvider = processProvider;
             _logger = logger;
@@ -30,7 +30,7 @@ namespace NzbDrone.Host.AccessControl
             }
             catch (Exception ex)
             {
-                _logger.Warn(ex, "Error executing netsh with arguments: " + arguments);
+                _logger.LogWarning(ex, "Error executing netsh with arguments: {Arguments}", arguments);
             }
 
             return null;

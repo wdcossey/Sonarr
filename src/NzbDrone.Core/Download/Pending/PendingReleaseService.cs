@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Marr.Data;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Crypto;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Configuration;
@@ -44,7 +43,7 @@ namespace NzbDrone.Core.Download.Pending
         private readonly ITaskManager _taskManager;
         private readonly IConfigService _configService;
         private readonly IEventAggregator _eventAggregator;
-        private readonly Logger _logger;
+        private readonly ILogger<PendingReleaseService> _logger;
 
         public PendingReleaseService(IIndexerStatusService indexerStatusService,
                                     IPendingReleaseRepository repository,
@@ -54,7 +53,7 @@ namespace NzbDrone.Core.Download.Pending
                                     ITaskManager taskManager,
                                     IConfigService configService,
                                     IEventAggregator eventAggregator,
-                                    Logger logger)
+                                    ILogger<PendingReleaseService> logger)
         {
             _indexerStatusService = indexerStatusService;
             _repository = repository;
@@ -100,18 +99,18 @@ namespace NzbDrone.Core.Download.Pending
 
                         if (matchingReport.Reason != reason)
                         {
-                            _logger.Debug("The release {0} is already pending with reason {1}, changing to {2}", decision.RemoteEpisode, matchingReport.Reason, reason);
+                            _logger.LogDebug("The release {RemoteEpisode} is already pending with reason {MatchingReportReason}, changing to {Reason}", decision.RemoteEpisode, matchingReport.Reason, reason);
                             matchingReport.Reason = reason;
                             _repository.Update(matchingReport);
                         }
                         else
                         {
-                            _logger.Debug("The release {0} is already pending with reason {1}, not adding again", decision.RemoteEpisode, reason);
+                            _logger.LogDebug("The release {RemoteEpisode} is already pending with reason {Reason}, not adding again", decision.RemoteEpisode, reason);
                         }
 
                         if (matchingReports.Count() > 1)
                         {
-                            _logger.Debug("The release {0} had {1} duplicate pending, removing duplicates.", decision.RemoteEpisode, matchingReports.Count() - 1);
+                            _logger.LogDebug("The release {RemoteEpisode} had {MatchingReportsCount} duplicate pending, removing duplicates.", decision.RemoteEpisode, matchingReports.Count() - 1);
 
                             foreach (var duplicate in matchingReports.Skip(1))
                             {
@@ -124,7 +123,7 @@ namespace NzbDrone.Core.Download.Pending
                         continue;
                     }
 
-                    _logger.Debug("Adding release {0} to pending releases with reason {1}", decision.RemoteEpisode, reason);
+                    _logger.LogDebug("Adding release {RemoteEpisode} to pending releases with reason {Reason}", decision.RemoteEpisode, reason);
                     Insert(decision, reason);
                 }
             }
@@ -380,7 +379,7 @@ namespace NzbDrone.Core.Download.Pending
                 //It is safer to retry these releases on the next round than remove it and try to re-add it (if its still in the feed)
                 if (compare >= 0)
                 {
-                    _logger.Debug("Removing previously pending release, as it was grabbed.");
+                    _logger.LogDebug("Removing previously pending release, as it was grabbed.");
                     Delete(existingReport);
                 }
             }
@@ -388,7 +387,7 @@ namespace NzbDrone.Core.Download.Pending
 
         private void RemoveRejected(List<DownloadDecision> rejected)
         {
-            _logger.Debug("Removing failed releases from pending");
+            _logger.LogDebug("Removing failed releases from pending");
             var pending = GetPendingReleases();
 
             foreach (var rejectedRelease in rejected)
@@ -397,7 +396,7 @@ namespace NzbDrone.Core.Download.Pending
 
                 foreach (var pendingRelease in matching)
                 {
-                    _logger.Debug("Removing previously pending release, as it has now been rejected.");
+                    _logger.LogDebug("Removing previously pending release, as it has now been rejected.");
                     Delete(pendingRelease);
                 }
             }

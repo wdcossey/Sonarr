@@ -55,8 +55,8 @@ namespace NzbDrone.Api.System
                 AppData = _appFolderInfo.GetAppDataPath(),
                 OsName = _osInfo.Name,
                 OsVersion = _osInfo.Version,
-                IsMonoRuntime = PlatformInfo.IsMono,
-                IsMono = PlatformInfo.IsMono,
+                IsMonoRuntime = false,
+                IsMono = false,
                 IsLinux = OsInfo.IsLinux,
                 IsOsx = OsInfo.IsOsx,
                 IsWindows = OsInfo.IsWindows,
@@ -65,7 +65,7 @@ namespace NzbDrone.Api.System
                 SqliteVersion = _database.Version,
                 UrlBase = _configFileProvider.UrlBase,
                 RuntimeVersion = _platformInfo.Version,
-                RuntimeName = PlatformInfo.Platform
+                RuntimeName = "dotNet"
             };
         }
 

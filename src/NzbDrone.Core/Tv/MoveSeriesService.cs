@@ -1,5 +1,5 @@
 using System.IO;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Instrumentation.Extensions;
 using NzbDrone.Core.Messaging.Commands;
@@ -17,14 +17,14 @@ namespace NzbDrone.Core.Tv
         private readonly IDiskProvider _diskProvider;
         private readonly IDiskTransferService _diskTransferService;
         private readonly IEventAggregator _eventAggregator;
-        private readonly Logger _logger;
+        private readonly ILogger<MoveSeriesService> _logger;
 
         public MoveSeriesService(ISeriesService seriesService,
                                  IBuildFileNames filenameBuilder,
                                  IDiskProvider diskProvider,
                                  IDiskTransferService diskTransferService,
                                  IEventAggregator eventAggregator,
-                                 Logger logger)
+                                 ILogger<MoveSeriesService> logger)
         {
             _seriesService = seriesService;
             _filenameBuilder = filenameBuilder;
@@ -38,17 +38,17 @@ namespace NzbDrone.Core.Tv
         {
             if (!_diskProvider.FolderExists(sourcePath))
             {
-                _logger.Debug("Folder '{0}' for '{1}' does not exist, not moving.", sourcePath, series.Title);
+                _logger.LogDebug("Folder '{SourcePath}' for '{Title}' does not exist, not moving.", sourcePath, series.Title);
                 return;
             }
 
             if (index != null && total != null)
             {
-                _logger.ProgressInfo("Moving {0} from '{1}' to '{2}' ({3}/{4})", series.Title, sourcePath, destinationPath, index + 1, total);
+                _logger.ProgressInfo("Moving {Title} from '{SourcePath}' to '{DestinationPath}' ({Index}/{Total})", series.Title, sourcePath, destinationPath, index + 1, total);
             }
             else
             {
-                _logger.ProgressInfo("Moving {0} from '{1}' to '{2}'", series.Title, sourcePath, destinationPath);
+                _logger.ProgressInfo("Moving {Title} from '{SourcePath}' to '{DestinationPath}'", series.Title, sourcePath, destinationPath);
             }
 
             try
@@ -64,7 +64,7 @@ namespace NzbDrone.Core.Tv
             }
             catch (IOException ex)
             {
-                _logger.Error(ex, "Unable to move series from '{0}' to '{1}'. Try moving files manually", sourcePath, destinationPath);
+                _logger.LogError(ex, "Unable to move series from '{SourcePath}' to '{DestinationPath}'. Try moving files manually", sourcePath, destinationPath);
 
                 RevertPath(series.Id, sourcePath);
             }

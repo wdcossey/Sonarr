@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using FluentValidation.Results;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
-using NLog;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Serializer;
 using NzbDrone.Core.Notifications.Xbmc.Model;
@@ -23,14 +23,14 @@ namespace NzbDrone.Core.Notifications.Xbmc
     {
         private readonly IXbmcJsonApiProxy _proxy;
         private readonly IEnumerable<IApiProvider> _apiProviders;
-        private readonly Logger _logger;
+        private readonly ILogger<XbmcService> _logger;
 
         private readonly ICached<XbmcVersion> _xbmcVersionCache;
 
         public XbmcService(IXbmcJsonApiProxy proxy,
                            IEnumerable<IApiProvider> apiProviders,
                            ICacheManager cacheManager,
-                           Logger logger)
+                           ILogger<XbmcService> logger)
         {
             _proxy = proxy;
             _apiProviders = apiProviders;
@@ -63,7 +63,7 @@ namespace NzbDrone.Core.Notifications.Xbmc
             {
                 var response = _proxy.GetJsonVersion(settings);
 
-                _logger.Debug("Getting version from response: " + response);
+                _logger.LogDebug("Getting version from response: {Response}", response);
                 var result = Json.Deserialize<XbmcJsonResult<JObject>>(response);
 
                 var versionObject = result.Result.Property("version");
@@ -102,9 +102,9 @@ namespace NzbDrone.Core.Notifications.Xbmc
 
             try
             {
-                _logger.Debug("Determining version of Host: {0}", settings.Address);
+                _logger.LogDebug("Determining version of Host: {Address}", settings.Address);
                 var version = GetJsonVersion(settings);
-                _logger.Debug("Version is: {0}", version);
+                _logger.LogDebug("Version is: {Version}", version);
 
                 if (version == new XbmcVersion(0))
                 {
@@ -115,7 +115,7 @@ namespace NzbDrone.Core.Notifications.Xbmc
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Unable to send test message");
+                _logger.LogError(ex, "Unable to send test message");
                 return new ValidationFailure("Host", "Unable to send test message");
             }
 

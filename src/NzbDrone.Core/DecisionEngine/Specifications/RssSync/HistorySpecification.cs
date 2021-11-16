@@ -1,5 +1,5 @@
 using System;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.History;
@@ -15,13 +15,13 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.RssSync
         private readonly UpgradableSpecification _upgradableSpecification;
         private readonly IConfigService _configService;
         private readonly IPreferredWordService _preferredWordServiceCalculator;
-        private readonly Logger _logger;
+        private readonly ILogger<HistorySpecification> _logger;
 
         public HistorySpecification(IHistoryService historyService,
                                            UpgradableSpecification upgradableSpecification,
                                            IConfigService configService,
                                            IPreferredWordService preferredWordServiceCalculator,
-                                           Logger logger)
+                                           ILogger<HistorySpecification> logger)
         {
             _historyService = historyService;
             _upgradableSpecification = upgradableSpecification;
@@ -37,16 +37,16 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.RssSync
         {
             if (searchCriteria != null)
             {
-                _logger.Debug("Skipping history check during search");
+                _logger.LogDebug("Skipping history check during search");
                 return Decision.Accept();
             }
 
             var cdhEnabled = _configService.EnableCompletedDownloadHandling;
 
-            _logger.Debug("Performing history status check on report");
+            _logger.LogDebug("Performing history status check on report");
             foreach (var episode in subject.Episodes)
             {
-                _logger.Debug("Checking current status of episode [{0}] in history", episode.Id);
+                _logger.LogDebug("Checking current status of episode [{Id}] in history", episode.Id);
                 var mostRecent = _historyService.MostRecentForEpisode(episode.Id);
 
                 if (mostRecent != null && mostRecent.EventType == EpisodeHistoryEventType.Grabbed)

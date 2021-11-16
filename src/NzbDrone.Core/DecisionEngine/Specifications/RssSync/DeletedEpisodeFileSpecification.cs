@@ -1,6 +1,6 @@
 using System.IO;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Configuration;
@@ -15,9 +15,9 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.RssSync
     {
         private readonly IDiskProvider _diskProvider;
         private readonly IConfigService _configService;
-        private readonly Logger _logger;
+        private readonly ILogger<DeletedEpisodeFileSpecification> _logger;
 
-        public DeletedEpisodeFileSpecification(IDiskProvider diskProvider, IConfigService configService, Logger logger)
+        public DeletedEpisodeFileSpecification(IDiskProvider diskProvider, IConfigService configService, ILogger<DeletedEpisodeFileSpecification> logger)
         {
             _diskProvider = diskProvider;
             _configService = configService;
@@ -36,7 +36,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.RssSync
 
             if (searchCriteria != null)
             {
-                _logger.Debug("Skipping deleted episodefile check during search");
+                _logger.LogDebug("Skipping deleted episodefile check during search");
                 return Decision.Accept();
             }
 
@@ -51,10 +51,10 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.RssSync
             {
                 foreach (var missingEpisodeFile in missingEpisodeFiles)
                 {
-                    _logger.Trace("Episode file {0} is missing from disk.", missingEpisodeFile.RelativePath);
+                    _logger.LogTrace("Episode file {RelativePath} is missing from disk.", missingEpisodeFile.RelativePath);
                 }
 
-                _logger.Debug("Files for this episode exist in the database but not on disk, will be unmonitored on next diskscan. skipping.");
+                _logger.LogDebug("Files for this episode exist in the database but not on disk, will be unmonitored on next diskscan. skipping.");
                 return Decision.Reject("Series is not monitored");
             }
 

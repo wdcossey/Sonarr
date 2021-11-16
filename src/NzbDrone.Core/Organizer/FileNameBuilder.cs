@@ -4,7 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnsureThat;
@@ -40,7 +40,7 @@ namespace NzbDrone.Core.Organizer
         private readonly ICached<AbsoluteEpisodeFormat[]> _absoluteEpisodeFormatCache;
         private readonly ICached<bool> _requiresEpisodeTitleCache;
         private readonly ICached<bool> _requiresAbsoluteEpisodeNumberCache;
-        private readonly Logger _logger;
+        private readonly ILogger<FileNameBuilder> _logger;
 
         private static readonly Regex TitleRegex = new Regex(@"(?<escaped>\{\{|\}\})|\{(?<prefix>[- ._\[(]*)(?<token>(?:[a-z0-9]+)(?:(?<separator>[- ._]+)(?:[a-z0-9]+))?)(?::(?<customFormat>[a-z0-9+-]+(?<!-)))?(?<suffix>[- ._)\]]*)\}",
                                                              RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
@@ -87,7 +87,7 @@ namespace NzbDrone.Core.Organizer
                                ICacheManager cacheManager,
                                IPreferredWordService preferredWordService,
                                IUpdateMediaInfo mediaInfoUpdater,
-                               Logger logger)
+                               ILogger<FileNameBuilder> logger)
         {
             _namingConfigService = namingConfigService;
             _qualityDefinitionService = qualityDefinitionService;
@@ -613,7 +613,7 @@ namespace NzbDrone.Core.Organizer
         {
             if (episodeFile.MediaInfo == null)
             {
-                _logger.Trace("Media info is unavailable for {0}", episodeFile);
+                _logger.LogTrace("Media info is unavailable for {EpisodeFile}", episodeFile);
 
                 return;
             }

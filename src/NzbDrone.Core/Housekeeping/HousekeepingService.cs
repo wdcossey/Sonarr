@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Datastore;
 
@@ -9,10 +9,10 @@ namespace NzbDrone.Core.Housekeeping
     public class HousekeepingService : IExecute<HousekeepingCommand>
     {
         private readonly IEnumerable<IHousekeepingTask> _housekeepers;
-        private readonly Logger _logger;
+        private readonly ILogger<HousekeepingService> _logger;
         private readonly IMainDatabase _mainDb;
 
-        public HousekeepingService(IEnumerable<IHousekeepingTask> housekeepers, IMainDatabase mainDb, Logger logger)
+        public HousekeepingService(IEnumerable<IHousekeepingTask> housekeepers, IMainDatabase mainDb, ILogger<HousekeepingService> logger)
         {
             _housekeepers = housekeepers;
             _logger = logger;
@@ -21,25 +21,25 @@ namespace NzbDrone.Core.Housekeeping
 
         private void Clean()
         {
-            _logger.Info("Running housecleaning tasks");
+            _logger.LogInformation("Running housecleaning tasks");
 
             foreach (var housekeeper in _housekeepers)
             {
                 try
                 {
-                    _logger.Debug("Starting {0}", housekeeper.GetType().Name);
+                    _logger.LogDebug("Starting {Name}", housekeeper.GetType().Name);
                     housekeeper.Clean();
-                    _logger.Debug("Completed {0}", housekeeper.GetType().Name);
+                    _logger.LogDebug("Completed {Name}", housekeeper.GetType().Name);
 
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error(ex, "Error running housekeeping task: {0}", housekeeper.GetType().Name);
+                    _logger.LogError(ex, "Error running housekeeping task: {Name}", housekeeper.GetType().Name);
                 }
             }
 
             // Vacuuming the log db isn't needed since that's done in a separate housekeeping task
-            _logger.Debug("Compressing main database after housekeeping");
+            _logger.LogDebug("Compressing main database after housekeeping");
             _mainDb.Vacuum();
         }
 

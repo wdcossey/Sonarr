@@ -3,8 +3,8 @@ using System.Text.RegularExpressions;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Configuration;
-using NLog;
 using FluentValidation.Results;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.MediaFiles.TorrentInfo;
 using NzbDrone.Core.RemotePathMappings;
 
@@ -18,7 +18,7 @@ namespace NzbDrone.Core.Download.Clients.Transmission
                             IConfigService configService,
                             IDiskProvider diskProvider,
                             IRemotePathMappingService remotePathMappingService,
-                            Logger logger)
+                            ILogger<Transmission> logger)
             : base(proxy, torrentFileInfoReader, httpClient, configService, diskProvider, remotePathMappingService, logger)
         {
         }
@@ -27,7 +27,7 @@ namespace NzbDrone.Core.Download.Clients.Transmission
         {
             var versionString = _proxy.GetClientVersion(Settings);
 
-            _logger.Debug("Transmission version information: {0}", versionString);
+            _logger.LogDebug("Transmission version information: {VersionString}", versionString);
 
             var versionResult = Regex.Match(versionString, @"(?<!\(|(\d|\.)+)(\d|\.)+(?!\)|(\d|\.)+)").Value;
             var version = Version.Parse(versionResult);

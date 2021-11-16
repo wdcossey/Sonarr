@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.DecisionEngine;
@@ -31,11 +32,12 @@ namespace Sonarr.Api.V3.Indexers
         private readonly ISeriesService _seriesService;
         private readonly IEpisodeService _episodeService;
         private readonly IParsingService _parsingService;
-        private readonly Logger _logger;
+        private readonly ILogger<ReleaseController> _logger;
 
         private readonly ICached<RemoteEpisode> _remoteEpisodeCache;
 
         public ReleaseController(
+            ILogger<ReleaseController> logger,
             IFetchAndParseRss rssFetcherAndParser,
             ISearchForReleases releaseSearchService,
             IMakeDownloadDecision downloadDecisionMaker,
@@ -46,8 +48,7 @@ namespace Sonarr.Api.V3.Indexers
             IParsingService parsingService,
             ICacheManager cacheManager,
             ILanguageProfileService languageProfileService,
-            IQualityProfileService qualityProfileService,
-            Logger logger) :
+            IQualityProfileService qualityProfileService) :
             base(languageProfileService, qualityProfileService)
         {
             _rssFetcherAndParser = rssFetcherAndParser;
@@ -67,6 +68,9 @@ namespace Sonarr.Api.V3.Indexers
             _remoteEpisodeCache = cacheManager.GetCache<RemoteEpisode>(GetType(), "remoteEpisodes");
         }
 
+        [ProducesResponseType(typeof(ReleaseResource), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         [HttpPost]
         public IActionResult DownloadRelease([FromBody] ReleaseResource release)
         {
@@ -74,7 +78,7 @@ namespace Sonarr.Api.V3.Indexers
 
             if (remoteEpisode == null)
             {
-                _logger.Debug("Couldn't find requested release in cache, cache timeout probably expired.");
+                _logger.LogDebug("Couldn't find requested release in cache, cache timeout probably expired.");
                 throw new NzbDroneClientException(HttpStatusCode.NotFound, "Couldn't find requested release in cache, try searching again");
             }
 
@@ -130,13 +134,15 @@ namespace Sonarr.Api.V3.Indexers
             }
             catch (ReleaseDownloadException ex)
             {
-                _logger.Error(ex, ex.Message);
+                _logger.LogError(ex, "{Message}",  ex.Message);
                 throw new NzbDroneClientException(HttpStatusCode.Conflict, "Getting release from indexer failed");
             }
 
             return Ok(release);
         }
 
+        [ProducesResponseType(typeof(List<ReleaseResource>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpGet]
         public IActionResult GetReleases([FromQuery] int? episodeId = null, [FromQuery] int? seriesId = null, [FromQuery] int? seasonNumber = null)
         {
@@ -164,7 +170,7 @@ namespace Sonarr.Api.V3.Indexers
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Episode search failed: " + ex.Message);
+                _logger.LogError(ex, "Episode search failed: {Message}", ex.Message);
                 throw new NzbDroneClientException(HttpStatusCode.InternalServerError, ex.Message);
             }
         }
@@ -184,7 +190,7 @@ namespace Sonarr.Api.V3.Indexers
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Season search failed: " + ex.Message);
+                _logger.LogError(ex, "Season search failed: {Message}", ex.Message);
                 throw new NzbDroneClientException(HttpStatusCode.InternalServerError, ex.Message);
             }
         }

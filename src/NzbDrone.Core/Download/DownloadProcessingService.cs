@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Download.TrackedDownloads;
 using NzbDrone.Core.Messaging.Commands;
@@ -16,14 +15,14 @@ namespace NzbDrone.Core.Download
         private readonly IFailedDownloadService _failedDownloadService;
         private readonly ITrackedDownloadService _trackedDownloadService;
         private readonly IEventAggregator _eventAggregator;
-        private readonly Logger _logger;
+        private readonly ILogger<DownloadProcessingService> _logger;
 
         public DownloadProcessingService(IConfigService configService,
                                          ICompletedDownloadService completedDownloadService,
                                          IFailedDownloadService failedDownloadService,
                                          ITrackedDownloadService trackedDownloadService,
                                          IEventAggregator eventAggregator,
-                                         Logger logger)
+                                         ILogger<DownloadProcessingService> logger)
         {
             _configService = configService;
             _completedDownloadService = completedDownloadService;
@@ -67,7 +66,7 @@ namespace NzbDrone.Core.Download
                 }
                 catch (Exception e)
                 {
-                    _logger.Debug(e, "Failed to process download: {0}", trackedDownload.DownloadItem.Title);
+                    _logger.LogDebug(e, "Failed to process download: {Title}", trackedDownload.DownloadItem.Title);
                 }
             }
 

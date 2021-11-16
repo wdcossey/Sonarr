@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Processes;
 
 namespace NzbDrone.Host
@@ -17,11 +17,11 @@ namespace NzbDrone.Host
     {
         private readonly IProcessProvider _processProvider;
         private readonly IBrowserService _browserService;
-        private readonly Logger _logger;
+        private readonly ILogger<SingleInstancePolicy> _logger;
 
         public SingleInstancePolicy(IProcessProvider processProvider,
                                     IBrowserService browserService,
-                                    Logger logger)
+                                    ILogger<SingleInstancePolicy> logger)
         {
             _processProvider = processProvider;
             _browserService = browserService;
@@ -32,7 +32,7 @@ namespace NzbDrone.Host
         {
             if (IsAlreadyRunning())
             {
-                _logger.Warn("Another instance of Sonarr is already running.");
+                _logger.LogWarning("Another instance of Sonarr is already running.");
                 _browserService.LaunchWebUI();
                 throw new TerminateApplicationException("Another instance is already running");
             }
@@ -50,7 +50,7 @@ namespace NzbDrone.Host
         {
             if (IsAlreadyRunning())
             {
-                _logger.Debug("Another instance of Sonarr is already running.");
+                _logger.LogDebug("Another instance of Sonarr is already running.");
             }
         }
 
@@ -73,14 +73,14 @@ namespace NzbDrone.Host
 
                 if (otherProcesses.Any())
                 {
-                    _logger.Info("{0} instance(s) of Sonarr are running", otherProcesses.Count);
+                    _logger.LogInformation("{Count} instance(s) of Sonarr are running", otherProcesses.Count);
                 }
 
                 return otherProcesses;
             }
             catch (Exception ex)
             {
-                _logger.Warn(ex, "Failed to check for multiple instances of Sonarr.");
+                _logger.LogWarning(ex, "Failed to check for multiple instances of Sonarr.");
                 return new List<int>();
             }
         }

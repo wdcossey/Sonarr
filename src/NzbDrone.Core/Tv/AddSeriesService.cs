@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using FluentValidation;
 using FluentValidation.Results;
-using NLog;
 using NzbDrone.Common.EnsureThat;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Exceptions;
@@ -26,13 +26,13 @@ namespace NzbDrone.Core.Tv
         private readonly IProvideSeriesInfo _seriesInfo;
         private readonly IBuildFileNames _fileNameBuilder;
         private readonly IAddSeriesValidator _addSeriesValidator;
-        private readonly Logger _logger;
+        private readonly ILogger<AddSeriesService> _logger;
 
         public AddSeriesService(ISeriesService seriesService,
                                 IProvideSeriesInfo seriesInfo,
                                 IBuildFileNames fileNameBuilder,
                                 IAddSeriesValidator addSeriesValidator,
-                                Logger logger)
+                                ILogger<AddSeriesService> logger)
         {
             _seriesService = seriesService;
             _seriesInfo = seriesInfo;
@@ -48,13 +48,13 @@ namespace NzbDrone.Core.Tv
             newSeries = AddSkyhookData(newSeries);
             newSeries = SetPropertiesAndValidate(newSeries);
 
-            _logger.Info("Adding Series {0} Path: [{1}]", newSeries, newSeries.Path);
+            _logger.LogInformation("Adding Series {0} Path: [{1}]", newSeries, newSeries.Path);
             _seriesService.AddSeries(newSeries);
 
             return newSeries;
         }
 
-        public List<Series> AddSeries(List<Series> newSeries, bool ignoreErrors = false) 
+        public List<Series> AddSeries(List<Series> newSeries, bool ignoreErrors = false)
         {
 
             var added = DateTime.UtcNow;
@@ -65,11 +65,11 @@ namespace NzbDrone.Core.Tv
             {
                 if (s.Path.IsNullOrWhiteSpace())
                 {
-                    _logger.Info("Adding Series {0} Root Folder Path: [{1}]", s, s.RootFolderPath);
+                    _logger.LogInformation("Adding Series {0} Root Folder Path: [{1}]", s, s.RootFolderPath);
                 }
                 else
                 {
-                    _logger.Info("Adding Series {0} Path: [{1}]", s, s.Path);
+                    _logger.LogInformation("Adding Series {0} Path: [{1}]", s, s.Path);
                 }
 
                 try
@@ -79,18 +79,18 @@ namespace NzbDrone.Core.Tv
                     series.Added = added;
                     if (existingSeries.Any(f => f.TvdbId == series.TvdbId))
                     {
-                        _logger.Debug("TVDB ID {0} was not added due to validation failure: Series already exists in database", s.TvdbId);
+                        _logger.LogDebug("TVDB ID {TvDbId} was not added due to validation failure: Series already exists in database", s.TvdbId);
                         continue;
                     }
                     if (seriesToAdd.Any(f => f.TvdbId == series.TvdbId))
                     {
-                        _logger.Debug("TVDB ID {0} was not added due to validation failure: Series already exists on list", s.TvdbId);
+                        _logger.LogDebug("TVDB ID {TvDbId} was not added due to validation failure: Series already exists on list", s.TvdbId);
                         continue;
                     }
                     var duplicateSlug = seriesToAdd.FirstOrDefault(f => f.TitleSlug == series.TitleSlug);
                     if (duplicateSlug != null)
                     {
-                        _logger.Debug("TVDB ID {0} was not added due to validation failure: Duplicate Slug {1} used by series {2}", s.TvdbId, s.TitleSlug, duplicateSlug.TvdbId);
+                        _logger.LogDebug("TVDB ID {TvDbId} was not added due to validation failure: Duplicate Slug {TitleSlug} used by series {DuplicateTvDbId}", s.TvdbId, s.TitleSlug, duplicateSlug.TvdbId);
                         continue;
                     }
                     seriesToAdd.Add(series);
@@ -102,7 +102,7 @@ namespace NzbDrone.Core.Tv
                         throw;
                     }
 
-                    _logger.Debug("TVDB ID {0} was not added due to validation failures. {1}", s.TvdbId, ex.Message);
+                    _logger.LogDebug("TVDB ID {TvDbId} was not added due to validation failures. {Message}", s.TvdbId, ex.Message);
                 }
             }
 
@@ -119,8 +119,8 @@ namespace NzbDrone.Core.Tv
             }
             catch (SeriesNotFoundException)
             {
-                _logger.Error("TVDB ID {0} was not found, it may have been removed from TheTVDB.  Path: {1}", newSeries.TvdbId, newSeries.Path);
-                
+                _logger.LogError("TVDB ID {TvDbId} was not found, it may have been removed from TheTVDB.  Path: {Path}", newSeries.TvdbId, newSeries.Path);
+
                 throw new ValidationException(new List<ValidationFailure>
                                               {
                                                   new ValidationFailure("TvdbId", $"A series with this ID was not found. Path: {newSeries.Path}", newSeries.TvdbId)

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Common.TPL;
 using System;
@@ -15,9 +15,9 @@ namespace NzbDrone.Core.Indexers
     public class FetchAndParseRssService : IFetchAndParseRss
     {
         private readonly IIndexerFactory _indexerFactory;
-        private readonly Logger _logger;
+        private readonly ILogger<FetchAndParseRssService> _logger;
 
-        public FetchAndParseRssService(IIndexerFactory indexerFactory, Logger logger)
+        public FetchAndParseRssService(IIndexerFactory indexerFactory, ILogger<FetchAndParseRssService> logger)
         {
             _indexerFactory = indexerFactory;
             _logger = logger;
@@ -31,11 +31,11 @@ namespace NzbDrone.Core.Indexers
 
             if (!indexers.Any())
             {
-                _logger.Warn("No available indexers. check your configuration.");
+                _logger.LogWarning("No available indexers. check your configuration.");
                 return result;
             }
 
-            _logger.Debug("Available indexers {0}", indexers.Count);
+            _logger.LogDebug("Available indexers {Count}", indexers.Count);
 
             var taskList = new List<Task>();
             var taskFactory = new TaskFactory(TaskCreationOptions.LongRunning, TaskContinuationOptions.None);
@@ -52,14 +52,14 @@ namespace NzbDrone.Core.Indexers
 
                              lock (result)
                              {
-                                 _logger.Debug("Found {0} from {1}", indexerReports.Count, indexer.Name);
+                                 _logger.LogDebug("Found {Count} from {Name}", indexerReports.Count, indexer.Name);
 
                                  result.AddRange(indexerReports);
                              }
                          }
                          catch (Exception e)
                          {
-                             _logger.Error(e, "Error during RSS Sync");
+                             _logger.LogError(e, "Error during RSS Sync");
                          }
                      }).LogExceptions();
 
@@ -68,7 +68,7 @@ namespace NzbDrone.Core.Indexers
 
             Task.WaitAll(taskList.ToArray());
 
-            _logger.Debug("Found {0} reports", result.Count);
+            _logger.LogDebug("Found {0} reports", result.Count);
 
             return result;
         }

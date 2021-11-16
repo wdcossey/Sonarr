@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
@@ -29,12 +29,12 @@ namespace NzbDrone.Core.Download.Clients.UTorrent
     public class UTorrentProxy : IUTorrentProxy
     {
         private readonly IHttpClient<UTorrentProxy> _httpClient;
-        private readonly Logger _logger;
+        private readonly ILogger<UTorrentProxy> _logger;
 
         private readonly ICached<Dictionary<string, string>> _authCookieCache;
         private readonly ICached<string> _authTokenCache;
 
-        public UTorrentProxy(ICacheManager cacheManager, IHttpClient<UTorrentProxy> httpClient, Logger logger)
+        public UTorrentProxy(ICacheManager cacheManager, IHttpClient<UTorrentProxy> httpClient, ILogger<UTorrentProxy> logger)
         {
             _httpClient = httpClient;
             _logger = logger;
@@ -213,7 +213,7 @@ namespace NzbDrone.Core.Download.Clients.UTorrent
             {
                 if (ex.Response.StatusCode == HttpStatusCode.BadRequest || ex.Response.StatusCode == HttpStatusCode.Unauthorized)
                 {
-                    _logger.Debug("Authentication required, logging in.");
+                    _logger.LogDebug("Authentication required, logging in.");
 
                     AuthenticateClient(requestBuilder, settings, true);
 
@@ -257,7 +257,7 @@ namespace NzbDrone.Core.Download.Clients.UTorrent
                 try
                 {
                     response = _httpClient.Execute(authLoginRequest);
-                    _logger.Debug("uTorrent authentication succeeded.");
+                    _logger.LogDebug("uTorrent authentication succeeded.");
 
                     var xmlDoc = new System.Xml.XmlDocument();
                     xmlDoc.LoadXml(response.Content);
@@ -268,7 +268,7 @@ namespace NzbDrone.Core.Download.Clients.UTorrent
                 {
                     if (ex.Response.StatusCode == HttpStatusCode.Unauthorized)
                     {
-                        _logger.Debug("uTorrent authentication failed.");
+                        _logger.LogDebug("uTorrent authentication failed.");
                         throw new DownloadClientAuthenticationException("Failed to authenticate with uTorrent.");
                     }
 

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Download.Aggregation.Aggregators;
 using NzbDrone.Core.Parser.Model;
 
@@ -14,10 +14,10 @@ namespace NzbDrone.Core.Download.Aggregation
     public class RemoteEpisodeAggregationService : IRemoteEpisodeAggregationService
     {
         private readonly IEnumerable<IAggregateRemoteEpisode> _augmenters;
-        private readonly Logger _logger;
+        private readonly ILogger<RemoteEpisodeAggregationService> _logger;
 
         public RemoteEpisodeAggregationService(IEnumerable<IAggregateRemoteEpisode> augmenters,
-                                  Logger logger)
+                                               ILogger<RemoteEpisodeAggregationService> logger)
         {
             _augmenters = augmenters;
             _logger = logger;
@@ -33,7 +33,7 @@ namespace NzbDrone.Core.Download.Aggregation
                 }
                 catch (Exception ex)
                 {
-                    _logger.Warn(ex, ex.Message);
+                    _logger.LogWarning(ex, "{Message}", ex.Message);
                 }
             }
 

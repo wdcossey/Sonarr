@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Parser.Model;
 
@@ -14,7 +15,7 @@ namespace NzbDrone.Core.Indexers
         // Use the specified element name to determine the size
         public string SizeElementName { get; set; }
 
-        public TorrentRssParser()
+        public TorrentRssParser(ILoggerFactory loggerFactory) : base(loggerFactory)
         {
             PreferredEnclosureMimeTypes = TorrentEnclosureMimeTypes;
         }

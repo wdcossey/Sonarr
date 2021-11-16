@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Instrumentation.Extensions;
@@ -32,7 +32,7 @@ namespace NzbDrone.Core.MediaFiles
         private readonly IEpisodeService _episodeService;
         private readonly IBuildFileNames _filenameBuilder;
         private readonly IDiskProvider _diskProvider;
-        private readonly Logger _logger;
+        private readonly ILogger<RenameEpisodeFileService> _logger;
 
         public RenameEpisodeFileService(ISeriesService seriesService,
                                         IMediaFileService mediaFileService,
@@ -41,7 +41,7 @@ namespace NzbDrone.Core.MediaFiles
                                         IEpisodeService episodeService,
                                         IBuildFileNames filenameBuilder,
                                         IDiskProvider diskProvider,
-                                        Logger logger)
+                                        ILogger<RenameEpisodeFileService> logger)
         {
             _seriesService = seriesService;
             _mediaFileService = mediaFileService;
@@ -85,7 +85,7 @@ namespace NzbDrone.Core.MediaFiles
 
                 if (!episodesInFile.Any())
                 {
-                    _logger.Warn("File ({0}) is not linked to any episodes", episodeFilePath);
+                    _logger.LogWarning("File ({EpisodeFilePath}) is not linked to any episodes", episodeFilePath);
                     continue;
                 }
 
@@ -118,7 +118,7 @@ namespace NzbDrone.Core.MediaFiles
 
                 try
                 {
-                    _logger.Debug("Renaming episode file: {0}", episodeFile);
+                    _logger.LogDebug("Renaming episode file: {EpisodeFile}", episodeFile);
                     _episodeFileMover.MoveEpisodeFile(episodeFile, series);
 
                     _mediaFileService.Update(episodeFile);
@@ -130,17 +130,17 @@ namespace NzbDrone.Core.MediaFiles
                                     PreviousPath = previousPath
                                 });
 
-                    _logger.Debug("Renamed episode file: {0}", episodeFile);
+                    _logger.LogDebug("Renamed episode file: {EpisodeFile}", episodeFile);
 
                     _eventAggregator.PublishEvent(new EpisodeFileRenamedEvent(series, episodeFile, previousPath));
                 }
                 catch (SameFilenameException ex)
                 {
-                    _logger.Debug("File not renamed, source and destination are the same: {0}", ex.Filename);
+                    _logger.LogDebug("File not renamed, source and destination are the same: {Filename}", ex.Filename);
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error(ex, "Failed to rename file {0}", previousPath);
+                    _logger.LogError(ex, "Failed to rename file {PreviousPath}", previousPath);
                 }
             }
 
@@ -168,7 +168,7 @@ namespace NzbDrone.Core.MediaFiles
 
         public void Execute(RenameSeriesCommand message)
         {
-            _logger.Debug("Renaming all files for selected series");
+            _logger.LogDebug("Renaming all files for selected series");
             var seriesToRename = _seriesService.GetSeries(message.SeriesIds);
 
             foreach (var series in seriesToRename)

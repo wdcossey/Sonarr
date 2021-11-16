@@ -1,5 +1,5 @@
 ﻿using System;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Serializer;
 using NzbDrone.Core.Indexers.Exceptions;
@@ -13,17 +13,16 @@ namespace NzbDrone.Core.Indexers.TorrentRss
 
     public class TorrentRssParserFactory : ITorrentRssParserFactory
     {
-        protected readonly Logger _logger;
-        
         private readonly ICached<TorrentRssIndexerParserSettings> _settingsCache;
 
         private readonly ITorrentRssSettingsDetector _torrentRssSettingsDetector;
+        private readonly ILoggerFactory _loggerFactory;
 
-        public TorrentRssParserFactory(ICacheManager cacheManager, ITorrentRssSettingsDetector torrentRssSettingsDetector, Logger logger)
+        public TorrentRssParserFactory(ICacheManager cacheManager, ITorrentRssSettingsDetector torrentRssSettingsDetector, ILoggerFactory loggerFactory)
         {
             _settingsCache = cacheManager.GetCache<TorrentRssIndexerParserSettings>(GetType());
             _torrentRssSettingsDetector = torrentRssSettingsDetector;
-            _logger = logger;
+            _loggerFactory = loggerFactory;
         }
 
         public TorrentRssParser GetParser(TorrentRssIndexerSettings indexerSettings)
@@ -33,11 +32,11 @@ namespace NzbDrone.Core.Indexers.TorrentRss
 
             if (parserSettings.UseEZTVFormat)
             {
-                return new EzrssTorrentRssParser();
+                return new EzrssTorrentRssParser(_loggerFactory);
             }
             else
             {
-                return new TorrentRssParser
+                return new TorrentRssParser(_loggerFactory)
                 {
                     UseGuidInfoUrl = false,
                     ParseSeedersInDescription = parserSettings.ParseSeedersInDescription,
