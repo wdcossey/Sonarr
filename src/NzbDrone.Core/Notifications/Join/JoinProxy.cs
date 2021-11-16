@@ -15,11 +15,11 @@ namespace NzbDrone.Core.Notifications.Join
 
     public class JoinProxy : IJoinProxy
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<JoinProxy> _httpClient;
         private readonly Logger _logger;
         private const string URL = "https://joinjoaomgcd.appspot.com/_ah/api/messaging/v1/sendPush?";
 
-        public JoinProxy(IHttpClient httpClient, Logger logger)
+        public JoinProxy(IHttpClient<JoinProxy> httpClient, Logger logger)
         {
             _httpClient = httpClient;
             _logger = logger;

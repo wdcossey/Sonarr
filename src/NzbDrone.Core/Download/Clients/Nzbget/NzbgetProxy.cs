@@ -24,12 +24,12 @@ namespace NzbDrone.Core.Download.Clients.Nzbget
 
     public class NzbgetProxy : INzbgetProxy
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<NzbgetProxy> _httpClient;
         private readonly Logger _logger;
 
         private readonly ICached<string> _versionCache;
 
-        public NzbgetProxy(IHttpClient httpClient, ICacheManager cacheManager, Logger logger)
+        public NzbgetProxy(IHttpClient<NzbgetProxy> httpClient, ICacheManager cacheManager, Logger logger)
         {
             _httpClient = httpClient;
             _logger = logger;

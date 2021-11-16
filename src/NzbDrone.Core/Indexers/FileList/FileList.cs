@@ -12,7 +12,7 @@ namespace NzbDrone.Core.Indexers.FileList
         public override bool SupportsRss => true;
         public override bool SupportsSearch => true;
 
-        public FileList(IHttpClient httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, Logger logger)
+        public FileList(IHttpClient<FileList> httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, Logger logger)
             : base(httpClient, indexerStatusService, configService, parsingService, logger)
         {
         }

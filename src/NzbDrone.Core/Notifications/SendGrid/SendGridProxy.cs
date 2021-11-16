@@ -11,9 +11,9 @@ namespace NzbDrone.Core.Notifications.SendGrid
 
     public class SendGridProxy : ISendGridProxy
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<SendGridProxy> _httpClient;
 
-        public SendGridProxy(IHttpClient httpClient)
+        public SendGridProxy(IHttpClient<SendGridProxy> httpClient)
         {
             _httpClient = httpClient;
         }

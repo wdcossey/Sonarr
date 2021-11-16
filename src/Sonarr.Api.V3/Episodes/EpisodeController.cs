@@ -26,9 +26,14 @@ namespace Sonarr.Api.V3.Episodes
             [FromQuery] bool includeImages = false)
         {
             if (seriesId.HasValue)
-                return Ok(seasonNumber.HasValue
-                    ? MapToResource(_episodeService.GetEpisodesBySeason(seriesId.Value, seasonNumber.Value), false, false, includeImages)
-                    : MapToResource(_episodeService.GetEpisodeBySeries(seriesId.Value), false, false, includeImages));
+            {
+                var result = seasonNumber.HasValue
+                    ? _episodeService.GetEpisodesBySeason(seriesId.Value, seasonNumber.Value)
+                    : _episodeService.GetEpisodeBySeries(seriesId.Value);
+
+                return Ok(MapToResource(result, false, false, includeImages));
+            }
+                
 
             if (episodeIds?.Any() == true)
                 return Ok(MapToResource(_episodeService.GetEpisodes(episodeIds), false, false, includeImages));

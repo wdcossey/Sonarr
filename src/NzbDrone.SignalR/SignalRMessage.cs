@@ -3,8 +3,8 @@ using NzbDrone.Core.Datastore.Events;
 
 namespace NzbDrone.SignalR
 {
-
-    public class SignalRMessage<TBody> where TBody: class
+    public abstract class SignalRMessage<TBody> 
+        where TBody: class
     {
         public TBody Body { get; set; }
 
@@ -15,6 +15,5 @@ namespace NzbDrone.SignalR
     }
 
     public class SignalRMessage : SignalRMessage<object> { }
-
-
+    
 }

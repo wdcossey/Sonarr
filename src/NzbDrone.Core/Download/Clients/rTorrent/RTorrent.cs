@@ -28,7 +28,7 @@ namespace NzbDrone.Core.Download.Clients.RTorrent
 
         public RTorrent(IRTorrentProxy proxy,
                         ITorrentFileInfoReader torrentFileInfoReader,
-                        IHttpClient httpClient,
+                        IHttpClient<RTorrent> httpClient,
                         IConfigService configService,
                         IDiskProvider diskProvider,
                         IRemotePathMappingService remotePathMappingService,

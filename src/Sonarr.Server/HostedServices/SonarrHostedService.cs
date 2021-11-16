@@ -18,9 +18,6 @@ namespace Sonarr.Server.HostedServices
             _logger = logger;
             _applicationLifetime = applicationLifetime;
             _eventAggregator = eventAggregator;
-            //app.ApplicationServices.GetRequiredService<IEventAggregator>().PublishEvent(new ApplicationStartingEvent());
-
-            //app.ApplicationServices.GetRequiredService<IEventAggregator>().PublishEvent(new ApplicationStartedEvent());
         }
 
         public Task StartAsync(CancellationToken cancellationToken)

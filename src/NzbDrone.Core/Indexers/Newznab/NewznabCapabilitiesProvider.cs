@@ -20,10 +20,10 @@ namespace NzbDrone.Core.Indexers.Newznab
     public class NewznabCapabilitiesProvider : INewznabCapabilitiesProvider
     {
         private readonly ICached<NewznabCapabilities> _capabilitiesCache;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<NewznabCapabilitiesProvider> _httpClient;
         private readonly Logger _logger;
 
-        public NewznabCapabilitiesProvider(ICacheManager cacheManager, IHttpClient httpClient, Logger logger)
+        public NewznabCapabilitiesProvider(ICacheManager cacheManager, IHttpClient<NewznabCapabilitiesProvider> httpClient, Logger logger)
         {
             _capabilitiesCache = cacheManager.GetCache<NewznabCapabilities>(GetType());
             _httpClient = httpClient;

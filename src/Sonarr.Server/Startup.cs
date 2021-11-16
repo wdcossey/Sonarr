@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
@@ -13,6 +14,9 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
 using NzbDrone.Common.Serializer;
 using NzbDrone.SignalR;
+using NzbDrone.SignalR.Extensions;
+using Sonarr.Server.Authentication;
+using Sonarr.Server.Authentication.Extensions;
 using Sonarr.Server.HostedServices;
 using Sonarr.Server.Middleware;
 using Sonarr.Server.ModelConventions;
@@ -32,7 +36,15 @@ namespace Sonarr.Server
             //TODO: Fix NLog integration!
             services.AddSingleton<NLog.Logger>(provider => NLog.LogManager.GetCurrentClassLogger());
 
-            services.AddSonarr();
+            services.AddSonarrServices();
+
+            services
+                .AddAuthentication(options =>
+                {
+                    options.DefaultAuthenticateScheme = ApiKeyAuthenticationOptions.DefaultScheme;
+                    options.DefaultChallengeScheme = ApiKeyAuthenticationOptions.DefaultScheme;
+                })
+                .AddSonarrApiKeyScheme();
 
             services.AddResponseCompression();
 
@@ -44,40 +56,66 @@ namespace Sonarr.Server
                 .AddApplicationPart(Assembly.Load(new AssemblyName("Sonarr.Api.V3")));
 
             services
-                .AddRazorPages()
+                .AddMvc()
                 .AddJsonOptions(options =>
                 {
-                    options.JsonSerializerOptions.IgnoreNullValues = true;
-                    //options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-                    //options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault;
+                    options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
                     options.JsonSerializerOptions.Converters.Add(new JsonVersionConverter());
                     options.JsonSerializerOptions.Converters.Add(new JsonHttpUriConverter());
                     options.JsonSerializerOptions.Converters.Add(new JsonTimeSpanConverter());
                     options.JsonSerializerOptions.Converters.Add(new JsonTimeSpanNullableConverter());
+                    options.JsonSerializerOptions.Converters.Add(new JsonBigIntegerConverter());
                 });
 
             services.AddResponseCaching();
+            
             services.AddHostedService<SonarrHostedService>();
+            
             services.AddSignalR()
                 .AddJsonProtocol(options =>
                 {
-                    options.PayloadSerializerOptions.IgnoreNullValues = true;
+                    options.PayloadSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
                     options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
                     options.PayloadSerializerOptions.Converters.Add(new JsonVersionConverter());
                     options.PayloadSerializerOptions.Converters.Add(new JsonHttpUriConverter());
                     options.PayloadSerializerOptions.Converters.Add(new JsonTimeSpanConverter());
                     options.PayloadSerializerOptions.Converters.Add(new JsonTimeSpanNullableConverter());
+                    options.PayloadSerializerOptions.Converters.Add(new JsonBigIntegerConverter());
                 });
 
-            services.AddSwaggerGen(c =>
+            services.AddSwaggerGen(options =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Sonarr", Version = "v1" });
-                c.SwaggerDoc("v3", new OpenApiInfo { Title = "Sonarr", Version = "v3" });
-                c.SwaggerGeneratorOptions.ConflictingActionsResolver = enumerable => enumerable.First();
+                
+                options.SwaggerDoc("v1", new OpenApiInfo { Title = "Sonarr", Version = "v1" });
+                options.SwaggerDoc("v3", new OpenApiInfo { Title = "Sonarr", Version = "v3" });
+                options.SwaggerGeneratorOptions.ConflictingActionsResolver = enumerable => enumerable.First();
+
+                const string securityDefinition = "ApiKey";
+                
+                options.AddSecurityDefinition(securityDefinition, new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Name = ApiKeyAuthenticationHandler.ApiKeyHeaderName,
+                    Type = SecuritySchemeType.ApiKey
+                });
+                
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Name = ApiKeyAuthenticationHandler.ApiKeyHeaderName,
+                            Type = SecuritySchemeType.ApiKey,
+                            In = ParameterLocation.Header,
+                            Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = securityDefinition }
+                        },
+                        new List<string>()
+                    }
+                });
             });
 
-            //services.AddAuthorization();
+            services.AddAuthorization();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -97,10 +135,9 @@ namespace Sonarr.Server
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Sonarr v1");
                 c.SwaggerEndpoint("/swagger/v3/swagger.json", "Sonarr v3");
                 c.RoutePrefix = "swagger";
-
             });
 
-            app.UseSonarr();
+            app.UseSonarrServices();
 
             //app.UseHttpsRedirection();
 
@@ -116,18 +153,18 @@ namespace Sonarr.Server
 
             app.UseRouting();
 
-            //app.UseAuthentication();
-            //app.UseAuthorization();
+            app.UseSonarrHubApiKeyMiddleware(); //ApiKey Middleware for SignalR
+            app.UseMiddleware<SonarrResponseHeaderMiddleware>(); //Sonarr response headers
 
-            app.UseMiddleware<SonarrResponseHeaderMiddleware>();
-            //app.UseMiddleware<ApiKeyAuthorizationMiddleware>();
-
+            app.UseAuthentication();
+            app.UseAuthorization();
+            
             app.UseResponseCaching();
             app.UseResponseCompression();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapHub<SonarrHub>("/signalr");
+                endpoints.MapHub<SonarrHub>(SonarrHub.RoutePattern).RequireAuthorization();
 
                 endpoints.MapRazorPages();
                 endpoints.MapControllers()/*.RequireAuthorization()*/;

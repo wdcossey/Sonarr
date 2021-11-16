@@ -3,7 +3,7 @@ using NzbDrone.Common.Messaging;
 
 namespace NzbDrone.SignalR.Extensions
 {
-    public static class HubExtensions
+    public static class SonarrHubExtensions
     {
         public static void BroadcastMessage<TMessage>(this IHubContext<SonarrHub, ISonarrHub> context, TMessage message)
             where TMessage : SignalRMessage

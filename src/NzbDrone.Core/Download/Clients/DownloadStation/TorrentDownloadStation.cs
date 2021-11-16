@@ -32,7 +32,7 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation
                                       IDownloadStationInfoProxy dsInfoProxy,
                                       IDownloadStationTaskProxySelector dsTaskProxySelector,
                                       ITorrentFileInfoReader torrentFileInfoReader,
-                                      IHttpClient httpClient,
+                                      IHttpClient<TorrentDownloadStation> httpClient,
                                       IConfigService configService,
                                       IDiskProvider diskProvider,
                                       IRemotePathMappingService remotePathMappingService,

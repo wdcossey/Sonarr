@@ -1,6 +1,6 @@
 using System.Linq;
+using System.Text.Json;
 using FluentAssertions;
-using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using NzbDrone.Common.Serializer;
 using NzbDrone.Core.Datastore.Migration;
@@ -132,7 +132,7 @@ namespace NzbDrone.Core.Test.Datastore.Migration
             });
 
             var items = db.Query<DownloadClientDefinition132>("SELECT * FROM DownloadClients");
-
+            
             items.Should().HaveCount(3);
             items[0].Priority.Should().Be(1);
             items[1].Priority.Should().Be(1);
@@ -147,7 +147,7 @@ namespace NzbDrone.Core.Test.Datastore.Migration
         public int Priority { get; set; }
         public string Name { get; set; }
         public string Implementation { get; set; }
-        public JObject Settings { get; set; }
+        public JsonDocument Settings { get; set; }
         public string ConfigContract { get; set; }
     }
 }

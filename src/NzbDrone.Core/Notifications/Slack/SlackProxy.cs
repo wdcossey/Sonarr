@@ -12,10 +12,10 @@ namespace NzbDrone.Core.Notifications.Slack
 
     public class SlackProxy : ISlackProxy
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<SlackProxy> _httpClient;
         private readonly Logger _logger;
 
-        public SlackProxy(IHttpClient httpClient, Logger logger)
+        public SlackProxy(IHttpClient<SlackProxy> httpClient, Logger logger)
         {
             _httpClient = httpClient;
             _logger = logger;

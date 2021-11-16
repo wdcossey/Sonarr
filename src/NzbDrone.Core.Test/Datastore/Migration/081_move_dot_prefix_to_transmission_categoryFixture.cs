@@ -29,10 +29,10 @@ namespace NzbDrone.Core.Test.Datastore.Migration
                 });
             });
 
-            var downloadClients = db.Query<DownloadClientDefinition81>("SELECT Settings FROM DownloadClients");
+            var downloadClients = db.Query<DownloadClientDefinition81<SabnzbdSettings81>>("SELECT Settings FROM DownloadClients");
 
             downloadClients.Should().HaveCount(1);
-            downloadClients.First().Settings.ToObject<SabnzbdSettings81>().TvCategory.Should().Be("abc");
+            downloadClients.First().Settings.TvCategory.Should().Be("abc");
         }
 
         [Test]
@@ -54,10 +54,10 @@ namespace NzbDrone.Core.Test.Datastore.Migration
                 });
             });
 
-            var downloadClients = db.Query<DownloadClientDefinition81>("SELECT Settings FROM DownloadClients");
+            var downloadClients = db.Query<DownloadClientDefinition81<TransmissionSettings81>>("SELECT Settings FROM DownloadClients");
 
             downloadClients.Should().HaveCount(1);
-            downloadClients.First().Settings.ToObject<TransmissionSettings81>().TvCategory.Should().Be(".abc");
+            downloadClients.First().Settings.TvCategory.Should().Be(".abc");
         }
 
         [Test]
@@ -79,10 +79,10 @@ namespace NzbDrone.Core.Test.Datastore.Migration
                 });
             });
 
-            var downloadClients = db.Query<DownloadClientDefinition81>("SELECT Settings FROM DownloadClients");
+            var downloadClients = db.Query<DownloadClientDefinition81<TransmissionSettings81>>("SELECT Settings FROM DownloadClients");
 
             downloadClients.Should().HaveCount(1);
-            downloadClients.First().Settings.ToObject<TransmissionSettings81>().TvCategory.Should().Be("");
+            downloadClients.First().Settings.TvCategory.Should().Be("");
         }
     }
 }

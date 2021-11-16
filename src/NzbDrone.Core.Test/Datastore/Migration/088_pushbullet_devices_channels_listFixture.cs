@@ -31,10 +31,10 @@ namespace NzbDrone.Core.Test.Datastore.Migration
                 });
             });
 
-            var items = db.Query<Notification86>("SELECT * FROM Notifications");
+            var items = db.Query<Notification86<PushBulletSettings88>>("SELECT * FROM Notifications");
 
             items.Should().HaveCount(1);
-            items.First().Settings.ToObject<PushBulletSettings88>().ChannelTags.Should().HaveCount(2);
+            items.First().Settings.ChannelTags.Should().HaveCount(2);
         }
     }
 }

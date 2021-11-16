@@ -16,10 +16,10 @@ namespace NzbDrone.Core.Notifications.Prowl
     public class ProwlProxy : IProwlProxy
     {
         private const string PUSH_URL = "https://api.prowlapp.com/publicapi/add";
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<ProwlProxy> _httpClient;
         private readonly Logger _logger;
 
-        public ProwlProxy(IHttpClient httpClient, Logger logger)
+        public ProwlProxy(IHttpClient<ProwlProxy> httpClient, Logger logger)
         {
             _httpClient = httpClient;
             _logger = logger;

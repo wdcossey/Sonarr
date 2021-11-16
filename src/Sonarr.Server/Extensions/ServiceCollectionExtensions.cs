@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Builder;
 using NzbDrone.Common.Composition;
 using NzbDrone.Common.EnvironmentInfo;
+using NzbDrone.Common.Http;
 using NzbDrone.Common.Instrumentation;
 using NzbDrone.Common.Messaging;
-using NzbDrone.Common.Processes;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Datastore.Migration.Framework;
 using NzbDrone.Core.DecisionEngine.Specifications;
@@ -19,23 +17,9 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
-        public static IApplicationBuilder UseSonarr(this IApplicationBuilder app)
-        {
-            //var container = MainAppContainerBuilder.BuildContainer(startupContext);
-            app.ApplicationServices.GetRequiredService<InitializeLogger>().Initialize();
-            app.ApplicationServices.GetRequiredService<IAppFolderFactory>().Register();
-            app.ApplicationServices.GetRequiredService<IProvidePidFile>().Write();
+        private static readonly HashSet<Type> TransientTypes = new() {typeof(FluentValidation.IValidator), typeof(FluentValidation.Validators.IPropertyValidator)/*, typeof(IHttpClient<>)*/};
 
-            //app.ApplicationServices.GetRequiredService<IEventAggregator>().PublishEvent(new ApplicationStartingEvent());
-
-            //app.ApplicationServices.GetRequiredService<IEventAggregator>().PublishEvent(new ApplicationStartedEvent());
-
-            //DbFactory.RegisterDatabase(container);
-
-            return app;
-        }
-
-        public static IServiceCollection AddSonarr(this IServiceCollection services)
+        public static IServiceCollection AddSonarrServices(this IServiceCollection services)
         {
             //TODO: Replace with file scanner *Sonar*.dll
             var assemblies = new List<string>
@@ -48,37 +32,37 @@ namespace Microsoft.Extensions.DependencyInjection
                 "Sonarr.Http.dll"
             };
 
-            return services.AddSonarr(assemblies);
+            return services.AddSonarrServices(assemblies);
         }
 
-        public static IServiceCollection AddSonarr(this IServiceCollection services, IList<string> assemblyNames)
+        public static IServiceCollection AddSonarrServices(this IServiceCollection services, IList<string> assemblyNames)
         {
             var loadedTypes = new List<Type>();
 
             assemblyNames.Add(OsInfo.IsWindows ? "Sonarr.Windows.dll" : "Sonarr.Mono.dll");
-            //assemblyNames.Add("Sonarr.Windows.dll");
             assemblyNames.Add("Sonarr.Common.dll");
 
             foreach (var assemblyName in assemblyNames)
             {
                 //Assembly.Load(new AssemblyName(assemblyName))
-                loadedTypes.AddRange(Assembly.LoadFrom(Path.Join(AppDomain.CurrentDomain.BaseDirectory, assemblyName)).GetExportedTypes());
+                //Assembly.LoadFrom("Sonarr.Api.dll")
+                loadedTypes.AddRange(Assembly.LoadFrom(assemblyName).GetExportedTypes());
             }
 
             loadedTypes.AutoRegisterInterfaces(services);
 
-            //services.AddSingleton<IBroadcastMessageEventWrapper, BroadcastMessageEventWrapper>();
             services.AddSingleton<InitializeLogger>();
-            services.AddSingleton<MediaBrowserProxy>();
             services.AddSingleton<SameEpisodesSpecification>();
-
-            services.RegisterDatabase();
-            //container.Resolve<DatabaseTarget>().Register();
+            //services.AddSingleton<IHandle<ApplicationShutdownRequested>, ShutdownEventHandler>();
+            
+            services.AddTransient(typeof(IHttpClient<>), typeof(HttpClient<>));
+            
+            services.AddSonarrDatabases();
 
             return services;
         }
 
-        private static IServiceCollection RegisterDatabase(this IServiceCollection services)
+        private static IServiceCollection AddSonarrDatabases(this IServiceCollection services)
         {
             services.AddSingleton<IMainDatabase>(provider =>
                 new MainDatabase(provider.GetRequiredService<IDbFactory>().Create()));
@@ -97,16 +81,18 @@ namespace Microsoft.Extensions.DependencyInjection
             var contractTypes = loadedInterfaces.Union(implementedInterfaces).Where(c =>
                     !c.IsGenericTypeDefinition && !string.IsNullOrWhiteSpace(c.FullName))
                 .Where(c => !string.IsNullOrWhiteSpace(c.FullName) && !c.FullName.StartsWith("System"))
-                //.Where(c => !c.FullName.EndsWith("Module"))
-                //.Where(c => !c.FullName.EndsWith("Controller"))
                 .Except(new List<Type> { typeof(IMessage), typeof(IEvent), typeof(IContainer) }).Distinct() //TODO: remove `IContainer`
                 .OrderBy(c => c.FullName);
 
             var implementations = new List<ServiceDescriptor>();
-
-            //TODO: Some services require Transient lifetime
+            
             foreach (var contractType in contractTypes)
-                implementations.AddRange(AutoRegisterImplementations(contractType: contractType, loadedTypes: loadedTypes, lifetime: ServiceLifetime.Singleton));
+                implementations.AddRange(AutoRegisterImplementations(contractType: contractType, loadedTypes: loadedTypes, lifetimeFunc: (lifetimeType) =>
+                {
+                    return TransientTypes.Any(a => a.IsAssignableFrom(lifetimeType)) 
+                        ? ServiceLifetime.Transient 
+                        : ServiceLifetime.Singleton;
+                }));
 
             foreach (var descriptor in implementations)
                 services.Add(descriptor);
@@ -140,6 +126,18 @@ namespace Microsoft.Extensions.DependencyInjection
                 : contractType.Register(implementations.Single(), lifetime);
         }
 
+        private static IEnumerable<ServiceDescriptor> AutoRegisterImplementations(Type contractType, IEnumerable<Type> loadedTypes, Func<Type, ServiceLifetime> lifetimeFunc)
+        {
+            var implementations = contractType.GetImplementations(loadedTypes).Where(c => !c.IsGenericTypeDefinition).ToList();
+
+            if (implementations.Count == 0)
+                return Array.Empty<ServiceDescriptor>();
+
+            return implementations.Count > 1
+                ? contractType.RegisterAll(implementations, lifetimeFunc.Invoke(contractType))
+                : contractType.Register(implementations.Single(), lifetimeFunc.Invoke(contractType));
+        }
+
         private static IEnumerable<Type> GetImplementations(this Type contractType, IEnumerable<Type> loadedTypes)
         {
             return loadedTypes
@@ -152,6 +150,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private static IEnumerable<ServiceDescriptor> Register(this Type service, Type implementation, ServiceLifetime lifetime = ServiceLifetime.Transient)
         {
+            //Console.WriteLine($"implementation: {implementation}; service: {service};");
             return new []
             {
                 ServiceDescriptor.Describe(implementation, implementation, lifetime),

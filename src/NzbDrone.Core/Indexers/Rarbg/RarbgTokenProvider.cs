@@ -14,11 +14,11 @@ namespace NzbDrone.Core.Indexers.Rarbg
 
     public class RarbgTokenProvider : IRarbgTokenProvider
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<RarbgTokenProvider> _httpClient;
         private readonly ICached<string> _tokenCache;
         private readonly Logger _logger;
 
-        public RarbgTokenProvider(IHttpClient httpClient, ICacheManager cacheManager, Logger logger)
+        public RarbgTokenProvider(IHttpClient<RarbgTokenProvider> httpClient, ICacheManager cacheManager, Logger logger)
         {
             _httpClient = httpClient;
             _tokenCache = cacheManager.GetCache<string>(GetType());

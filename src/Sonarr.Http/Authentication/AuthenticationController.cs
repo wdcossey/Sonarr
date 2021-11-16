@@ -15,13 +15,13 @@ namespace Sonarr.Http.Authentication
         {
             _authService = authService;
             _configFileProvider = configFileProvider;
-            //Post("/login",  x => Login(this.Bind<LoginResource>()));
-            //Get("/logout",  x => Logout());
         }
 
         [Route("/login")]
         [HttpPost]
-        public IActionResult Login([FromForm] LoginResource resource, [FromQuery] string returnUrl)
+        public IActionResult Login(
+            [FromForm] [ModelBinder(typeof(LoginResourceModelBinder))] LoginResource resource,
+            [FromQuery] string returnUrl)
         {
             var user = _authService.Login(HttpContext, resource.Username, resource.Password);
 

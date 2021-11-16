@@ -14,11 +14,11 @@ namespace NzbDrone.Core.Notifications.Pushover
 
     public class PushoverProxy : IPushoverProxy
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<PushoverProxy> _httpClient;
         private readonly Logger _logger;
         private const string URL = "https://api.pushover.net/1/messages.json";
 
-        public PushoverProxy(IHttpClient httpClient, Logger logger)
+        public PushoverProxy(IHttpClient<PushoverProxy> httpClient, Logger logger)
         {
             _httpClient = httpClient;
             _logger = logger;

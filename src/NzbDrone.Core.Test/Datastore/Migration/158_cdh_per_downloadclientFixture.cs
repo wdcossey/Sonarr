@@ -1,7 +1,6 @@
-using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using FluentAssertions;
-using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using NzbDrone.Common.Serializer;
 using NzbDrone.Core.Datastore.Migration;
@@ -111,9 +110,10 @@ namespace NzbDrone.Core.Test.Datastore.Migration
         public int Priority { get; set; }
         public string Name { get; set; }
         public string Implementation { get; set; }
-        public JObject Settings { get; set; }
+        public JsonDocument Settings { get; set; }
         public string ConfigContract { get; set; }
         public bool RemoveCompletedDownloads { get; set; }
         public bool RemoveFailedDownloads { get; set; }
     }
+    
 }

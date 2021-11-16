@@ -216,13 +216,14 @@ namespace NzbDrone.Common.Http.Dispatchers
         // Workaround for mono not closing connections properly on timeouts
         private void AbortWebRequest(HttpWebRequest webRequest)
         {
+            //TODO: Not needed in a .Net 6+ world?
             // First affected version was mono 5.16
             if (OsInfo.IsNotWindows && _platformInfo.Version >= new Version(5, 16))
             {
                 try
                 {
                     var currentOperationInfo = webRequest.GetType().GetField("currentOperation", BindingFlags.NonPublic | BindingFlags.Instance);
-                    var currentOperation = currentOperationInfo.GetValue(webRequest);
+                    var currentOperation = currentOperationInfo?.GetValue(webRequest);
 
                     if (currentOperation != null)
                     {

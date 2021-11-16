@@ -24,10 +24,10 @@ namespace NzbDrone.Core.Download.Clients.Sabnzbd
 
     public class SabnzbdProxy : ISabnzbdProxy
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<SabnzbdProxy> _httpClient;
         private readonly Logger _logger;
 
-        public SabnzbdProxy(IHttpClient httpClient, Logger logger)
+        public SabnzbdProxy(IHttpClient<SabnzbdProxy> httpClient, Logger logger)
         {
             _httpClient = httpClient;
             _logger = logger;

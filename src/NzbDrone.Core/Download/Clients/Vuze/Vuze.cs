@@ -15,7 +15,7 @@ namespace NzbDrone.Core.Download.Clients.Vuze
 
         public Vuze(ITransmissionProxy proxy,
                     ITorrentFileInfoReader torrentFileInfoReader,
-                    IHttpClient httpClient,
+                    IHttpClient<Vuze> httpClient,
                     IConfigService configService,
                     IDiskProvider diskProvider,
                     IRemotePathMappingService remotePathMappingService,

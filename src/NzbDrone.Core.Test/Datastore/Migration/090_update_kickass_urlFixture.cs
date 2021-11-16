@@ -32,10 +32,10 @@ namespace NzbDrone.Core.Test.Datastore.Migration
                 });
             });
 
-            var items = db.Query<IndexerDefinition90>("SELECT * FROM Indexers");
+            var items = db.Query<IndexerDefinition90<KickassTorrentsSettings90>>("SELECT * FROM Indexers");
 
             items.Should().HaveCount(1);
-            items.First().Settings.ToObject<KickassTorrentsSettings90>().BaseUrl.Should().Be("https://kat.cr");
+            items.First().Settings.BaseUrl.Should().Be("https://kat.cr");
         }
 
         [Test]
@@ -55,10 +55,10 @@ namespace NzbDrone.Core.Test.Datastore.Migration
                 });
             });
 
-            var items = db.Query<IndexerDefinition90>("SELECT * FROM Indexers");
+            var items = db.Query<IndexerDefinition90<KickassTorrentsSettings90>>("SELECT * FROM Indexers");
 
             items.Should().HaveCount(1);
-            items.First().Settings.ToObject<KickassTorrentsSettings90>().BaseUrl.Should().Be("kickass.so");
+            items.First().Settings.BaseUrl.Should().Be("kickass.so");
         }
     }
 }

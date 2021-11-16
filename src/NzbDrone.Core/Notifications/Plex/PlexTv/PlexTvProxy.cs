@@ -14,10 +14,10 @@ namespace NzbDrone.Core.Notifications.Plex.PlexTv
 
     public class PlexTvProxy : IPlexTvProxy
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<PlexTvProxy> _httpClient;
         private readonly Logger _logger;
 
-        public PlexTvProxy(IHttpClient httpClient, Logger logger)
+        public PlexTvProxy(IHttpClient<PlexTvProxy> httpClient, Logger logger)
         {
             _httpClient = httpClient;
             _logger = logger;

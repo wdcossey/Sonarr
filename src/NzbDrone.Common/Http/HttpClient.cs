@@ -23,8 +23,10 @@ namespace NzbDrone.Common.Http
         HttpResponse Post(HttpRequest request);
         HttpResponse<T> Post<T>(HttpRequest request) where T : new();
     }
+    
+    public interface IHttpClient<TService> : IHttpClient { }
 
-    public class HttpClient : IHttpClient
+    public class HttpClient<TService> : IHttpClient<TService>
     {
         private const int MaxRedirects = 5;
 
@@ -47,9 +49,9 @@ namespace NzbDrone.Common.Http
             _httpDispatcher = httpDispatcher;
             _userAgentBuilder = userAgentBuilder;
             _logger = logger;
-
+            
             ServicePointManager.DefaultConnectionLimit = 12;
-            _cookieContainerCache = cacheManager.GetCache<CookieContainer>(typeof(HttpClient));
+            _cookieContainerCache = cacheManager.GetCache<CookieContainer>(typeof(HttpClient<TService>));
         }
 
         public HttpResponse Execute(HttpRequest request)

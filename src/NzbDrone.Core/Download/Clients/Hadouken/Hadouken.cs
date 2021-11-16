@@ -21,7 +21,7 @@ namespace NzbDrone.Core.Download.Clients.Hadouken
 
         public Hadouken(IHadoukenProxy proxy,
                         ITorrentFileInfoReader torrentFileInfoReader,
-                        IHttpClient httpClient,
+                        IHttpClient<Hadouken> httpClient,
                         IConfigService configService,
                         IDiskProvider diskProvider,
                         IRemotePathMappingService remotePathMappingService,

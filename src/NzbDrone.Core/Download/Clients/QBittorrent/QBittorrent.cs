@@ -29,7 +29,7 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
 
         public QBittorrent(IQBittorrentProxySelector proxySelector,
                            ITorrentFileInfoReader torrentFileInfoReader,
-                           IHttpClient httpClient,
+                           IHttpClient<QBittorrent> httpClient,
                            IConfigService configService,
                            IDiskProvider diskProvider,
                            IRemotePathMappingService remotePathMappingService,

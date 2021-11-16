@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.EnvironmentInfo;
@@ -6,6 +7,7 @@ using NzbDrone.Core.Configuration;
 
 namespace Sonarr.Http.Frontend.Mappers
 {
+    [AllowAnonymous]
     [ResponseCache(NoStore = true, Duration = 0, Location = ResponseCacheLocation.None)]
     public class ManifestMapperController : PhysicalFileControllerBase
     {

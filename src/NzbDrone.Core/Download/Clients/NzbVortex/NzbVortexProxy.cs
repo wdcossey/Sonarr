@@ -24,12 +24,12 @@ namespace NzbDrone.Core.Download.Clients.NzbVortex
 
     public class NzbVortexProxy : INzbVortexProxy
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<NzbVortexProxy> _httpClient;
         private readonly Logger _logger;
 
         private readonly ICached<string> _authSessionIdCache;
 
-        public NzbVortexProxy(IHttpClient httpClient, ICacheManager cacheManager, Logger logger)
+        public NzbVortexProxy(IHttpClient<NzbVortexProxy> httpClient, ICacheManager cacheManager, Logger logger)
         {
             _httpClient = httpClient;
             _logger = logger;

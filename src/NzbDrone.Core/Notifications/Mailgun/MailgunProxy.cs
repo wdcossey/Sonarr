@@ -11,13 +11,13 @@ namespace NzbDrone.Core.Notifications.Mailgun {
     
     public class MailgunProxy : IMailgunProxy
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<MailgunProxy> _httpClient;
         private readonly Logger _logger;
         private const string BaseUrlEu = "https://api.eu.mailgun.net/v3";
         private const string BaseUrlUs = "https://api.mailgun.net/v3";
 
 
-        public MailgunProxy(IHttpClient httpClient, Logger logger)
+        public MailgunProxy(IHttpClient<MailgunProxy> httpClient, Logger logger)
         {
             _httpClient = httpClient;
             _logger = logger;

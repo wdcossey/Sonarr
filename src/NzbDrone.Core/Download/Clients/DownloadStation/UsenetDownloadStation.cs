@@ -29,7 +29,7 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation
                                      IFileStationProxy fileStationProxy,
                                      IDownloadStationInfoProxy dsInfoProxy,
                                      IDownloadStationTaskProxySelector dsTaskProxySelector,
-                                     IHttpClient httpClient,
+                                     IHttpClient<UsenetDownloadStation> httpClient,
                                      IConfigService configService,
                                      IDiskProvider diskProvider,
                                      IRemotePathMappingService remotePathMappingService,

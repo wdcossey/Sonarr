@@ -56,7 +56,7 @@ namespace NzbDrone.Core.Indexers.Newznab
             }
         }
 
-        public Newznab(INewznabCapabilitiesProvider capabilitiesProvider, IHttpClient httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, Logger logger)
+        public Newznab(INewznabCapabilitiesProvider capabilitiesProvider, IHttpClient<Newznab> httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, Logger logger)
             : base(httpClient, indexerStatusService, configService, parsingService, logger)
         {
             _capabilitiesProvider = capabilitiesProvider;

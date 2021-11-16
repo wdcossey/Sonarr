@@ -20,15 +20,16 @@ namespace NzbDrone.Common.Serializer
         {
             var serializerSettings = new JsonSerializerOptions(JsonSerializerDefaults.Web)
             {
-                IgnoreNullValues = true,
                 WriteIndented = true
             };
 
+            serializerSettings.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
             serializerSettings.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
             serializerSettings.Converters.Add(new JsonVersionConverter());
             serializerSettings.Converters.Add(new JsonHttpUriConverter());
             serializerSettings.Converters.Add(new JsonTimeSpanConverter());
             serializerSettings.Converters.Add(new JsonTimeSpanNullableConverter());
+            serializerSettings.Converters.Add(new JsonBigIntegerConverter());
 
             return serializerSettings;
         }

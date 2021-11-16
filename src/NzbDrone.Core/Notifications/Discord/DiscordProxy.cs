@@ -12,10 +12,10 @@ namespace NzbDrone.Core.Notifications.Discord
 
     public class DiscordProxy : IDiscordProxy
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<DiscordProxy> _httpClient;
         private readonly Logger _logger;
 
-        public DiscordProxy(IHttpClient httpClient, Logger logger)
+        public DiscordProxy(IHttpClient<DiscordProxy> httpClient, Logger logger)
         {
             _httpClient = httpClient;
             _logger = logger;

@@ -28,7 +28,7 @@ namespace NzbDrone.Core.Update
         private readonly IManageCommandQueue _commandQueueManager;
         private readonly IDiskProvider _diskProvider;
         private readonly IDiskTransferService _diskTransferService;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<InstallUpdateService> _httpClient;
         private readonly IArchiveService _archiveService;
         private readonly IProcessProvider _processProvider;
         private readonly IVerifyUpdates _updateVerifier;
@@ -44,7 +44,7 @@ namespace NzbDrone.Core.Update
                                     IManageCommandQueue commandQueueManager,
                                     IDiskProvider diskProvider,
                                     IDiskTransferService diskTransferService,
-                                    IHttpClient httpClient,
+                                    IHttpClient<InstallUpdateService> httpClient,
                                     IArchiveService archiveService,
                                     IProcessProvider processProvider,
                                     IVerifyUpdates updateVerifier,

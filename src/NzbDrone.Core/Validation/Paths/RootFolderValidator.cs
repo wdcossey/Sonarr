@@ -4,7 +4,7 @@ using NzbDrone.Core.RootFolders;
 
 namespace NzbDrone.Core.Validation.Paths
 {
-    public class RootFolderValidator : PropertyValidator
+    public class RootFolderValidator : PropertyValidator, IPropertyValidator
     {
         private readonly IRootFolderService _rootFolderService;
 

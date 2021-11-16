@@ -17,11 +17,11 @@ namespace NzbDrone.Core.Notifications.Telegram
 
     public class TelegramProxy : ITelegramProxy
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<TelegramProxy> _httpClient;
         private readonly Logger _logger;
         private const string URL = "https://api.telegram.org";
 
-        public TelegramProxy(IHttpClient httpClient, Logger logger)
+        public TelegramProxy(IHttpClient<TelegramProxy> httpClient, Logger logger)
         {
             _httpClient = httpClient;
             _logger = logger;

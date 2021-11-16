@@ -11,10 +11,10 @@ namespace NzbDrone.Core.DataAugmentation.Scene
 
     public class SceneMappingProxy : ISceneMappingProxy
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<SceneMappingProxy> _httpClient;
         private readonly IHttpRequestBuilderFactory _requestBuilder;
 
-        public SceneMappingProxy(IHttpClient httpClient, ISonarrCloudRequestBuilder requestBuilder)
+        public SceneMappingProxy(IHttpClient<SceneMappingProxy> httpClient, ISonarrCloudRequestBuilder requestBuilder)
         {
             _httpClient = httpClient;
             _requestBuilder = requestBuilder.Services;

@@ -20,7 +20,7 @@ namespace NzbDrone.Core.Download.Clients.Blackhole
         public TimeSpan ScanGracePeriod { get; set; }
 
         public UsenetBlackhole(IScanWatchFolder scanWatchFolder,
-                               IHttpClient httpClient,
+                               IHttpClient<UsenetBlackhole> httpClient,
                                IConfigService configService,
                                IDiskProvider diskProvider,
                                IRemotePathMappingService remotePathMappingService,

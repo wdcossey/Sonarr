@@ -8,11 +8,11 @@ namespace NzbDrone.Core.HealthCheck.Checks
 {
     public class SystemTimeCheck : HealthCheckBase
     {
-        private readonly IHttpClient _client;
+        private readonly IHttpClient<SystemTimeCheck> _client;
         private readonly IHttpRequestBuilderFactory _cloudRequestBuilder;
         private readonly Logger _logger;
 
-        public SystemTimeCheck(IHttpClient client, ISonarrCloudRequestBuilder cloudRequestBuilder, Logger logger)
+        public SystemTimeCheck(IHttpClient<SystemTimeCheck> client, ISonarrCloudRequestBuilder cloudRequestBuilder, Logger logger)
         {
             _client = client;
             _cloudRequestBuilder = cloudRequestBuilder.Services;

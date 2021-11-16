@@ -8,7 +8,7 @@ namespace NzbDrone.Core.ImportLists.Trakt.Popular
     public class TraktPopularImport : TraktImportBase<TraktPopularSettings>
     {
         public TraktPopularImport(IImportListRepository netImportRepository,
-                   IHttpClient httpClient,
+                   IHttpClient<TraktPopularImport> httpClient,
                    IImportListStatusService netImportStatusService,
                    IConfigService configService,
                    IParsingService parsingService,

@@ -23,6 +23,7 @@ namespace Sonarr.Api.V3.Logs
         public IActionResult GetLogs(
             [FromQuery] [ModelBinder(typeof(PagingResourceModelBinder))] PagingResource<LogResource> pagingResource)
         {
+
             var pageSpec = pagingResource.MapToPagingSpec<LogResource, Log>();
 
             if (pageSpec.SortKey == "time")

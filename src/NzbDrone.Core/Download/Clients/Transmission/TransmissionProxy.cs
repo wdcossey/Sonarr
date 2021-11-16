@@ -25,12 +25,12 @@ namespace NzbDrone.Core.Download.Clients.Transmission
 
     public class TransmissionProxy: ITransmissionProxy
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<TransmissionProxy> _httpClient;
         private readonly Logger _logger;
 
         private ICached<string> _authSessionIDCache;
 
-        public TransmissionProxy(ICacheManager cacheManager, IHttpClient httpClient, Logger logger)
+        public TransmissionProxy(ICacheManager cacheManager, IHttpClient<TransmissionProxy> httpClient, Logger logger)
         {
             _httpClient = httpClient;
             _logger = logger;

@@ -4,10 +4,7 @@ using NzbDrone.Core.Validation.Paths;
 
 namespace NzbDrone.Core.Tv
 {
-    public interface IAddSeriesValidator
-    {
-        ValidationResult Validate(Series instance);
-    }
+    public interface IAddSeriesValidator : IValidator<Series> { }
 
     public class AddSeriesValidator : AbstractValidator<Series>, IAddSeriesValidator
     {

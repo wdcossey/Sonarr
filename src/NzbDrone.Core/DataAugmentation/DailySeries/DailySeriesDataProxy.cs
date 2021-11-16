@@ -14,11 +14,11 @@ namespace NzbDrone.Core.DataAugmentation.DailySeries
 
     public class DailySeriesDataProxy : IDailySeriesDataProxy
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<DailySeriesDataProxy> _httpClient;
         private readonly IHttpRequestBuilderFactory _requestBuilder;
         private readonly Logger _logger;
 
-        public DailySeriesDataProxy(IHttpClient httpClient, ISonarrCloudRequestBuilder requestBuilder, Logger logger)
+        public DailySeriesDataProxy(IHttpClient<DailySeriesDataProxy> httpClient, ISonarrCloudRequestBuilder requestBuilder, Logger logger)
         {
             _httpClient = httpClient;
             _requestBuilder = requestBuilder.Services;

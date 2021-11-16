@@ -21,10 +21,10 @@ namespace NzbDrone.Core.Notifications.PushBullet
     {
         private const string PUSH_URL = "https://api.pushbullet.com/v2/pushes";
         private const string DEVICE_URL = "https://api.pushbullet.com/v2/devices";
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<PushBulletProxy> _httpClient;
         private readonly Logger _logger;
 
-        public PushBulletProxy(IHttpClient httpClient, Logger logger)
+        public PushBulletProxy(IHttpClient<PushBulletProxy> httpClient, Logger logger)
         {
             _httpClient = httpClient;
             _logger = logger;

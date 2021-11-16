@@ -24,7 +24,7 @@ namespace NzbDrone.Core.Download.Clients.UTorrent
         public UTorrent(IUTorrentProxy proxy,
                         ICacheManager cacheManager,
                         ITorrentFileInfoReader torrentFileInfoReader,
-                        IHttpClient httpClient,
+                        IHttpClient<UTorrent> httpClient,
                         IConfigService configService,
                         IDiskProvider diskProvider,
                         IRemotePathMappingService remotePathMappingService,

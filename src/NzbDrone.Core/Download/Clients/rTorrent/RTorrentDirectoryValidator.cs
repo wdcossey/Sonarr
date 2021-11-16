@@ -6,10 +6,7 @@ using NzbDrone.Core.Validation.Paths;
 
 namespace NzbDrone.Core.Download.Clients.rTorrent
 {
-    public interface IRTorrentDirectoryValidator
-    {
-        ValidationResult Validate(RTorrentSettings instance);
-    }
+    public interface IRTorrentDirectoryValidator : IValidator<RTorrentSettings> { }
 
     public class RTorrentDirectoryValidator : AbstractValidator<RTorrentSettings>, IRTorrentDirectoryValidator
     {

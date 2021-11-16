@@ -28,13 +28,13 @@ namespace NzbDrone.Core.Download.Clients.UTorrent
 
     public class UTorrentProxy : IUTorrentProxy
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<UTorrentProxy> _httpClient;
         private readonly Logger _logger;
 
         private readonly ICached<Dictionary<string, string>> _authCookieCache;
         private readonly ICached<string> _authTokenCache;
 
-        public UTorrentProxy(ICacheManager cacheManager, IHttpClient httpClient, Logger logger)
+        public UTorrentProxy(ICacheManager cacheManager, IHttpClient<UTorrentProxy> httpClient, Logger logger)
         {
             _httpClient = httpClient;
             _logger = logger;

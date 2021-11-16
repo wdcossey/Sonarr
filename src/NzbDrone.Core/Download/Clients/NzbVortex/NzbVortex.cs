@@ -19,7 +19,7 @@ namespace NzbDrone.Core.Download.Clients.NzbVortex
         private readonly INzbVortexProxy _proxy;
 
         public NzbVortex(INzbVortexProxy proxy,
-                       IHttpClient httpClient,
+                       IHttpClient<NzbVortex> httpClient,
                        IConfigService configService,
                        IDiskProvider diskProvider,
                        IRemotePathMappingService remotePathMappingService,

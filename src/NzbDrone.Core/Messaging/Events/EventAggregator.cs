@@ -92,6 +92,7 @@ namespace NzbDrone.Core.Messaging.Events
                 {
                     _logger.Trace("{0} -> {1}", eventName, handler.GetType().Name);
                     handler.Handle(@event);
+                    
                     _logger.Trace("{0} <- {1}", eventName, handler.GetType().Name);
                 }
                 catch (Exception e)

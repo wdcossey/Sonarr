@@ -12,7 +12,7 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation.Proxies
 
     public class DownloadStationInfoProxy : DiskStationProxyBase, IDownloadStationInfoProxy
     {
-        public DownloadStationInfoProxy(IHttpClient httpClient, ICacheManager cacheManager, Logger logger) :
+        public DownloadStationInfoProxy(IHttpClient<DownloadStationInfoProxy> httpClient, ICacheManager cacheManager, Logger logger) :
             base(DiskStationApi.DownloadStationInfo, "SYNO.DownloadStation.Info", httpClient, cacheManager, logger)
         {
         }

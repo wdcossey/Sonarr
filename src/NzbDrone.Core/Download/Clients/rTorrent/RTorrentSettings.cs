@@ -5,7 +5,9 @@ using NzbDrone.Core.Validation;
 
 namespace NzbDrone.Core.Download.Clients.RTorrent
 {
-    public class RTorrentSettingsValidator : AbstractValidator<RTorrentSettings>
+    public interface IRTorrentSettingsValidator : IValidator<RTorrentSettings> { }
+    
+    public class RTorrentSettingsValidator : AbstractValidator<RTorrentSettings>, IRTorrentSettingsValidator
     {
         public RTorrentSettingsValidator()
         {
@@ -19,7 +21,7 @@ namespace NzbDrone.Core.Download.Clients.RTorrent
 
     public class RTorrentSettings : IProviderConfig
     {
-        private static readonly RTorrentSettingsValidator Validator = new RTorrentSettingsValidator();
+        private static readonly IRTorrentSettingsValidator Validator = new RTorrentSettingsValidator();
 
         public RTorrentSettings()
         {

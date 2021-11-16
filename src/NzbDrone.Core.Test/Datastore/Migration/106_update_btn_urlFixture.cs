@@ -30,10 +30,10 @@ namespace NzbDrone.Core.Test.Datastore.Migration
                 });
             });
 
-            var items = db.Query<IndexerDefinition90>("SELECT * FROM Indexers");
+            var items = db.Query<IndexerDefinition90<BroadcastheNetSettings106>>("SELECT * FROM Indexers");
 
             items.Should().HaveCount(1);
-            items.First().Settings.ToObject<BroadcastheNetSettings106>().BaseUrl.Should().Contain("api.broadcasthe.net");
+            items.First().Settings.BaseUrl.Should().Contain("api.broadcasthe.net");
         }
 
         [Test]
@@ -53,10 +53,10 @@ namespace NzbDrone.Core.Test.Datastore.Migration
                 });
             });
 
-            var items = db.Query<IndexerDefinition90>("SELECT * FROM Indexers");
+            var items = db.Query<IndexerDefinition90<BroadcastheNetSettings106>>("SELECT * FROM Indexers");
 
             items.Should().HaveCount(1);
-            items.First().Settings.ToObject<BroadcastheNetSettings106>().BaseUrl.Should().Be("http://api.btnapps.net");
+            items.First().Settings.BaseUrl.Should().Be("http://api.btnapps.net");
         }
     }
 }

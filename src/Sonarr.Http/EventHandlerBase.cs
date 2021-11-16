@@ -41,9 +41,7 @@ namespace Sonarr.Http
         where TModel : ModelBase, new()
     {
         protected EventHandlerBase(IHubContext<SonarrHub, ISonarrHub> hubContext)
-            : base(hubContext)
-        {
-        }
+            : base(hubContext) { }
 
         public void Handle(ModelEvent<TModel> message)
         {

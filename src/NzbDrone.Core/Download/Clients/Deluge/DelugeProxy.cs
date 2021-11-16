@@ -33,12 +33,12 @@ namespace NzbDrone.Core.Download.Clients.Deluge
     {
         private static readonly string[] requiredProperties = new string[] { "hash", "name", "state", "progress", "eta", "message", "is_finished", "save_path", "total_size", "total_done", "time_added", "active_time", "ratio", "is_auto_managed", "stop_at_ratio", "remove_at_ratio", "stop_ratio" };
 
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<DelugeProxy> _httpClient;
         private readonly Logger _logger;
 
         private readonly ICached<Dictionary<string, string>> _authCookieCache;
 
-        public DelugeProxy(ICacheManager cacheManager, IHttpClient httpClient, Logger logger)
+        public DelugeProxy(ICacheManager cacheManager, IHttpClient<DelugeProxy> httpClient, Logger logger)
         {
             _httpClient = httpClient;
             _logger = logger;

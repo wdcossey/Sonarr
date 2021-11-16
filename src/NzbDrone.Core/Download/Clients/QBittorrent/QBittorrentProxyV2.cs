@@ -13,11 +13,11 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
 
     public class QBittorrentProxyV2 : IQBittorrentProxy
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<QBittorrentProxyV2> _httpClient;
         private readonly Logger _logger;
         private readonly ICached<Dictionary<string, string>> _authCookieCache;
 
-        public QBittorrentProxyV2(IHttpClient httpClient, ICacheManager cacheManager, Logger logger)
+        public QBittorrentProxyV2(IHttpClient<QBittorrentProxyV2> httpClient, ICacheManager cacheManager, Logger logger)
         {
             _httpClient = httpClient;
             _logger = logger;

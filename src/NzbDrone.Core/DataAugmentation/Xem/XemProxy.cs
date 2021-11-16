@@ -21,12 +21,12 @@ namespace NzbDrone.Core.DataAugmentation.Xem
         private const string ROOT_URL = "http://thexem.info/map/";
 
         private readonly Logger _logger;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<XemProxy> _httpClient;
         private readonly IHttpRequestBuilderFactory _xemRequestBuilder;
 
         private static readonly string[] IgnoredErrors = { "no single connection", "no show with the tvdb_id" };
 
-        public XemProxy(IHttpClient httpClient, Logger logger)
+        public XemProxy(IHttpClient<XemProxy> httpClient, Logger logger)
         {
             _httpClient = httpClient;
             _logger = logger;

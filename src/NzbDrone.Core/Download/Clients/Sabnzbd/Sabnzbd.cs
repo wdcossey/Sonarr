@@ -21,7 +21,7 @@ namespace NzbDrone.Core.Download.Clients.Sabnzbd
         private readonly ISabnzbdProxy _proxy;
 
         public Sabnzbd(ISabnzbdProxy proxy,
-                       IHttpClient httpClient,
+                       IHttpClient<Sabnzbd> httpClient,
                        IConfigService configService,
                        IDiskProvider diskProvider,
                        IRemotePathMappingService remotePathMappingService,

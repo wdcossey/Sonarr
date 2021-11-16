@@ -13,7 +13,7 @@ namespace NzbDrone.Core.Indexers.HDBits
         public override bool SupportsSearch => true;
         public override int PageSize => 30;
 
-        public HDBits(IHttpClient httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, Logger logger)
+        public HDBits(IHttpClient<HDBits> httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, Logger logger)
             : base(httpClient, indexerStatusService, configService, parsingService, logger)
         { }
 

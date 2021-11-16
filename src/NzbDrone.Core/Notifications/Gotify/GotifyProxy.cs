@@ -10,9 +10,9 @@ namespace NzbDrone.Core.Notifications.Gotify
 
     public class GotifyProxy : IGotifyProxy
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<GotifyProxy> _httpClient;
 
-        public GotifyProxy(IHttpClient httpClient)
+        public GotifyProxy(IHttpClient<GotifyProxy> httpClient)
         {
             _httpClient = httpClient;
         }

@@ -1,17 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Platforms>x86;AnyCPU</Platforms>
+    <Platforms>AnyCPU</Platforms>
     <LangVersion>default</LangVersion>
     <Nullable>disable</Nullable>
     <Configurations>Debug;Release</Configurations>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Nancy.Owin" Version="2.0.0" />
-    <PackageReference Include="System.Text.Json" Version="5.0.2" />
+    <PackageReference Include="System.Text.Json" Version="6.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NzbDrone.Api\Sonarr.Api.csproj" />
     <ProjectReference Include="..\NzbDrone.Core\Sonarr.Core.csproj" />
     <ProjectReference Include="..\NzbDrone.Mono\Sonarr.Mono.csproj" />
     <ProjectReference Include="..\NzbDrone.SignalR\Sonarr.SignalR.csproj" />

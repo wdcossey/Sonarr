@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
@@ -10,6 +11,7 @@ using Sonarr.Http.Attributes;
 
 namespace Sonarr.Api.V3.System
 {
+    [Authorize]
     [ApiController]
     [SonarrApiRoute("system", RouteVersion.V3)]
     public class SystemController : ControllerBase
@@ -90,6 +92,7 @@ namespace Sonarr.Api.V3.System
             //return Ok(_routeCacheProvider.GetCache().Values);
         }
 
+        [Authorize(Roles = "sonarr-shutdown")]
         [HttpPost("shutdown")]
         public IActionResult Shutdown()
         {
@@ -97,6 +100,7 @@ namespace Sonarr.Api.V3.System
             return Ok(new { ShuttingDown = true });
         }
 
+        [Authorize(Roles = "sonarr-restart")]
         [HttpPost("restart")]
         public IActionResult Restart()
         {

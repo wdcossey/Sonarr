@@ -2,6 +2,7 @@ using System;
 using System.Data.SQLite;
 using Marr.Data;
 using Marr.Data.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using NLog;
 using NzbDrone.Common.Composition;
 using NzbDrone.Common.Disk;
@@ -43,15 +44,16 @@ namespace NzbDrone.Core.Datastore
             Environment.SetEnvironmentVariable("No_SQLiteFunctions", "true");
         }
 
-        public static void RegisterDatabase(IContainer container)
+        //TODO: Kill this method, no longer required.
+        public static void RegisterDatabase(IServiceProvider serviceProvider)
         {
-            var mainDb = new MainDatabase(container.Resolve<IDbFactory>().Create());
+            var mainDb = new MainDatabase(serviceProvider.GetRequiredService<IDbFactory>().Create());
 
-            container.Register<IMainDatabase>(mainDb);
+            //container.Register<IMainDatabase>(mainDb);
 
-            var logDb = new LogDatabase(container.Resolve<IDbFactory>().Create(MigrationType.Log));
+            var logDb = new LogDatabase(serviceProvider.GetRequiredService<IDbFactory>().Create(MigrationType.Log));
 
-            container.Register<ILogDatabase>(logDb);
+            //container.Register<ILogDatabase>(logDb);
         }
 
         public DbFactory(IMigrationController migrationController,

@@ -13,7 +13,7 @@ namespace NzbDrone.Core.Indexers.IPTorrents
         public override bool SupportsSearch => false;
         public override int PageSize => 0;
 
-        public IPTorrents(IHttpClient httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, Logger logger)
+        public IPTorrents(IHttpClient<IPTorrents> httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, Logger logger)
             : base(httpClient, indexerStatusService, configService, parsingService, logger)
         {
 

@@ -15,11 +15,11 @@ namespace NzbDrone.Core.Notifications.Boxcar
 
     public class BoxcarProxy : IBoxcarProxy
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<BoxcarProxy> _httpClient;
         private readonly Logger _logger;
         private const string URL = "https://new.boxcar.io/api/notifications";
 
-        public BoxcarProxy(IHttpClient httpClient, Logger logger)
+        public BoxcarProxy(IHttpClient<BoxcarProxy> httpClient, Logger logger)
         {
             _httpClient = httpClient;
             _logger = logger;

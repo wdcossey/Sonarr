@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Nancy.Bootstrapper;
+//using Nancy.Bootstrapper;
 using NzbDrone.Common.Composition;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.SignalR;
@@ -27,9 +27,9 @@ namespace NzbDrone.Host
         private MainAppContainerBuilder(StartupContext args, List<string> assemblies)
             : base(args, assemblies)
         {
-            AutoRegisterImplementations<NzbDronePersistentConnection>();
+            //AutoRegisterImplementations<NzbDronePersistentConnection>();
 
-            Container.Register<INancyBootstrapper, SonarrBootstrapper>();
+            //Container.Register<INancyBootstrapper, SonarrBootstrapper>();
         }
     }
 }

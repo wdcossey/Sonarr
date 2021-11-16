@@ -11,9 +11,9 @@ namespace NzbDrone.Core.MediaCover
     public class CoverAlreadyExistsSpecification : ICoverExistsSpecification
     {
         private readonly IDiskProvider _diskProvider;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<CoverAlreadyExistsSpecification> _httpClient;
 
-        public CoverAlreadyExistsSpecification(IDiskProvider diskProvider, IHttpClient httpClient)
+        public CoverAlreadyExistsSpecification(IDiskProvider diskProvider, IHttpClient<CoverAlreadyExistsSpecification> httpClient)
         {
             _diskProvider = diskProvider;
             _httpClient = httpClient;

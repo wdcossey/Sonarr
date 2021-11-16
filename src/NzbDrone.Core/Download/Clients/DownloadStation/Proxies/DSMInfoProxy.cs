@@ -14,7 +14,7 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation.Proxies
 
     public class DSMInfoProxy : DiskStationProxyBase, IDSMInfoProxy
     {
-        public DSMInfoProxy(IHttpClient httpClient, ICacheManager cacheManager, Logger logger) :
+        public DSMInfoProxy(IHttpClient<DSMInfoProxy> httpClient, ICacheManager cacheManager, Logger logger) :
             base(DiskStationApi.DSMInfo, "SYNO.DSM.Info", httpClient, cacheManager, logger)
         {
         }

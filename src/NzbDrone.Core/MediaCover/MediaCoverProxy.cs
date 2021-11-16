@@ -19,11 +19,11 @@ namespace NzbDrone.Core.MediaCover
     }
     public class MediaCoverProxy : IMediaCoverProxy
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<MediaCoverProxy> _httpClient;
         private readonly IConfigFileProvider _configFileProvider;
         private readonly ICached<string> _cache;
 
-        public MediaCoverProxy(IHttpClient httpClient, IConfigFileProvider configFileProvider, ICacheManager cacheManager)
+        public MediaCoverProxy(IHttpClient<MediaCoverProxy> httpClient, IConfigFileProvider configFileProvider, ICacheManager cacheManager)
         {
             _httpClient = httpClient;
             _configFileProvider = configFileProvider;

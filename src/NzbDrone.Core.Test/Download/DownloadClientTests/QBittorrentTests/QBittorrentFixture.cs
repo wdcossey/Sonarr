@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using FluentAssertions;
 using Moq;
 using NUnit.Framework;
@@ -798,9 +799,8 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.QBittorrentTests
             // (Also don't replace library versions in your build script)
 
             var json = "{ \"eta\": 18446744073709335000 }";
-            var torrent = Newtonsoft.Json.JsonConvert.DeserializeObject<QBittorrentTorrent>(json);
+            var torrent = System.Text.Json.JsonSerializer.Deserialize<QBittorrentTorrent>(json, new JsonSerializerOptions(JsonSerializerDefaults.Web));
             torrent.Eta.ToString().Should().Be("18446744073709335000");
-
         }
 
         [Test]

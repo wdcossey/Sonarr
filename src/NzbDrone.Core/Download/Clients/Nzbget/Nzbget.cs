@@ -23,7 +23,7 @@ namespace NzbDrone.Core.Download.Clients.Nzbget
         private readonly string[] _deleteFailedStatus =  { "HEALTH", "DUPE", "SCAN", "COPY", "BAD" };
 
         public Nzbget(INzbgetProxy proxy,
-                      IHttpClient httpClient,
+                      IHttpClient<Nzbget> httpClient,
                       IConfigService configService,
                       IDiskProvider diskProvider,
                       IRemotePathMappingService remotePathMappingService,

@@ -21,10 +21,10 @@ namespace NzbDrone.Core.Notifications.Twitter
 
     public class TwitterService : ITwitterService
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<TwitterService> _httpClient;
         private readonly Logger _logger;
 
-        public TwitterService(IHttpClient httpClient, Logger logger)
+        public TwitterService(IHttpClient<TwitterService> httpClient, Logger logger)
         {
             _httpClient = httpClient;
             _logger = logger;

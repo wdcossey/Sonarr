@@ -16,9 +16,9 @@ namespace NzbDrone.Core.Download.Clients.Pneumatic
 {
     public class Pneumatic : DownloadClientBase<PneumaticSettings>
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<Pneumatic> _httpClient;
 
-        public Pneumatic(IHttpClient httpClient,
+        public Pneumatic(IHttpClient<Pneumatic> httpClient,
                          IConfigService configService,
                          IDiskProvider diskProvider,
                          IRemotePathMappingService remotePathMappingService,

@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿/*
+using NUnit.Framework;
 using NzbDrone.Core.HealthCheck.Checks;
 using NzbDrone.Core.Test.Framework;
 using NzbDrone.Test.Common;
@@ -57,3 +58,4 @@ namespace NzbDrone.Core.Test.HealthCheck.Checks
         }
     }
 }
+*/

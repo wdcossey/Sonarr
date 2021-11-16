@@ -18,7 +18,7 @@ namespace NzbDrone.Core.ImportLists.Plex
         public override ImportListType ListType => ImportListType.Plex;
 
         public PlexImport(IPlexTvService plexTvService,
-                                  IHttpClient httpClient,
+                                  IHttpClient<PlexImport> httpClient,
                                   IImportListStatusService importListStatusService,
                                   IConfigService configService,
                                   IParsingService parsingService,

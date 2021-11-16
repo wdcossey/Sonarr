@@ -28,7 +28,7 @@ namespace NzbDrone.Core.MediaCover
     {
         private readonly IMediaCoverProxy _mediaCoverProxy;
         private readonly IImageResizer _resizer;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<MediaCoverService> _httpClient;
         private readonly IDiskProvider _diskProvider;
         private readonly ICoverExistsSpecification _coverExistsSpecification;
         private readonly IConfigFileProvider _configFileProvider;
@@ -43,7 +43,7 @@ namespace NzbDrone.Core.MediaCover
 
         public MediaCoverService(IMediaCoverProxy mediaCoverProxy,
                                  IImageResizer resizer,
-                                 IHttpClient httpClient,
+                                 IHttpClient<MediaCoverService> httpClient,
                                  IDiskProvider diskProvider,
                                  IAppFolderInfo appFolderInfo,
                                  ICoverExistsSpecification coverExistsSpecification,

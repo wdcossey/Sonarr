@@ -11,9 +11,9 @@ namespace NzbDrone.Core.Notifications.Webhook
 
     public class WebhookProxy : IWebhookProxy
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<WebhookProxy> _httpClient;
 
-        public WebhookProxy(IHttpClient httpClient)
+        public WebhookProxy(IHttpClient<WebhookProxy> httpClient)
         {
             _httpClient = httpClient;
         }

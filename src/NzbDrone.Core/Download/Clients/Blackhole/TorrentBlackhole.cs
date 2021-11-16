@@ -26,7 +26,7 @@ namespace NzbDrone.Core.Download.Clients.Blackhole
 
         public TorrentBlackhole(IScanWatchFolder scanWatchFolder,
                                 ITorrentFileInfoReader torrentFileInfoReader,
-                                IHttpClient httpClient,
+                                IHttpClient<TorrentBlackhole> httpClient,
                                 IConfigService configService,
                                 IDiskProvider diskProvider,
                                 IRemotePathMappingService remotePathMappingService,

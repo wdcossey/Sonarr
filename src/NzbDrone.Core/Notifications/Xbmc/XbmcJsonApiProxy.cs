@@ -19,10 +19,10 @@ namespace NzbDrone.Core.Notifications.Xbmc
 
     public class XbmcJsonApiProxy : IXbmcJsonApiProxy
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<XbmcJsonApiProxy> _httpClient;
         private readonly Logger _logger;
 
-        public XbmcJsonApiProxy(IHttpClient httpClient, Logger logger)
+        public XbmcJsonApiProxy(IHttpClient<XbmcJsonApiProxy> httpClient, Logger logger)
         {
             _httpClient = httpClient;
             _logger = logger;

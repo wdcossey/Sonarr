@@ -24,7 +24,7 @@ namespace NzbDrone.Core.Download.Clients.Aria2
 
         public Aria2(IAria2Proxy proxy,
                         ITorrentFileInfoReader torrentFileInfoReader,
-                        IHttpClient httpClient,
+                        IHttpClient<Aria2> httpClient,
                         IConfigService configService,
                         IDiskProvider diskProvider,
                         IRemotePathMappingService remotePathMappingService,

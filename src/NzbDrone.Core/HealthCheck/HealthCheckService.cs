@@ -118,15 +118,10 @@ namespace NzbDrone.Core.HealthCheck
         public void HandleAsync(IEvent message)
         {
             if (message is HealthCheckCompleteEvent)
-            {
                 return;
-            }
 
-            IEventDrivenHealthCheck[] checks;
-            if (!_eventDrivenHealthChecks.TryGetValue(message.GetType(), out checks))
-            {
+            if (!_eventDrivenHealthChecks.TryGetValue(message.GetType(), out var checks))
                 return;
-            }
 
             var filteredChecks = new List<IProvideHealthCheck>();
             var healthCheckResults = _healthCheckResults.Values.ToList();
@@ -136,13 +131,11 @@ namespace NzbDrone.Core.HealthCheck
                 var healthCheckType = eventDrivenHealthCheck.HealthCheck.GetType();
                 var previouslyFailed = healthCheckResults.Any(r => r.Source == healthCheckType);
 
-                if (eventDrivenHealthCheck.ShouldExecute(message, previouslyFailed))
-                {
-                    filteredChecks.Add(eventDrivenHealthCheck.HealthCheck);
+                if (!eventDrivenHealthCheck.ShouldExecute(message, previouslyFailed)) 
                     continue;
-                }
+                
+                filteredChecks.Add(eventDrivenHealthCheck.HealthCheck);
             }
-
 
             // TODO: Add debounce
 

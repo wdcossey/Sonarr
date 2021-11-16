@@ -14,7 +14,7 @@ namespace NzbDrone.Core.Download.Clients.Transmission
     {
         public Transmission(ITransmissionProxy proxy,
                             ITorrentFileInfoReader torrentFileInfoReader,
-                            IHttpClient httpClient,
+                            IHttpClient<Transmission> httpClient,
                             IConfigService configService,
                             IDiskProvider diskProvider,
                             IRemotePathMappingService remotePathMappingService,

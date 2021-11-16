@@ -24,7 +24,7 @@ namespace NzbDrone.Core.Extras.Metadata
         private readonly IOtherExtraFileRenamer _otherExtraFileRenamer;
         private readonly IDiskTransferService _diskTransferService;
         private readonly IDiskProvider _diskProvider;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<MetadataService> _httpClient;
         private readonly IMediaFileAttributeService _mediaFileAttributeService;
         private readonly IMetadataFileService _metadataFileService;
         private readonly Logger _logger;
@@ -36,7 +36,7 @@ namespace NzbDrone.Core.Extras.Metadata
                                IOtherExtraFileRenamer otherExtraFileRenamer,
                                IMetadataFactory metadataFactory,
                                ICleanMetadataService cleanMetadataService,
-                               IHttpClient httpClient,
+                               IHttpClient<MetadataService> httpClient,
                                IMediaFileAttributeService mediaFileAttributeService,
                                IMetadataFileService metadataFileService,
                                Logger logger)

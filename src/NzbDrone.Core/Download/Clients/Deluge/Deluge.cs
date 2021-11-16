@@ -21,7 +21,7 @@ namespace NzbDrone.Core.Download.Clients.Deluge
 
         public Deluge(IDelugeProxy proxy,
                       ITorrentFileInfoReader torrentFileInfoReader,
-                      IHttpClient httpClient,
+                      IHttpClient<Deluge> httpClient,
                       IConfigService configService,
                       IDiskProvider diskProvider,
                       IRemotePathMappingService remotePathMappingService,

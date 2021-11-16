@@ -22,11 +22,11 @@ namespace NzbDrone.Core.Notifications.Plex.Server
 
     public class PlexServerProxy : IPlexServerProxy
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<PlexServerProxy> _httpClient;
         private readonly IConfigService _configService;
         private readonly Logger _logger;
 
-        public PlexServerProxy(IHttpClient httpClient, IConfigService configService,Logger logger)
+        public PlexServerProxy(IHttpClient<PlexServerProxy> httpClient, IConfigService configService,Logger logger)
         {
             _httpClient = httpClient;
             _configService = configService;

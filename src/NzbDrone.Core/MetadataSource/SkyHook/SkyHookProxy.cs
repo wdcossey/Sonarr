@@ -17,13 +17,13 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 {
     public class SkyHookProxy : IProvideSeriesInfo, ISearchForNewSeries
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<SkyHookProxy> _httpClient;
         private readonly Logger _logger;
         private readonly ISeriesService _seriesService;
         private readonly IDailySeriesService _dailySeriesService;
         private readonly IHttpRequestBuilderFactory _requestBuilder;
 
-        public SkyHookProxy(IHttpClient httpClient,
+        public SkyHookProxy(IHttpClient<SkyHookProxy> httpClient,
                             ISonarrCloudRequestBuilder requestBuilder,
                             ISeriesService seriesService,
                             IDailySeriesService dailySeriesService,

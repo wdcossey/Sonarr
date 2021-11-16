@@ -23,7 +23,7 @@ namespace NzbDrone.Core.Download.Clients.Flood
         public Flood(IFloodProxy proxy,
                         IDownloadSeedConfigProvider downloadSeedConfigProvider,
                         ITorrentFileInfoReader torrentFileInfoReader,
-                        IHttpClient httpClient,
+                        IHttpClient<Flood> httpClient,
                         IConfigService configService,
                         IDiskProvider diskProvider,
                         IRemotePathMappingService remotePathMappingService,

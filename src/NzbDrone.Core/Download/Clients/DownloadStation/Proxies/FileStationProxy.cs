@@ -18,7 +18,7 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation.Proxies
 
     public class FileStationProxy : DiskStationProxyBase, IFileStationProxy
     {
-        public FileStationProxy(IHttpClient httpClient, ICacheManager cacheManager, Logger logger)
+        public FileStationProxy(IHttpClient<FileStationProxy> httpClient, ICacheManager cacheManager, Logger logger)
             : base(DiskStationApi.FileStationList, "SYNO.FileStation.List", httpClient, cacheManager, logger)
         {
         }

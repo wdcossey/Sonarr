@@ -11,7 +11,7 @@ namespace NzbDrone.Http.Extensions
     public static class HubExtensions
     {
         public static void BroadcastResourceChange<TResource>(this IHubContext<SonarrHub, ISonarrHub> context, ModelAction action, TResource resource, string name)
-            where TResource : RestResource, new() 
+            where TResource : RestResource
         {
             var signalRMessage = new SignalRMessage
             {
@@ -24,7 +24,7 @@ namespace NzbDrone.Http.Extensions
         }
         
         public static void BroadcastResourceChange<TResource>(this IHubContext<SonarrHub, ISonarrHub> context, ModelAction action, TResource resource)
-            where TResource : RestResource, new()
+            where TResource : RestResource
         {
             context?.BroadcastResourceChange(action, resource, resource.GetBroadcastName());
         }

@@ -8,7 +8,7 @@ namespace NzbDrone.Core.ImportLists.Trakt.User
     public class TraktUserImport : TraktImportBase<TraktUserSettings>
     {
         public TraktUserImport(IImportListRepository netImportRepository,
-                               IHttpClient httpClient,
+                               IHttpClient<TraktUserImport> httpClient,
                                IImportListStatusService netImportStatusService,
                                IConfigService configService,
                                IParsingService parsingService,

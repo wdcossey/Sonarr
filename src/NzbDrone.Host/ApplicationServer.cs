@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Extensions.DependencyInjection;
 //using System.ServiceProcess;
 using NLog;
 using NzbDrone.Common.Composition;
@@ -24,7 +25,7 @@ namespace NzbDrone.Host
         //private readonly IHostController _hostController;
         private readonly IStartupContext _startupContext;
         private readonly IBrowserService _browserService;
-        private readonly IContainer _container;
+        private readonly IServiceProvider _serviceProvider;
         private readonly Logger _logger;
 
         public NzbDroneServiceFactory(IConfigFileProvider configFileProvider,
@@ -32,7 +33,7 @@ namespace NzbDrone.Host
                                       IRuntimeInfo runtimeInfo,
                                       IStartupContext startupContext,
                                       IBrowserService browserService,
-                                      IContainer container,
+                                      IServiceProvider serviceProvider,
                                       Logger logger)
         {
             _configFileProvider = configFileProvider;
@@ -40,7 +41,7 @@ namespace NzbDrone.Host
             _runtimeInfo = runtimeInfo;
             _startupContext = startupContext;
             _browserService = browserService;
-            _container = container;
+            _serviceProvider = serviceProvider;
             _logger = logger;
         }
 
@@ -57,9 +58,9 @@ namespace NzbDrone.Host
             }
 
             _runtimeInfo.IsExiting = false;
-            DbFactory.RegisterDatabase(_container);
+            DbFactory.RegisterDatabase(_serviceProvider);
 
-            _container.Resolve<IEventAggregator>().PublishEvent(new ApplicationStartingEvent());
+            _serviceProvider.GetRequiredService<IEventAggregator>().PublishEvent(new ApplicationStartingEvent());
 
             if (_runtimeInfo.IsExiting)
             {
@@ -74,7 +75,7 @@ namespace NzbDrone.Host
                 _browserService.LaunchWebUI();
             }
 
-            _container.Resolve<IEventAggregator>().PublishEvent(new ApplicationStartedEvent());
+            _serviceProvider.GetRequiredService<IEventAggregator>().PublishEvent(new ApplicationStartedEvent());
         }
 
         /*protected override void OnStop()

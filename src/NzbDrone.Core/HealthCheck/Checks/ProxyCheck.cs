@@ -14,11 +14,11 @@ namespace NzbDrone.Core.HealthCheck.Checks
     {
         private readonly Logger _logger;
         private readonly IConfigService _configService;
-        private readonly IHttpClient _client;
+        private readonly IHttpClient<ProxyCheck> _client;
 
         private readonly IHttpRequestBuilderFactory _cloudRequestBuilder;
 
-        public ProxyCheck(ISonarrCloudRequestBuilder cloudRequestBuilder, IConfigService configService, IHttpClient client, Logger logger)
+        public ProxyCheck(ISonarrCloudRequestBuilder cloudRequestBuilder, IConfigService configService, IHttpClient<ProxyCheck> client, Logger logger)
         {
             _configService = configService;
             _client = client;

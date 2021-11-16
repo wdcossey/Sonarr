@@ -46,7 +46,7 @@ namespace NzbDrone.Core.Indexers.Torznab
             }
         }
 
-        public Torznab(INewznabCapabilitiesProvider capabilitiesProvider, IHttpClient httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, Logger logger)
+        public Torznab(INewznabCapabilitiesProvider capabilitiesProvider, IHttpClient<Torznab> httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, Logger logger)
             : base(httpClient, indexerStatusService, configService, parsingService, logger)
         {
             _capabilitiesProvider = capabilitiesProvider;

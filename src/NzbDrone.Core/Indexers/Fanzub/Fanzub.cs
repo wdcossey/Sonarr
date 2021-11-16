@@ -11,7 +11,7 @@ namespace NzbDrone.Core.Indexers.Fanzub
 
         public override DownloadProtocol Protocol => DownloadProtocol.Usenet;
 
-        public Fanzub(IHttpClient httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, Logger logger)
+        public Fanzub(IHttpClient<Fanzub> httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, Logger logger)
             : base(httpClient, indexerStatusService, configService, parsingService, logger)
         {
 

@@ -1,15 +1,17 @@
 using System.IO;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
-using Sonarr.Http.Extensions;
 
 namespace Sonarr.Http.Frontend.Mappers
 {
     //[ResponseCache]
+    [ResponseCache(NoStore = true, Duration = 7200, Location = ResponseCacheLocation.Any)]
+    [AllowAnonymous]
     [Route("MediaCover")]
     public class MediaCoverMapperController : PhysicalFileControllerBase
     {

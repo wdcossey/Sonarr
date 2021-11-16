@@ -19,10 +19,10 @@ namespace NzbDrone.Core.ImportLists.Sonarr
 
     public class SonarrV3Proxy : ISonarrV3Proxy
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClient<SonarrV3Proxy> _httpClient;
         private readonly Logger _logger;
 
-        public SonarrV3Proxy(IHttpClient httpClient, Logger logger)
+        public SonarrV3Proxy(IHttpClient<SonarrV3Proxy> httpClient, Logger logger)
         {
             _httpClient = httpClient;
             _logger = logger;
