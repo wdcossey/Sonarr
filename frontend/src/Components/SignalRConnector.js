@@ -93,12 +93,8 @@ class SignalRConnector extends Component {
   componentDidMount() {
     console.log('Starting signalR');
 
-    const url = `${window.Sonarr.urlBase}/signalr`;
-
-    //this.signalRconnection = $.connection(url, { apiKey: window.Sonarr.apiKey });
-
     this.signalRconnection = new HubConnectionBuilder()
-      .withUrl("/signalr")
+      .withUrl(`/hubs/sonarr?apiKey=${window.Sonarr.apiKey}`)
       .withAutomaticReconnect()
       .build();
 
@@ -253,7 +249,7 @@ class SignalRConnector extends Component {
   }
 
   handleVersion = (body) => {
-    const version = body.Version;
+    const version = body.version;
 
     this.props.dispatchSetVersion({ version });
   }
