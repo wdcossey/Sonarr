@@ -1,17 +1,17 @@
 ﻿using System;
-using NLog;
 using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Common.Extensions;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace NzbDrone.Core.DecisionEngine.Specifications
 {
     public class FullSeasonSpecification : IDecisionEngineSpecification
     {
-        private readonly Logger _logger;
+        private readonly ILogger<FullSeasonSpecification> _logger;
 
-        public FullSeasonSpecification(Logger logger)
+        public FullSeasonSpecification(ILogger<FullSeasonSpecification> logger)
         {
             _logger = logger;
         }
@@ -23,11 +23,11 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
         {
             if (subject.ParsedEpisodeInfo.FullSeason)
             {
-                _logger.Debug("Checking if all episodes in full season release have aired. {0}", subject.Release.Title);
+                _logger.LogDebug("Checking if all episodes in full season release have aired. {Title}", subject.Release.Title);
 
                 if (subject.Episodes.Any(e => !e.AirDateUtc.HasValue || e.AirDateUtc.Value.After(DateTime.UtcNow)))
                 {
-                    _logger.Debug("Full season release {0} rejected. All episodes haven't aired yet.", subject.Release.Title);
+                    _logger.LogDebug("Full season release {Title} rejected. All episodes haven't aired yet.", subject.Release.Title);
                     return Decision.Reject("Full season release rejected. All episodes haven't aired yet.");
                 }
             }

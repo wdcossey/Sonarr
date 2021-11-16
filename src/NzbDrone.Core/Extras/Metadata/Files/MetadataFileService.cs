@@ -1,4 +1,4 @@
-﻿using NLog;
+﻿using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Core.Extras.Files;
 using NzbDrone.Core.MediaFiles;
@@ -12,7 +12,7 @@ namespace NzbDrone.Core.Extras.Metadata.Files
 
     public class MetadataFileService : ExtraFileService<MetadataFile>, IMetadataFileService
     {
-        public MetadataFileService(IExtraFileRepository<MetadataFile> repository, ISeriesService seriesService, IDiskProvider diskProvider, IRecycleBinProvider recycleBinProvider, Logger logger)
+        public MetadataFileService(IExtraFileRepository<MetadataFile> repository, ISeriesService seriesService, IDiskProvider diskProvider, IRecycleBinProvider recycleBinProvider, ILogger<MetadataFileService> logger)
             : base(repository, seriesService, diskProvider, recycleBinProvider, logger)
         {
         }

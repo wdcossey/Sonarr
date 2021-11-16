@@ -3,7 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Net;
 using FluentValidation.Results;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
@@ -34,7 +34,7 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
                            IDiskProvider diskProvider,
                            IRemotePathMappingService remotePathMappingService,
                            ICacheManager cacheManager,
-                           Logger logger)
+                           ILogger<QBittorrent> logger)
             : base(torrentFileInfoReader, httpClient, configService, diskProvider, remotePathMappingService, logger)
         {
             _proxySelector = proxySelector;
@@ -57,7 +57,7 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
                 }
                 catch (DownloadClientException)
                 {
-                    _logger.Warn("Failed to set post-import torrent label \"{0}\" for {1} in qBittorrent. Does the label exist?",
+                    _logger.LogWarning("Failed to set post-import torrent label \"{TvImportedCategory}\" for {Title} in qBittorrent. Does the label exist?",
                         Settings.TvImportedCategory, downloadClientItem.Title);
                 }
             }
@@ -94,7 +94,7 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
                     }
                     catch (Exception ex)
                     {
-                        _logger.Warn(ex, "Failed to set the torrent seed criteria for {0}.", hash);
+                        _logger.LogWarning(ex, "Failed to set the torrent seed criteria for {Hash}.", hash);
                     }
                 }
 
@@ -106,7 +106,7 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
                     }
                     catch (Exception ex)
                     {
-                        _logger.Warn(ex, "Failed to set the torrent priority for {0}.", hash);
+                        _logger.LogWarning(ex, "Failed to set the torrent priority for {Hash}.", hash);
                     }
                 }
 
@@ -118,7 +118,7 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
                     }
                     catch (Exception ex)
                     {
-                        _logger.Warn(ex, "Failed to set ForceStart for {0}.", hash);
+                        _logger.LogWarning(ex, "Failed to set ForceStart for {Hash}.", hash);
                     }
                 }
             }
@@ -152,7 +152,7 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
                     }
                     catch (Exception ex)
                     {
-                        _logger.Warn(ex, "Failed to set the torrent seed criteria for {0}.", hash);
+                        _logger.LogWarning(ex, "Failed to set the torrent seed criteria for {Hash}.", hash);
                     }
                 }
 
@@ -164,7 +164,7 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
                     }
                     catch (Exception ex)
                     {
-                        _logger.Warn(ex, "Failed to set the torrent priority for {0}.", hash);
+                        _logger.LogWarning(ex, "Failed to set the torrent priority for {Hash}.", hash);
                     }
                 }
 
@@ -176,7 +176,7 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
                     }
                     catch (Exception ex)
                     {
-                        _logger.Warn(ex, "Failed to set ForceStart for {0}.", hash);
+                        _logger.LogWarning(ex, "Failed to set ForceStart for {Hash}.", hash);
                     }
                 }
             }
@@ -201,12 +201,12 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
                 {
                 }
 
-                _logger.Trace("Torrent '{0}' not yet visible in qbit, waiting 100ms.", hash);
+                _logger.LogTrace("Torrent '{Hash}' not yet visible in qbit, waiting 100ms.", hash);
                 System.Threading.Thread.Sleep(100);
                 count--;
             }
 
-            _logger.Warn("Failed to load torrent '{0}' within 500 ms, skipping additional parameters.", hash);
+            _logger.LogWarning("Failed to load torrent '{Hash}' within 500 ms, skipping additional parameters.", hash);
             return false;
         }
 
@@ -281,7 +281,7 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
                         }
                         break;
 
-                    case "forcedDL": //torrent is being downloaded, and was forced started 
+                    case "forcedDL": //torrent is being downloaded, and was forced started
                     case "moving": // torrent is being moved from a folder
                     case "downloading": // torrent is being downloaded and data is being transferred
                         item.Status = DownloadItemStatus.Downloading;
@@ -289,7 +289,7 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
 
                     default: // new status in API? default to downloading
                         item.Message = "Unknown download state: " + torrent.State;
-                        _logger.Info(item.Message);
+                        _logger.LogInformation("{Message}", item.Message);
                         item.Status = DownloadItemStatus.Downloading;
                         break;
                 }
@@ -329,7 +329,7 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
             var files = Proxy.GetTorrentFiles(item.DownloadId.ToLower(), Settings);
             if (!files.Any())
             {
-                _logger.Debug($"No files found for torrent {item.Title} in qBittorrent");
+                _logger.LogDebug("No files found for torrent {Title} in qBittorrent", item.Title);
                 return item;
             }
 
@@ -420,7 +420,7 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
             }
             catch (DownloadClientAuthenticationException ex)
             {
-                _logger.Error(ex, ex.Message);
+                _logger.LogError(ex, "{Message}", ex.Message);
                 return new NzbDroneValidationFailure("Username", "Authentication failure")
                 {
                     DetailedDescription = "Please verify your username and password."
@@ -428,7 +428,7 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
             }
             catch (WebException ex)
             {
-                _logger.Error(ex, "Unable to connect to qBittorrent");
+                _logger.LogError(ex, "Unable to connect to qBittorrent");
                 if (ex.Status == WebExceptionStatus.ConnectFailure)
                 {
                     return new NzbDroneValidationFailure("Host", "Unable to connect")
@@ -440,7 +440,7 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Unable to test qBittorrent");
+                _logger.LogError(ex, "Unable to test qBittorrent");
 
                 return new NzbDroneValidationFailure("Host", "Unable to connect to qBittorrent")
                        {
@@ -526,7 +526,7 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failed to test qBittorrent");
+                _logger.LogError(ex, "Failed to test qBittorrent");
                 return new NzbDroneValidationFailure(String.Empty, "Unknown exception: " + ex.Message);
             }
 
@@ -541,7 +541,7 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failed to get torrents");
+                _logger.LogError(ex, "Failed to get torrents");
                 return new NzbDroneValidationFailure(String.Empty, "Failed to get the list of torrents: " + ex.Message);
             }
 

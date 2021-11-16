@@ -1,13 +1,9 @@
 using System;
 using System.IO;
-using System.Linq;
-using System.Security.AccessControl;
-using System.Security.Principal;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Exceptions;
 using NzbDrone.Common.Extensions;
-using NzbDrone.Common.Instrumentation;
 
 namespace NzbDrone.Common.EnvironmentInfo
 {
@@ -22,18 +18,19 @@ namespace NzbDrone.Common.EnvironmentInfo
         private readonly IStartupContext _startupContext;
         private readonly IDiskProvider _diskProvider;
         private readonly IDiskTransferService _diskTransferService;
-        private readonly Logger _logger;
+        private readonly ILogger<AppFolderFactory> _logger;
 
         public AppFolderFactory(IAppFolderInfo appFolderInfo,
                                 IStartupContext startupContext,
                                 IDiskProvider diskProvider,
-                                IDiskTransferService diskTransferService)
+                                IDiskTransferService diskTransferService,
+                                ILogger<AppFolderFactory> logger)
         {
             _appFolderInfo = appFolderInfo;
             _startupContext = startupContext;
             _diskProvider = diskProvider;
             _diskTransferService = diskTransferService;
-            _logger = NzbDroneLogger.GetLogger(this);
+            _logger = logger;
         }
 
         public void Register()
@@ -47,7 +44,7 @@ namespace NzbDrone.Common.EnvironmentInfo
             {
                 throw new SonarrStartupException("Cannot create AppFolder, Access to the path {0} is denied", _appFolderInfo.AppDataFolder);
             }
-            
+
 
             if (OsInfo.IsWindows)
             {
@@ -70,7 +67,7 @@ namespace NzbDrone.Common.EnvironmentInfo
             }
             catch (Exception ex)
             {
-                _logger.Warn(ex, "Coudn't set app folder permission");
+                _logger.LogWarning(ex, "Couldn't set app folder permission");
             }
         }
 
@@ -118,7 +115,7 @@ namespace NzbDrone.Common.EnvironmentInfo
             }
             catch (Exception ex)
             {
-                _logger.Debug(ex, ex.Message);
+                _logger.LogDebug(ex, "{Message}", ex.Message);
                 throw new SonarrStartupException("Unable to migrate AppData folder from {0} to {1}. Migrate manually", _appFolderInfo.LegacyAppDataFolder, _appFolderInfo.AppDataFolder);
             }
         }
@@ -149,13 +146,13 @@ namespace NzbDrone.Common.EnvironmentInfo
             }
             catch (Exception ex)
             {
-                _logger.Warn(ex, "Failed to initialize the mono config directory.");
+                _logger.LogWarning(ex, "Failed to initialize the mono config directory.");
             }
         }
 
         private void MoveSqliteDatabase(string source, string destination)
         {
-            _logger.Info("Moving {0}* to {1}*", source, destination);
+            _logger.LogInformation("Moving {Source}* to {Destination}*", source, destination);
 
             var dbSuffixes = new[] { "", "-shm", "-wal", "-journal" };
 

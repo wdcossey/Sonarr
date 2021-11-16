@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using FluentValidation.Results;
-using NLog;
 
 namespace NzbDrone.Core.Notifications.SendGrid
 {
     public class SendGrid : NotificationBase<SendGridSettings>
     {
         private readonly ISendGridProxy _proxy;
-        private readonly Logger _logger;
+        private readonly ILogger<SendGrid> _logger;
 
-        public SendGrid(ISendGridProxy proxy, Logger logger)
+        public SendGrid(ISendGridProxy proxy, ILogger<SendGrid> logger)
         {
             _proxy = proxy;
             _logger = logger;
@@ -56,7 +56,7 @@ namespace NzbDrone.Core.Notifications.SendGrid
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Unable to send test message");
+                _logger.LogError(ex, "Unable to send test message");
                 failures.Add(new ValidationFailure("", "Unable to send test message"));
             }
 

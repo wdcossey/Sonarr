@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.DecisionEngine;
 using NzbDrone.Core.Download;
@@ -14,12 +14,12 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
     {
         private readonly IConfigService _configService;
         private readonly IEpisodeFilePreferredWordCalculator _episodeFilePreferredWordCalculator;
-        private readonly Logger _logger;
+        private readonly ILogger<UpgradeSpecification> _logger;
 
         public UpgradeSpecification(IConfigService configService,
                                     IPreferredWordService preferredWordService,
                                     IEpisodeFilePreferredWordCalculator episodeFilePreferredWordCalculator,
-                                    Logger logger)
+                                    ILogger<UpgradeSpecification> logger)
         {
             _configService = configService;
             _episodeFilePreferredWordCalculator = episodeFilePreferredWordCalculator;
@@ -39,7 +39,7 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
 
                 if (episodeFile == null)
                 {
-                    _logger.Trace("Unable to get episode file details from the DB. EpisodeId: {0} EpisodeFileId: {1}", episode.Id, episode.EpisodeFileId);
+                    _logger.LogTrace("Unable to get episode file details from the DB. EpisodeId: {Id} EpisodeFileId: {EpisodeFileId}", episode.Id, episode.EpisodeFileId);
                     continue;
                 }
 
@@ -48,7 +48,7 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
 
                 if (qualityCompare < 0)
                 {
-                    _logger.Debug("This file isn't a quality upgrade for all episodes. Skipping {0}", localEpisode.Path);
+                    _logger.LogDebug("This file isn't a quality upgrade for all episodes. Skipping {Path}", localEpisode.Path);
                     return Decision.Reject("Not an upgrade for existing episode file(s)");
                 }
 
@@ -61,13 +61,13 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
                     downloadPropersAndRepacks != ProperDownloadTypes.DoNotPrefer &&
                     localEpisode.Quality.Revision.CompareTo(episodeFile.Quality.Revision) < 0)
                 {
-                    _logger.Debug("This file isn't a quality revision upgrade for all episodes. Skipping {0}", localEpisode.Path);
+                    _logger.LogDebug("This file isn't a quality revision upgrade for all episodes. Skipping {Path}", localEpisode.Path);
                     return Decision.Reject("Not a quality revision upgrade for existing episode file(s)");
                 }
 
                 if (languageCompare < 0 && qualityCompare == 0)
                 {
-                    _logger.Debug("This file isn't a language upgrade for all episodes. Skipping {0}", localEpisode.Path);
+                    _logger.LogDebug("This file isn't a language upgrade for all episodes. Skipping {Path}", localEpisode.Path);
                     return Decision.Reject("Not a language upgrade for existing episode file(s)");
                 }
 
@@ -75,7 +75,7 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
 
                 if (qualityCompare == 0 && languageCompare == 0 && preferredWordScore < episodeFilePreferredWordScore)
                 {
-                    _logger.Debug("This file isn't a preferred word upgrade for all episodes. Skipping {0}", localEpisode.Path);
+                    _logger.LogDebug("This file isn't a preferred word upgrade for all episodes. Skipping {Path}", localEpisode.Path);
                     return Decision.Reject("Not a preferred word upgrade for existing episode file(s)");
                 }
             }

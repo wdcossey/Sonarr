@@ -2,19 +2,19 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using Microsoft.Extensions.Logging;
 //using System.Security.Principal;
 //using System.ServiceProcess;
-using NLog;
 using NzbDrone.Common.Processes;
 
 namespace NzbDrone.Common.EnvironmentInfo
 {
     public class RuntimeInfo : IRuntimeInfo
     {
-        private readonly Logger _logger;
+        private readonly ILogger<RuntimeInfo> _logger;
         private readonly DateTime _startTime = DateTime.UtcNow;
 
-        public RuntimeInfo(IServiceProvider serviceProvider, Logger logger)
+        public RuntimeInfo(IServiceProvider serviceProvider, ILogger<RuntimeInfo> logger)
         {
             _logger = logger;
 
@@ -67,7 +67,7 @@ namespace NzbDrone.Common.EnvironmentInfo
                 }
                 catch (Exception ex)
                 {
-                    _logger.Warn(ex, "Error checking if the current user is an administrator.");
+                    _logger.LogWarning(ex, "Error checking if the current user is an administrator.");
                     return false;
                 }
             }

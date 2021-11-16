@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
-
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cache;
 
 using NzbDrone.Common.Http;
@@ -43,7 +42,7 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
     public class QBittorrentProxySelector : IQBittorrentProxySelector
     {
         private readonly ICached<Tuple<IQBittorrentProxy, Version>> _proxyCache;
-        private readonly Logger _logger;
+        private readonly ILogger<QBittorrentProxySelector> _logger;
 
         private readonly IQBittorrentProxy _proxyV1;
         private readonly IQBittorrentProxy _proxyV2;
@@ -51,7 +50,7 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
         public  QBittorrentProxySelector(QBittorrentProxyV1 proxyV1,
                                          QBittorrentProxyV2 proxyV2,
                                          ICacheManager cacheManager,
-                                         Logger logger)
+                                         ILogger<QBittorrentProxySelector> logger)
         {
             _proxyCache = cacheManager.GetCache<Tuple<IQBittorrentProxy, Version>>(GetType());
             _logger = logger;
@@ -86,13 +85,13 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
         {
             if (_proxyV2.IsApiSupported(settings))
             {
-                _logger.Trace("Using qbitTorrent API v2");
+                _logger.LogTrace("Using qbitTorrent API v2");
                 return Tuple.Create(_proxyV2, _proxyV2.GetApiVersion(settings));
             }
 
             if (_proxyV1.IsApiSupported(settings))
             {
-                _logger.Trace("Using qbitTorrent API v1");
+                _logger.LogTrace("Using qbitTorrent API v1");
                 return Tuple.Create(_proxyV1, _proxyV1.GetApiVersion(settings));
             }
 

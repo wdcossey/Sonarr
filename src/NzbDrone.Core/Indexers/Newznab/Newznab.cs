@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using FluentValidation;
 using FluentValidation.Results;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Configuration;
@@ -16,6 +15,7 @@ namespace NzbDrone.Core.Indexers.Newznab
     public class Newznab : HttpIndexerBase<NewznabSettings>
     {
         private readonly INewznabCapabilitiesProvider _capabilitiesProvider;
+        private readonly ILoggerFactory _loggerFactory;
 
         public override string Name => "Newznab";
 
@@ -25,7 +25,7 @@ namespace NzbDrone.Core.Indexers.Newznab
 
         public override IIndexerRequestGenerator GetRequestGenerator()
         {
-            return new NewznabRequestGenerator(_capabilitiesProvider)
+            return new NewznabRequestGenerator(_capabilitiesProvider, _loggerFactory)
             {
                 PageSize = PageSize,
                 Settings = Settings
@@ -34,7 +34,7 @@ namespace NzbDrone.Core.Indexers.Newznab
 
         public override IParseIndexerResponse GetParser()
         {
-            return new NewznabRssParser();
+            return new NewznabRssParser(_loggerFactory);
         }
 
         public override IEnumerable<ProviderDefinition> DefaultDefinitions
@@ -56,10 +56,11 @@ namespace NzbDrone.Core.Indexers.Newznab
             }
         }
 
-        public Newznab(INewznabCapabilitiesProvider capabilitiesProvider, IHttpClient httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, Logger logger)
-            : base(httpClient, indexerStatusService, configService, parsingService, logger)
+        public Newznab(INewznabCapabilitiesProvider capabilitiesProvider, IHttpClient httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, ILoggerFactory loggerFactory)
+            : base(httpClient, indexerStatusService, configService, parsingService, loggerFactory)
         {
             _capabilitiesProvider = capabilitiesProvider;
+            _loggerFactory = loggerFactory;
         }
 
         private IndexerDefinition GetDefinition(string name, NewznabSettings settings)
@@ -129,7 +130,7 @@ namespace NzbDrone.Core.Indexers.Newznab
             }
             catch (Exception ex)
             {
-                _logger.Warn(ex, "Unable to connect to indexer: " + ex.Message);
+                _logger.LogWarning(ex, "Unable to connect to indexer: {Message}", ex.Message);
 
                 return new ValidationFailure(string.Empty, "Unable to connect to indexer, check the log for more details");
             }

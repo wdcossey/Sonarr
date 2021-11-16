@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
@@ -24,9 +24,9 @@ namespace NzbDrone.Core.Notifications.Plex.Server
     {
         private readonly IHttpClient _httpClient;
         private readonly IConfigService _configService;
-        private readonly Logger _logger;
+        private readonly ILogger<PlexServerProxy> _logger;
 
-        public PlexServerProxy(IHttpClient httpClient, IConfigService configService,Logger logger)
+        public PlexServerProxy(IHttpClient httpClient, IConfigService configService, ILogger<PlexServerProxy> logger)
         {
             _httpClient = httpClient;
             _configService = configService;
@@ -178,7 +178,7 @@ namespace NzbDrone.Core.Notifications.Plex.Server
 
             HttpResponse response;
 
-            _logger.Debug("Url: {0}", httpRequest.Url);
+            _logger.LogDebug("Url: {Url}", httpRequest.Url);
 
             try
             {
@@ -203,16 +203,16 @@ namespace NzbDrone.Core.Notifications.Plex.Server
 
         private void CheckForError(string response)
         {
-            _logger.Trace("Checking for error");
+            _logger.LogTrace("Checking for error");
 
             if (response.IsNullOrWhiteSpace())
             {
-                _logger.Trace("No response body returned, no error detected");
+                _logger.LogTrace("No response body returned, no error detected");
                 return;
             }
 
             var error = response.Contains("_children") ?
-                        Json.Deserialize<PlexError>(response) : 
+                        Json.Deserialize<PlexError>(response) :
                         Json.Deserialize<PlexResponse<PlexError>>(response).MediaContainer;
 
             if (error != null && !error.Error.IsNullOrWhiteSpace())
@@ -220,7 +220,7 @@ namespace NzbDrone.Core.Notifications.Plex.Server
                 throw new PlexException(error.Error);
             }
 
-            _logger.Trace("No error detected");
+            _logger.LogTrace("No error detected");
         }
     }
 }

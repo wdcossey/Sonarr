@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Drawing;
-using System.Net;
-using System.Text;
+using Microsoft.Extensions.Logging;
 using Mono.Unix;
 using Mono.Unix.Native;
-using NLog;
 
 namespace NzbDrone.Mono.Disk
 {
@@ -15,12 +12,10 @@ namespace NzbDrone.Mono.Disk
 
     public class SymbolicLinkResolver : ISymbolicLinkResolver
     {
-        private readonly Logger _logger;
+        private readonly ILogger<SymbolicLinkResolver> _logger;
 
-        public SymbolicLinkResolver(Logger logger)
-        {
-            _logger = logger;
-        }
+        public SymbolicLinkResolver(ILogger<SymbolicLinkResolver> logger)
+            => _logger = logger;
 
         public string GetCompleteRealPath(string path)
         {
@@ -39,12 +34,12 @@ namespace NzbDrone.Mono.Disk
                 }
 
                 var ex = new UnixIOException(Errno.ELOOP);
-                _logger.Warn("Failed to check for symlinks in the path {0}: {1}", path, ex.Message);
+                _logger.LogWarning("Failed to check for symlinks in the path {Path}: {Message}", path, ex.Message);
                 return path;
             }
             catch (Exception ex)
             {
-                _logger.Debug(ex, "Failed to check for symlinks in the path {0}", path);
+                _logger.LogDebug(ex, "Failed to check for symlinks in the path {Path}", path);
                 return path;
             }
         }
@@ -143,7 +138,7 @@ namespace NzbDrone.Mono.Disk
                 var errno = Stdlib.GetLastError();
                 if (errno != Errno.EINVAL)
                 {
-                    _logger.Trace("Checking path {0} for symlink returned error {1}, assuming it's not a symlink.", path, errno);
+                    _logger.LogTrace("Checking path {Path} for symlink returned error {Errno}, assuming it's not a symlink.", path, errno);
                 }
 
                 wasSymLink = true;

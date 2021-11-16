@@ -1,19 +1,17 @@
 ﻿using System;
+using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
-using NLog;
 using NzbDrone.Common.EnvironmentInfo;
 
 namespace NzbDrone.Windows.EnvironmentInfo
 {
     public class WindowsVersionInfo : IOsVersionAdapter
     {
-        private readonly Logger _logger;
+        private readonly ILogger<WindowsVersionInfo> _logger;
         public bool Enabled => OsInfo.IsWindows;
 
-        public WindowsVersionInfo(Logger logger)
-        {
-            _logger = logger;
-        }
+        public WindowsVersionInfo(ILogger<WindowsVersionInfo> logger)
+            => _logger = logger;
 
         public OsVersionModel Read()
         {
@@ -40,7 +38,7 @@ namespace NzbDrone.Windows.EnvironmentInfo
             }
             catch (Exception e)
             {
-                _logger.Error(e, "Couldn't detect if running Windows Server");
+                _logger.LogError(e, "Couldn't detect if running Windows Server");
             }
 
             return false;

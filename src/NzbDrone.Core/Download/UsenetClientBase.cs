@@ -1,4 +1,5 @@
 using System.Net;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Exceptions;
@@ -7,7 +8,6 @@ using NzbDrone.Core.Organizer;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.ThingiProvider;
 using NzbDrone.Core.Configuration;
-using NLog;
 using NzbDrone.Core.RemotePathMappings;
 
 namespace NzbDrone.Core.Download
@@ -23,7 +23,7 @@ namespace NzbDrone.Core.Download
                                    IDiskProvider diskProvider,
                                    IRemotePathMappingService remotePathMappingService,
                                    IValidateNzbs nzbValidationService,
-                                   Logger logger)
+                                   ILogger logger)
             : base(configService, diskProvider, remotePathMappingService, logger)
         {
             _httpClient = httpClient;
@@ -47,37 +47,37 @@ namespace NzbDrone.Core.Download
                 request.RateLimitKey = remoteEpisode?.Release?.IndexerId.ToString();
                 nzbData = _httpClient.Get(request).ResponseData;
 
-                _logger.Debug("Downloaded nzb for episode '{0}' finished ({1} bytes from {2})", remoteEpisode.Release.Title, nzbData.Length, url);
+                _logger.LogDebug("Downloaded nzb for episode '{Title}' finished ({Length} bytes from {Url})", remoteEpisode.Release.Title, nzbData.Length, url);
             }
             catch (HttpException ex)
             {
                 if (ex.Response.StatusCode == HttpStatusCode.NotFound)
                 {
-                    _logger.Error(ex, "Downloading nzb file for episode '{0}' failed since it no longer exists ({1})", remoteEpisode.Release.Title, url);
+                    _logger.LogError(ex, "Downloading nzb file for episode '{Title}' failed since it no longer exists ({Url})", remoteEpisode.Release.Title, url);
                     throw new ReleaseUnavailableException(remoteEpisode.Release, "Downloading nzb failed", ex);
                 }
 
                 if ((int)ex.Response.StatusCode == 429)
                 {
-                    _logger.Error("API Grab Limit reached for {0}", url);
+                    _logger.LogError("API Grab Limit reached for {Url}", url);
                 }
                 else
                 {
-                    _logger.Error(ex, "Downloading nzb for episode '{0}' failed ({1})", remoteEpisode.Release.Title, url);
+                    _logger.LogError(ex, "Downloading nzb for episode '{Title}' failed ({Url})", remoteEpisode.Release.Title, url);
                 }
 
                 throw new ReleaseDownloadException(remoteEpisode.Release, "Downloading nzb failed", ex);
             }
             catch (WebException ex)
             {
-                _logger.Error(ex, "Downloading nzb for episode '{0}' failed ({1})", remoteEpisode.Release.Title, url);
+                _logger.LogError(ex, "Downloading nzb for episode '{Title}' failed ({Url})", remoteEpisode.Release.Title, url);
 
                 throw new ReleaseDownloadException(remoteEpisode.Release, "Downloading nzb failed", ex);
             }
 
             _nzbValidationService.Validate(filename, nzbData);
 
-            _logger.Info("Adding report [{0}] to the queue.", remoteEpisode.Release.Title);
+            _logger.LogInformation("Adding report [{Title}] to the queue.", remoteEpisode.Release.Title);
             return AddFromNzbFile(remoteEpisode, filename, nzbData);
         }
     }

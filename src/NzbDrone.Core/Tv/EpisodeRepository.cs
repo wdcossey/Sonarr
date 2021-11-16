@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using Marr.Data.QGen;
-using NLog;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Datastore.Extensions;
 using NzbDrone.Core.Messaging.Events;
@@ -37,9 +37,9 @@ namespace NzbDrone.Core.Tv
     public class EpisodeRepository : BasicRepository<Episode>, IEpisodeRepository
     {
         private readonly IMainDatabase _database;
-        private readonly Logger _logger;
+        private readonly ILogger<EpisodeRepository> _logger;
 
-        public EpisodeRepository(IMainDatabase database, IEventAggregator eventAggregator, Logger logger)
+        public EpisodeRepository(IMainDatabase database, IEventAggregator eventAggregator, ILogger<EpisodeRepository> logger)
             : base(database, eventAggregator)
         {
             _database = database;
@@ -184,7 +184,7 @@ namespace NzbDrone.Core.Tv
         public void SetMonitored(IEnumerable<int> ids, bool monitored)
         {
             var mapper = DataMapper;
-           
+
             mapper.AddParameter("monitored", monitored);
 
             var sqlUpdate = $"UPDATE Episodes SET Monitored = @monitored WHERE Id IN ({string.Join(", ", ids)}) AND Monitored != @monitored";
@@ -231,8 +231,8 @@ namespace NzbDrone.Core.Tv
                              .AndWhere(e => e.EpisodeFileId != 0)
                              .AndWhere(e => e.SeasonNumber >= startingSeasonNumber)
                              .AndWhere(
-                                String.Format("({0} OR {1})", 
-                                BuildLanguageCutoffWhereClause(languagesBelowCutoff), 
+                                String.Format("({0} OR {1})",
+                                BuildLanguageCutoffWhereClause(languagesBelowCutoff),
                                 BuildQualityCutoffWhereClause(qualitiesBelowCutoff)))
                              //.AndWhere(BuildQualityCutoffWhereClause(qualitiesBelowCutoff, languagesBelowCutoff))
                              .OrderBy(pagingSpec.OrderByClause(), pagingSpec.ToSortDirection())
@@ -287,13 +287,13 @@ namespace NzbDrone.Core.Tv
 
             if (episodes.Count == 1) return episodes.First();
 
-            _logger.Debug("Multiple episodes with the same air date were found, will exclude specials");
+            _logger.LogDebug("Multiple episodes with the same air date were found, will exclude specials");
 
             var regularEpisodes = episodes.Where(e => e.SeasonNumber > 0).ToList();
 
             if (regularEpisodes.Count == 1)
             {
-                _logger.Debug("Left with one episode after excluding specials");
+                _logger.LogDebug("Left with one episode after excluding specials");
                 return regularEpisodes.First();
             }
 

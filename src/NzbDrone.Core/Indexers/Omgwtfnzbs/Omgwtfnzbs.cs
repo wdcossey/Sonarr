@@ -1,4 +1,4 @@
-﻿using NLog;
+﻿using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Parser;
@@ -7,14 +7,15 @@ namespace NzbDrone.Core.Indexers.Omgwtfnzbs
 {
     public class Omgwtfnzbs : HttpIndexerBase<OmgwtfnzbsSettings>
     {
+        private readonly ILoggerFactory _loggerFactory;
         public override string Name => "omgwtfnzbs";
 
         public override DownloadProtocol Protocol => DownloadProtocol.Usenet;
 
-        public Omgwtfnzbs(IHttpClient httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, Logger logger)
-            : base(httpClient, indexerStatusService, configService, parsingService, logger)
+        public Omgwtfnzbs(IHttpClient httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, ILoggerFactory loggerFactory)
+            : base(httpClient, indexerStatusService, configService, parsingService, loggerFactory)
         {
-
+            _loggerFactory = loggerFactory;
         }
 
         public override IIndexerRequestGenerator GetRequestGenerator()
@@ -24,7 +25,7 @@ namespace NzbDrone.Core.Indexers.Omgwtfnzbs
 
         public override IParseIndexerResponse GetParser()
         {
-            return new OmgwtfnzbsRssParser();
+            return new OmgwtfnzbsRssParser(_loggerFactory);
         }
     }
 }

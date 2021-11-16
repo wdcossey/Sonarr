@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Nancy;
 using Nancy.Responses;
 using NzbDrone.Common.EnvironmentInfo;
@@ -16,22 +17,27 @@ namespace Sonarr.Http.Extensions
         public static readonly string LastModified = BuildInfo.BuildDateTime.ToString("r");
 
         public static T FromJson<T>(this Stream body) where T : class, new()
-        {
-            return FromJson<T>(body, typeof(T));
-        }
+            => FromJson<T>(body, typeof(T));
+
+        public static Task<T> FromJsonAsync<T>(this Stream body) where T : class, new()
+            => FromJsonAsync<T>(body, typeof(T));
 
         public static T FromJson<T>(this Stream body, Type type)
-        {
-            return (T)FromJson(body, type);
-        }
+            => (T)FromJson(body, type);
+
+        public static Task<T> FromJsonAsync<T>(this Stream body, Type type)
+            => FromJsonAsync(body, type) as Task<T>;
 
         public static object FromJson(this Stream body, Type type)
         {
-            var reader = new StreamReader(body, true);
-            body.Position = 0;
+            using var reader = new StreamReader(body, true);
+            body.Seek(0, SeekOrigin.Begin);
             var value = reader.ReadToEnd();
             return Json.Deserialize(value, type);
         }
+
+        public static Task<object> FromJsonAsync(this Stream body, Type type)
+            => Json.DeserializeAsync(body, type);
 
         public static JsonResponse<TModel> AsResponse<TModel>(this TModel model, NancyContext context, HttpStatusCode statusCode = HttpStatusCode.OK)
         {

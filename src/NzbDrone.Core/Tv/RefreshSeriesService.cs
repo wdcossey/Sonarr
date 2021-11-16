@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Instrumentation.Extensions;
 using NzbDrone.Core.Configuration;
@@ -25,17 +25,16 @@ namespace NzbDrone.Core.Tv
         private readonly IDiskScanService _diskScanService;
         private readonly ICheckIfSeriesShouldBeRefreshed _checkIfSeriesShouldBeRefreshed;
         private readonly IConfigService _configService;
-        private readonly Logger _logger;
+        private readonly ILogger<RefreshSeriesService> _logger;
 
         public RefreshSeriesService(IProvideSeriesInfo seriesInfo,
                                     ISeriesService seriesService,
                                     IRefreshEpisodeService refreshEpisodeService,
                                     IEventAggregator eventAggregator,
-                                    
                                     IDiskScanService diskScanService,
                                     ICheckIfSeriesShouldBeRefreshed checkIfSeriesShouldBeRefreshed,
                                     IConfigService configService,
-                                    Logger logger)
+                                    ILogger<RefreshSeriesService> logger)
         {
             _seriesInfo = seriesInfo;
             _seriesService = seriesService;
@@ -70,7 +69,7 @@ namespace NzbDrone.Core.Tv
                 {
                     series.Status = SeriesStatusType.Deleted;
                     _seriesService.UpdateSeries(series, publishUpdatedEvent: false);
-                    _logger.Debug("Series marked as deleted on tvdb for {0}", series.Title);
+                    _logger.LogDebug("Series marked as deleted on tvdb for {Title}", series.Title);
                     _eventAggregator.PublishEvent(new SeriesUpdatedEvent(series));
                 }
                 throw;
@@ -78,7 +77,7 @@ namespace NzbDrone.Core.Tv
 
             if (series.TvdbId != seriesInfo.TvdbId)
             {
-                _logger.Warn("Series '{0}' (tvdbid {1}) was replaced with '{2}' (tvdbid {3}), because the original was a duplicate.", series.Title, series.TvdbId, seriesInfo.Title, seriesInfo.TvdbId);
+                _logger.LogWarning("Series '{SeriesTitle}' (tvdbid {SeriesTvdbId}) was replaced with '{SeriesInfoTitle}' (tvdbid {SeriesInfoTvdbId}), because the original was a duplicate.", series.Title, series.TvdbId, seriesInfo.Title, seriesInfo.TvdbId);
                 series.TvdbId = seriesInfo.TvdbId;
             }
 
@@ -110,7 +109,7 @@ namespace NzbDrone.Core.Tv
             }
             catch (Exception e)
             {
-                _logger.Warn(e, "Couldn't update series path for " + series.Path);
+                _logger.LogWarning(e, "Couldn't update series path for {Path}", series.Path);
             }
 
             series.Seasons = UpdateSeasons(series, seriesInfo);
@@ -118,7 +117,7 @@ namespace NzbDrone.Core.Tv
             _seriesService.UpdateSeries(series, publishUpdatedEvent: false);
             _refreshEpisodeService.RefreshEpisodeInfo(series, episodes);
 
-            _logger.Debug("Finished series refresh for {0}", series.Title);
+            _logger.LogDebug("Finished series refresh for {Title}", series.Title);
             _eventAggregator.PublishEvent(new SeriesUpdatedEvent(series));
 
             return series;
@@ -137,12 +136,12 @@ namespace NzbDrone.Core.Tv
                 {
                     if (season.SeasonNumber == 0)
                     {
-                        _logger.Debug("Ignoring season 0 for series [{0}] {1} by default", series.TvdbId, series.Title);
+                        _logger.LogDebug("Ignoring season 0 for series [{TvdbId}] {Title} by default", series.TvdbId, series.Title);
                         season.Monitored = false;
                         continue;
                     }
 
-                    _logger.Debug("New season ({0}) for series: [{1}] {2}, setting monitored to {3}", season.SeasonNumber, series.TvdbId, series.Title, series.Monitored.ToString().ToLowerInvariant());
+                    _logger.LogDebug("New season ({SeasonNumber}) for series: [{TvdbId}] {Title}, setting monitored to {Monitored}", season.SeasonNumber, series.TvdbId, series.Title, series.Monitored.ToString().ToLowerInvariant());
                     season.Monitored = series.Monitored;
                 }
 
@@ -162,17 +161,17 @@ namespace NzbDrone.Core.Tv
 
             if (isNew)
             {
-                _logger.Trace("Forcing rescan of {0}. Reason: New series", series);
+                _logger.LogTrace("Forcing rescan of {Series}. Reason: New series", series);
                 shouldRescan = true;
             }
             else if (rescanAfterRefresh == RescanAfterRefreshType.Never)
             {
-                _logger.Trace("Skipping rescan of {0}. Reason: never rescan after refresh", series);
+                _logger.LogTrace("Skipping rescan of {Series}. Reason: never rescan after refresh", series);
                 shouldRescan = false;
             }
             else if (rescanAfterRefresh == RescanAfterRefreshType.AfterManual && trigger != CommandTrigger.Manual)
             {
-                _logger.Trace("Skipping rescan of {0}. Reason: not after automatic scans", series);
+                _logger.LogTrace("Skipping rescan of {Series}. Reason: not after automatic scans", series);
                 shouldRescan = false;
             }
 
@@ -187,7 +186,7 @@ namespace NzbDrone.Core.Tv
             }
             catch (Exception e)
             {
-                _logger.Error(e, "Couldn't rescan series {0}", series);
+                _logger.LogError(e, "Couldn't rescan series {Series}", series);
             }
         }
 
@@ -208,11 +207,11 @@ namespace NzbDrone.Core.Tv
                 }
                 catch (SeriesNotFoundException)
                 {
-                    _logger.Error("Series '{0}' (tvdbid {1}) was not found, it may have been removed from TheTVDB.", series.Title, series.TvdbId);
+                    _logger.LogError("Series '{Title}' (tvdbid {TvdbId}) was not found, it may have been removed from TheTVDB.", series.Title, series.TvdbId);
                 }
                 catch (Exception e)
                 {
-                    _logger.Error(e, "Couldn't refresh info for {0}", series);
+                    _logger.LogError(e, "Couldn't refresh info for {Series}", series);
                     RescanSeries(series, isNew, trigger);
                     throw;
                 }
@@ -232,12 +231,12 @@ namespace NzbDrone.Core.Tv
                         }
                         catch (SeriesNotFoundException)
                         {
-                            _logger.Error("Series '{0}' (tvdbid {1}) was not found, it may have been removed from TheTVDB.", seriesLocal.Title, seriesLocal.TvdbId);
+                            _logger.LogError("Series '{Title}' (tvdbid {TvdbId}) was not found, it may have been removed from TheTVDB.", seriesLocal.Title, seriesLocal.TvdbId);
                             continue;
                         }
                         catch (Exception e)
                         {
-                            _logger.Error(e, "Couldn't refresh info for {0}", seriesLocal);
+                            _logger.LogError(e, "Couldn't refresh info for {SeriesLocal}", seriesLocal);
                         }
 
                         RescanSeries(seriesLocal, false, trigger);
@@ -245,7 +244,7 @@ namespace NzbDrone.Core.Tv
 
                     else
                     {
-                        _logger.Info("Skipping refresh of series: {0}", seriesLocal.Title);
+                        _logger.LogInformation("Skipping refresh of series: {Title}", seriesLocal.Title);
                         RescanSeries(seriesLocal, false, trigger);
                     }
                 }

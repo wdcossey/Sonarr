@@ -1,6 +1,6 @@
 using System.IO;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.MediaFiles.EpisodeImport;
@@ -19,13 +19,13 @@ namespace NzbDrone.Core.MediaFiles
         private readonly IMediaFileService _mediaFileService;
         private readonly IMoveEpisodeFiles _episodeFileMover;
         private readonly IDiskProvider _diskProvider;
-        private readonly Logger _logger;
+        private readonly ILogger<UpgradeMediaFileService> _logger;
 
         public UpgradeMediaFileService(IRecycleBinProvider recycleBinProvider,
                                        IMediaFileService mediaFileService,
                                        IMoveEpisodeFiles episodeFileMover,
                                        IDiskProvider diskProvider,
-                                       Logger logger)
+                                       ILogger<UpgradeMediaFileService> logger)
         {
             _recycleBinProvider = recycleBinProvider;
             _mediaFileService = mediaFileService;
@@ -60,7 +60,7 @@ namespace NzbDrone.Core.MediaFiles
 
                 if (_diskProvider.FileExists(episodeFilePath))
                 {
-                    _logger.Debug("Removing existing episode file: {0}", file);
+                    _logger.LogDebug("Removing existing episode file: {File}", file);
                     _recycleBinProvider.DeleteFile(episodeFilePath, subfolder);
                 }
 

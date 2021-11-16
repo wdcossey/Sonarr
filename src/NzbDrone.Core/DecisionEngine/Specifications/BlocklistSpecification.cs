@@ -1,4 +1,4 @@
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Blocklisting;
 using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.Parser.Model;
@@ -8,9 +8,9 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
     public class BlocklistSpecification : IDecisionEngineSpecification
     {
         private readonly IBlocklistService _blocklistService;
-        private readonly Logger _logger;
+        private readonly ILogger<BlocklistSpecification> _logger;
 
-        public BlocklistSpecification(IBlocklistService blocklistService, Logger logger)
+        public BlocklistSpecification(IBlocklistService blocklistService, ILogger<BlocklistSpecification> logger)
         {
             _blocklistService = blocklistService;
             _logger = logger;
@@ -23,7 +23,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
         {
             if (_blocklistService.Blocklisted(subject.Series.Id, subject.Release))
             {
-                _logger.Debug("{0} is blocklisted, rejecting.", subject.Release.Title);
+                _logger.LogDebug("{Title} is blocklisted, rejecting.", subject.Release.Title);
                 return Decision.Reject("Release is blocklisted");
             }
 

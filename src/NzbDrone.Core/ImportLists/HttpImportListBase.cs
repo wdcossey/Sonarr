@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using FluentValidation.Results;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Configuration;
@@ -22,7 +22,7 @@ namespace NzbDrone.Core.ImportLists
         protected const int MaxNumResultsPerQuery = 1000;
 
         protected readonly IHttpClient _httpClient;
-        
+
         public bool SupportsPaging => PageSize > 0;
 
         public virtual int PageSize => 0;
@@ -31,7 +31,7 @@ namespace NzbDrone.Core.ImportLists
         public abstract IImportListRequestGenerator GetRequestGenerator();
         public abstract IParseImportListResponse GetParser();
 
-        public HttpImportListBase(IHttpClient httpClient, IImportListStatusService importListStatusService, IConfigService configService, IParsingService parsingService, Logger logger)
+        public HttpImportListBase(IHttpClient httpClient, IImportListStatusService importListStatusService, IConfigService configService, IParsingService parsingService, ILogger logger)
             : base(importListStatusService, configService, parsingService, logger)
         {
             _httpClient = httpClient;
@@ -107,11 +107,11 @@ namespace NzbDrone.Core.ImportLists
                 if (webException.Message.Contains("502") || webException.Message.Contains("503") ||
                     webException.Message.Contains("timed out"))
                 {
-                    _logger.Warn("{0} server is currently unavailable. {1} {2}", this, url, webException.Message);
+                    _logger.LogWarning("{Type} server is currently unavailable. {Url} {Message}", this.GetType(), url, webException.Message);
                 }
                 else
                 {
-                    _logger.Warn("{0} {1} {2}", this, url, webException.Message);
+                    _logger.LogWarning("{Type} {Url} {Message}", this.GetType(), url, webException.Message);
                 }
             }
             catch (TooManyRequestsException ex)
@@ -124,17 +124,17 @@ namespace NzbDrone.Core.ImportLists
                 {
                     _importListStatusService.RecordFailure(Definition.Id, TimeSpan.FromHours(1));
                 }
-                _logger.Warn("API Request Limit reached for {0}", this);
+                _logger.LogWarning("API Request Limit reached for {Type}", this.GetType());
             }
             catch (HttpException ex)
             {
                 _importListStatusService.RecordFailure(Definition.Id);
-                _logger.Warn("{0} {1}", this, ex.Message);
+                _logger.LogWarning("{Type} {Message}", this.GetType(), ex.Message);
             }
             catch (RequestLimitReachedException)
             {
                 _importListStatusService.RecordFailure(Definition.Id, TimeSpan.FromHours(1));
-                _logger.Warn("API Request Limit reached for {0}", this);
+                _logger.LogWarning("API Request Limit reached for {Type}", this.GetType());
             }
             catch (CloudFlareCaptchaException ex)
             {
@@ -142,23 +142,23 @@ namespace NzbDrone.Core.ImportLists
                 ex.WithData("FeedUrl", url);
                 if (ex.IsExpired)
                 {
-                    _logger.Error(ex, "Expired CAPTCHA token for {0}, please refresh in import list settings.", this);
+                    _logger.LogError(ex, "Expired CAPTCHA token for {Type}, please refresh in import list settings.", this.GetType());
                 }
                 else
                 {
-                    _logger.Error(ex, "CAPTCHA token required for {0}, check import list settings.", this);
+                    _logger.LogError(ex, "CAPTCHA token required for {Type}, check import list settings.", this.GetType());
                 }
             }
             catch (ImportListException ex)
             {
                 _importListStatusService.RecordFailure(Definition.Id);
-                _logger.Warn(ex, "{0}", url);
+                _logger.LogWarning(ex, "{Url}", url);
             }
             catch (Exception ex)
             {
                 _importListStatusService.RecordFailure(Definition.Id);
                 ex.WithData("FeedUrl", url);
-                _logger.Error(ex, "An error occurred while processing feed. {0}", url);
+                _logger.LogError(ex, "An error occurred while processing feed. {Url}", url);
             }
 
             return CleanupListItems(releases);
@@ -188,7 +188,7 @@ namespace NzbDrone.Core.ImportLists
 
         protected virtual ImportListResponse FetchImportListResponse(ImportListRequest request)
         {
-            _logger.Debug("Downloading Feed " + request.HttpRequest.ToString(false));
+            _logger.LogDebug("Downloading Feed {HttpRequestString}", request.HttpRequest.ToString(false));
 
             if (request.HttpRequest.RateLimit < RateLimit)
             {
@@ -220,23 +220,23 @@ namespace NzbDrone.Core.ImportLists
             }
             catch (RequestLimitReachedException)
             {
-                _logger.Warn("Request limit reached");
+                _logger.LogWarning("Request limit reached");
             }
             catch (UnsupportedFeedException ex)
             {
-                _logger.Warn(ex, "Import list feed is not supported");
+                _logger.LogWarning(ex, "Import list feed is not supported");
 
                 return new ValidationFailure(string.Empty, "Import list feed is not supported: " + ex.Message);
             }
             catch (ImportListException ex)
             {
-                _logger.Warn(ex, "Unable to connect to import list");
+                _logger.LogWarning(ex, "Unable to connect to import list");
 
                 return new ValidationFailure(string.Empty, "Unable to connect to import list. " + ex.Message);
             }
             catch (Exception ex)
             {
-                _logger.Warn(ex, "Unable to connect to import list");
+                _logger.LogWarning(ex, "Unable to connect to import list");
 
                 return new ValidationFailure(string.Empty, "Unable to connect to import list, check the log for more details");
             }

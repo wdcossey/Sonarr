@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentValidation.Results;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Parser;
@@ -22,7 +22,7 @@ namespace NzbDrone.Core.ImportLists.Sonarr
                             IImportListStatusService importListStatusService,
                             IConfigService configService,
                             IParsingService parsingService,
-                            Logger logger)
+                            ILogger<SonarrImport> logger)
             : base(importListStatusService, configService, parsingService, logger)
         {
             _sonarrV3Proxy = sonarrV3Proxy;

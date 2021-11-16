@@ -12,6 +12,7 @@ using NzbDrone.Common.Processes;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Datastore.Migration.Framework;
 using NzbDrone.Core.DecisionEngine.Specifications;
+using NzbDrone.Core.HealthCheck.Checks;
 using NzbDrone.Core.Notifications.Emby;
 
 // ReSharper disable once CheckNamespace
@@ -56,7 +57,6 @@ namespace Microsoft.Extensions.DependencyInjection
             var loadedTypes = new List<Type>();
 
             assemblyNames.Add(OsInfo.IsWindows ? "Sonarr.Windows.dll" : "Sonarr.Mono.dll");
-            //assemblyNames.Add("Sonarr.Windows.dll");
             assemblyNames.Add("Sonarr.Common.dll");
 
             foreach (var assemblyName in assemblyNames)

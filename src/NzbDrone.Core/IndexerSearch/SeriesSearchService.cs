@@ -1,5 +1,5 @@
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Instrumentation.Extensions;
 using NzbDrone.Core.Download;
 using NzbDrone.Core.Messaging.Commands;
@@ -12,12 +12,12 @@ namespace NzbDrone.Core.IndexerSearch
         private readonly ISeriesService _seriesService;
         private readonly ISearchForReleases _releaseSearchService;
         private readonly IProcessDownloadDecisions _processDownloadDecisions;
-        private readonly Logger _logger;
+        private readonly ILogger<SeriesSearchService> _logger;
 
         public SeriesSearchService(ISeriesService seriesService,
                                    ISearchForReleases releaseSearchService,
                                    IProcessDownloadDecisions processDownloadDecisions,
-                                   Logger logger)
+                                   ILogger<SeriesSearchService> logger)
         {
             _seriesService = seriesService;
             _releaseSearchService = releaseSearchService;
@@ -35,7 +35,7 @@ namespace NzbDrone.Core.IndexerSearch
             {
                 if (!season.Monitored)
                 {
-                    _logger.Debug("Season {0} of {1} is not monitored, skipping search", season.SeasonNumber, series.Title);
+                    _logger.LogDebug("Season {SeasonNumber} of {Title} is not monitored, skipping search", season.SeasonNumber, series.Title);
                     continue;
                 }
 

@@ -1,5 +1,5 @@
 ﻿using System;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Core.Lifecycle.Commands;
@@ -20,13 +20,13 @@ namespace NzbDrone.Core.Lifecycle
         private readonly IEventAggregator _eventAggregator;
         private readonly IRuntimeInfo _runtimeInfo;
         private readonly IServiceProvider _serviceProvider;
-        private readonly Logger _logger;
+        private readonly ILogger<LifecycleService> _logger;
 
 
         public LifecycleService(IEventAggregator eventAggregator,
                                 IRuntimeInfo runtimeInfo,
                                 IServiceProvider serviceProvider,
-                                Logger logger)
+                                ILogger<LifecycleService> logger)
         {
             _eventAggregator = eventAggregator;
             _runtimeInfo = runtimeInfo;
@@ -36,11 +36,12 @@ namespace NzbDrone.Core.Lifecycle
 
         public void Shutdown()
         {
-            _logger.Info("Shutdown requested.");
+            _logger.LogInformation("Shutdown requested.");
             _eventAggregator.PublishEvent(new ApplicationShutdownRequested());
 
             if (_runtimeInfo.IsWindowsService)
             {
+                //TODO: _serviceProvider.Stop()
                 throw new NotImplementedException("_serviceProvider.Stop()");
                 _serviceProvider.Stop(ServiceProvider.SERVICE_NAME);
             }
@@ -48,12 +49,13 @@ namespace NzbDrone.Core.Lifecycle
 
         public void Restart()
         {
-            _logger.Info("Restart requested.");
+            _logger.LogInformation("Restart requested.");
 
             _eventAggregator.PublishEvent(new ApplicationShutdownRequested(true));
 
             if (_runtimeInfo.IsWindowsService)
             {
+                //TODO: _serviceProvider.Restart()
                 throw new NotImplementedException("_serviceProvider.Restart()");
                 _serviceProvider.Restart(ServiceProvider.SERVICE_NAME);
             }

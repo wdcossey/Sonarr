@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Download;
 using NzbDrone.Core.Languages;
@@ -12,12 +12,10 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Aggregation.Aggregators
 {
     public class AggregateLanguage : IAggregateLocalEpisode
     {
-        private readonly Logger _logger;
+        private readonly ILogger<AggregateLanguage> _logger;
 
-        public AggregateLanguage(Logger logger)
-        {
-            _logger = logger;
-        }
+        public AggregateLanguage(ILogger<AggregateLanguage> logger)
+            => _logger = logger;
 
         public LocalEpisode Aggregate(LocalEpisode localEpisode, DownloadClientItem downloadClientItem)
         {
@@ -34,7 +32,7 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Aggregation.Aggregators
 
             var language = languages.FirstOrDefault(l => l != Language.English) ?? Language.English;
 
-            _logger.Debug("Using language: {0}", language);
+            _logger.LogDebug("Using language: {Language}", language);
 
             localEpisode.Language = language;
 

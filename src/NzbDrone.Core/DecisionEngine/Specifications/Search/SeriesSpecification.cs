@@ -1,4 +1,4 @@
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.Parser.Model;
 
@@ -6,9 +6,9 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.Search
 {
     public class SeriesSpecification : IDecisionEngineSpecification
     {
-        private readonly Logger _logger;
+        private readonly ILogger<SeriesSpecification> _logger;
 
-        public SeriesSpecification(Logger logger)
+        public SeriesSpecification(ILogger<SeriesSpecification> logger)
         {
             _logger = logger;
         }
@@ -23,11 +23,11 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.Search
                 return Decision.Accept();
             }
 
-            _logger.Debug("Checking if series matches searched series");
+            _logger.LogDebug("Checking if series matches searched series");
 
             if (remoteEpisode.Series.Id != searchCriteria.Series.Id)
             {
-                _logger.Debug("Series {0} does not match {1}", remoteEpisode.Series, searchCriteria.Series);
+                _logger.LogDebug("Series {RemoteSeries} does not match {SearchSeries}", remoteEpisode.Series, searchCriteria.Series);
                 return Decision.Reject("Wrong series");
             }
 

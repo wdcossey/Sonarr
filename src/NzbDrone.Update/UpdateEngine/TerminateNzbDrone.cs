@@ -1,6 +1,4 @@
-using System;
-using NLog;
-using NzbDrone.Common;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Processes;
 //using IServiceProvider = NzbDrone.Common.IServiceProvider;
@@ -14,13 +12,13 @@ namespace NzbDrone.Update.UpdateEngine
 
     public class TerminateNzbDrone : ITerminateNzbDrone
     {
-        //private readonly IServiceProvider _serviceProvider;
+        //private readonly IServiceProvider _serviceProvider; //TODO: Legacy IServiceProvider
         private readonly IProcessProvider _processProvider;
-        private readonly Logger _logger;
+        private readonly ILogger<TerminateNzbDrone> _logger;
 
-        public TerminateNzbDrone(/*IServiceProvider serviceProvider,*/ IProcessProvider processProvider, Logger logger)
+        public TerminateNzbDrone(/*IServiceProvider serviceProvider,*/ IProcessProvider processProvider, ILogger<TerminateNzbDrone> logger) //TODO: Legacy IServiceProvider
         {
-            //_serviceProvider = serviceProvider;
+            //_serviceProvider = serviceProvider; //TODO: Legacy IServiceProvider
             _processProvider = processProvider;
             _logger = logger;
         }
@@ -29,8 +27,9 @@ namespace NzbDrone.Update.UpdateEngine
         {
             if (OsInfo.IsWindows)
             {
-                _logger.Info("Stopping all running services");
+                _logger.LogInformation("Stopping all running services");
 
+                //TODO: Legacy IServiceProvider
                 /*if (_serviceProvider.ServiceExist(ServiceProvider.SERVICE_NAME)
                     && _serviceProvider.IsServiceRunning(ServiceProvider.SERVICE_NAME))
                 {
@@ -45,14 +44,14 @@ namespace NzbDrone.Update.UpdateEngine
                     }
                 }*/
 
-                _logger.Info("Killing all running processes");
+                _logger.LogInformation("Killing all running processes");
 
                 _processProvider.KillAll(ProcessProvider.SONARR_CONSOLE_PROCESS_NAME);
                 _processProvider.KillAll(ProcessProvider.SONARR_PROCESS_NAME);
             }
             else
             {
-                _logger.Info("Killing all running processes");
+                _logger.LogInformation("Killing all running processes");
 
                 _processProvider.KillAll(ProcessProvider.SONARR_CONSOLE_PROCESS_NAME);
                 _processProvider.KillAll(ProcessProvider.SONARR_PROCESS_NAME);

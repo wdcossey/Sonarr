@@ -1,5 +1,5 @@
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.DataAugmentation.Scene;
 using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.Parser.Model;
@@ -8,10 +8,10 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.Search
 {
     public class SingleEpisodeSearchMatchSpecification : IDecisionEngineSpecification
     {
-        private readonly Logger _logger;
+        private readonly ILogger<SingleEpisodeSearchMatchSpecification> _logger;
         private readonly ISceneMappingService _sceneMappingService;
 
-        public SingleEpisodeSearchMatchSpecification(ISceneMappingService sceneMappingService, Logger logger)
+        public SingleEpisodeSearchMatchSpecification(ISceneMappingService sceneMappingService, ILogger<SingleEpisodeSearchMatchSpecification> logger)
         {
             _logger = logger;
             _sceneMappingService = sceneMappingService;
@@ -40,19 +40,19 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.Search
         {
             if (singleEpisodeSpec.SeasonNumber != remoteEpisode.ParsedEpisodeInfo.SeasonNumber)
             {
-                _logger.Debug("Season number does not match searched season number, skipping.");
+                _logger.LogDebug("Season number does not match searched season number, skipping.");
                 return Decision.Reject("Wrong season");
             }
 
             if (!remoteEpisode.ParsedEpisodeInfo.EpisodeNumbers.Any())
             {
-                _logger.Debug("Full season result during single episode search, skipping.");
+                _logger.LogDebug("Full season result during single episode search, skipping.");
                 return Decision.Reject("Full season pack");
             }
 
             if (!remoteEpisode.ParsedEpisodeInfo.EpisodeNumbers.Contains(singleEpisodeSpec.EpisodeNumber))
             {
-                _logger.Debug("Episode number does not match searched episode number, skipping.");
+                _logger.LogDebug("Episode number does not match searched episode number, skipping.");
                 return Decision.Reject("Wrong episode");
             }
 
@@ -63,7 +63,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.Search
         {
             if (remoteEpisode.ParsedEpisodeInfo.FullSeason && !animeEpisodeSpec.IsSeasonSearch)
             {
-                _logger.Debug("Full season result during single episode search, skipping.");
+                _logger.LogDebug("Full season result during single episode search, skipping.");
                 return Decision.Reject("Full season pack");
             }
 

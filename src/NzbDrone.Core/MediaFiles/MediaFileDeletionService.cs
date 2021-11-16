@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using System.Net;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Configuration;
@@ -29,7 +29,7 @@ namespace NzbDrone.Core.MediaFiles
         private readonly ISeriesService _seriesService;
         private readonly IConfigService _configService;
         private readonly IEventAggregator _eventAggregator;
-        private readonly Logger _logger;
+        private readonly ILogger<MediaFileDeletionService> _logger;
 
         public MediaFileDeletionService(IDiskProvider diskProvider,
                                         IRecycleBinProvider recycleBinProvider,
@@ -37,14 +37,14 @@ namespace NzbDrone.Core.MediaFiles
                                         ISeriesService seriesService,
                                         IConfigService configService,
                                         IEventAggregator eventAggregator,
-                                        Logger logger)
+                                        ILogger<MediaFileDeletionService> logger)
         {
             _diskProvider = diskProvider;
             _recycleBinProvider = recycleBinProvider;
             _mediaFileService = mediaFileService;
             _seriesService = seriesService;
             _configService = configService;
-            _eventAggregator = eventAggregator; 
+            _eventAggregator = eventAggregator;
             _logger = logger;
         }
 
@@ -55,19 +55,19 @@ namespace NzbDrone.Core.MediaFiles
 
             if (!_diskProvider.FolderExists(rootFolder))
             {
-                _logger.Warn("Series' root folder ({0}) doesn't exist.", rootFolder);
+                _logger.LogWarning("Series' root folder ({RootFolder}) doesn't exist.", rootFolder);
                 throw new NzbDroneClientException(HttpStatusCode.Conflict, "Series' root folder ({0}) doesn't exist.", rootFolder);
             }
 
             if (_diskProvider.GetDirectories(rootFolder).Empty())
             {
-                _logger.Warn("Series' root folder ({0}) is empty.", rootFolder);
+                _logger.LogWarning("Series' root folder ({RootFolder}) is empty.", rootFolder);
                 throw new NzbDroneClientException(HttpStatusCode.Conflict, "Series' root folder ({0}) is empty.", rootFolder);
             }
 
             if (_diskProvider.FolderExists(series.Path) && _diskProvider.FileExists(fullPath))
             {
-                _logger.Info("Deleting episode file: {0}", fullPath);
+                _logger.LogInformation("Deleting episode file: {FullPath}", fullPath);
 
                 var subfolder = _diskProvider.GetParentFolder(series.Path).GetRelativePath(_diskProvider.GetParentFolder(fullPath));
 
@@ -77,11 +77,11 @@ namespace NzbDrone.Core.MediaFiles
                 }
                 catch (Exception e)
                 {
-                    _logger.Error(e, "Unable to delete episode file");
+                    _logger.LogError(e, "Unable to delete episode file");
                     throw new NzbDroneClientException(HttpStatusCode.InternalServerError, "Unable to delete episode file");
                 }
             }
-            
+
             // Delete the episode file from the database to clean it up even if the file was already deleted
             _mediaFileService.Delete(episodeFile, DeleteMediaFileReason.Manual);
 
@@ -101,13 +101,13 @@ namespace NzbDrone.Core.MediaFiles
 
                     if (series.Path.IsParentPath(s.Path))
                     {
-                        _logger.Error("Series path: '{0}' is a parent of another series, not deleting files.", series.Path);
+                        _logger.LogError("Series path: '{Path}' is a parent of another series, not deleting files.", series.Path);
                         return;
                     }
 
                     if (series.Path.PathEquals(s.Path))
                     {
-                        _logger.Error("Series path: '{0}' is the same as another series, not deleting files.", series.Path);
+                        _logger.LogError("Series path: '{Path}' is the same as another series, not deleting files.", series.Path);
                         return;
                     }
                 }

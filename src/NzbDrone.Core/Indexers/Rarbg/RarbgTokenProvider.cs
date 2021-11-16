@@ -1,6 +1,6 @@
 using System;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
-using NLog;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
@@ -16,9 +16,9 @@ namespace NzbDrone.Core.Indexers.Rarbg
     {
         private readonly IHttpClient _httpClient;
         private readonly ICached<string> _tokenCache;
-        private readonly Logger _logger;
+        private readonly ILogger<RarbgTokenProvider> _logger;
 
-        public RarbgTokenProvider(IHttpClient httpClient, ICacheManager cacheManager, Logger logger)
+        public RarbgTokenProvider(IHttpClient httpClient, ICacheManager cacheManager, ILogger<RarbgTokenProvider> logger)
         {
             _httpClient = httpClient;
             _tokenCache = cacheManager.GetCache<string>(GetType());

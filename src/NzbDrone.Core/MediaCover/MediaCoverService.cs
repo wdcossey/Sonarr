@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
@@ -33,7 +33,7 @@ namespace NzbDrone.Core.MediaCover
         private readonly ICoverExistsSpecification _coverExistsSpecification;
         private readonly IConfigFileProvider _configFileProvider;
         private readonly IEventAggregator _eventAggregator;
-        private readonly Logger _logger;
+        private readonly ILogger<MediaCoverService> _logger;
 
         private readonly string _coverRootFolder;
 
@@ -49,7 +49,7 @@ namespace NzbDrone.Core.MediaCover
                                  ICoverExistsSpecification coverExistsSpecification,
                                  IConfigFileProvider configFileProvider,
                                  IEventAggregator eventAggregator,
-                                 Logger logger)
+                                 ILogger<MediaCoverService> logger)
         {
             _mediaCoverProxy = mediaCoverProxy;
             _resizer = resizer;
@@ -124,15 +124,15 @@ namespace NzbDrone.Core.MediaCover
                 }
                 catch (HttpException e)
                 {
-                    _logger.Warn("Couldn't download media cover for {0}. {1}", series, e.Message);
+                    _logger.LogWarning("Couldn't download media cover for {Series}. {Message}", series, e.Message);
                 }
                 catch (WebException e)
                 {
-                    _logger.Warn("Couldn't download media cover for {0}. {1}", series, e.Message);
+                    _logger.LogWarning("Couldn't download media cover for {Series}. {Message}", series, e.Message);
                 }
                 catch (Exception e)
                 {
-                    _logger.Error(e, "Couldn't download media cover for {0}", series);
+                    _logger.LogError(e, "Couldn't download media cover for {Series}", series);
                 }
 
                 toResize.Add(Tuple.Create(cover, alreadyExists));
@@ -159,7 +159,7 @@ namespace NzbDrone.Core.MediaCover
         {
             var fileName = GetCoverPath(series.Id, cover.CoverType);
 
-            _logger.Info("Downloading {0} for {1} {2}", cover.CoverType, series, cover.Url);
+            _logger.LogInformation("Downloading {CoverType} for {Series} {Url}", cover.CoverType, series, cover.Url);
             _httpClient.DownloadFile(cover.Url, fileName);
         }
 
@@ -194,7 +194,7 @@ namespace NzbDrone.Core.MediaCover
 
                 if (forceResize || !_diskProvider.FileExists(resizeFileName) || _diskProvider.GetFileSize(resizeFileName) == 0)
                 {
-                    _logger.Debug("Resizing {0}-{1} for {2}", cover.CoverType, height, series);
+                    _logger.LogDebug("Resizing {CoverType}-{Height} for {Series}", cover.CoverType, height, series);
 
                     try
                     {
@@ -202,7 +202,7 @@ namespace NzbDrone.Core.MediaCover
                     }
                     catch
                     {
-                        _logger.Debug("Couldn't resize media cover {0}-{1} for {2}, using full size image instead.", cover.CoverType, height, series);
+                        _logger.LogDebug("Couldn't resize media cover {CoverType}-{Height} for {Series}, using full size image instead.", cover.CoverType, height, series);
                     }
                 }
             }

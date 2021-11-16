@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Tv;
@@ -17,11 +17,11 @@ namespace NzbDrone.Core.MediaFiles
     {
         private readonly IMediaFileService _mediaFileService;
         private readonly IEpisodeService _episodeService;
-        private readonly Logger _logger;
+        private readonly ILogger<MediaFileTableCleanupService> _logger;
 
         public MediaFileTableCleanupService(IMediaFileService mediaFileService,
                                             IEpisodeService episodeService,
-                                            Logger logger)
+                                            ILogger<MediaFileTableCleanupService> logger)
         {
             _mediaFileService = mediaFileService;
             _episodeService = episodeService;
@@ -34,7 +34,7 @@ namespace NzbDrone.Core.MediaFiles
             var episodes = _episodeService.GetEpisodeBySeries(series.Id);
 
             var filesOnDiskKeys = new HashSet<string>(filesOnDisk, PathEqualityComparer.Instance);
-            
+
             foreach (var seriesFile in seriesFiles)
             {
                 var episodeFile = seriesFile;
@@ -44,14 +44,14 @@ namespace NzbDrone.Core.MediaFiles
                 {
                     if (!filesOnDiskKeys.Contains(episodeFilePath))
                     {
-                        _logger.Debug("File [{0}] no longer exists on disk, removing from db", episodeFilePath);
+                        _logger.LogDebug("File [{EpisodeFilePath}] no longer exists on disk, removing from db", episodeFilePath);
                         _mediaFileService.Delete(seriesFile, DeleteMediaFileReason.MissingFromDisk);
                         continue;
                     }
 
                     if (episodes.None(e => e.EpisodeFileId == episodeFile.Id))
                     {
-                        _logger.Debug("File [{0}] is not assigned to any episodes, removing from db", episodeFilePath);
+                        _logger.LogDebug("File [{EpisodeFilePath}] is not assigned to any episodes, removing from db", episodeFilePath);
                         _mediaFileService.Delete(episodeFile, DeleteMediaFileReason.NoLinkedEpisodes);
                         continue;
                     }
@@ -68,7 +68,7 @@ namespace NzbDrone.Core.MediaFiles
 
                 catch (Exception ex)
                 {
-                    _logger.Error(ex, "Unable to cleanup EpisodeFile in DB: {0}", episodeFile.Id);
+                    _logger.LogError(ex, "Unable to cleanup EpisodeFile in DB: {Id}", episodeFile.Id);
                 }
             }
 

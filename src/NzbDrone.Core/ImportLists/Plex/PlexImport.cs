@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Configuration;
@@ -22,7 +22,7 @@ namespace NzbDrone.Core.ImportLists.Plex
                                   IImportListStatusService importListStatusService,
                                   IConfigService configService,
                                   IParsingService parsingService,
-                                  Logger logger)
+                                  ILogger<PlexImport> logger)
             : base(httpClient, importListStatusService, configService, parsingService, logger)
         {
             _plexTvService = plexTvService;

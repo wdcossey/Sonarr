@@ -1,4 +1,4 @@
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.EnsureThat;
 using NzbDrone.Common.Serializer;
 using NzbDrone.Core.Lifecycle;
@@ -34,25 +34,23 @@ namespace NzbDrone.Core.Messaging.Commands
     {
         private readonly ICommandRepository _repo;
         private readonly ICommandFactory _commandFactory;
-        private readonly Logger _logger;
+        private readonly ILogger<CommandQueueManager> _logger;
 
         private readonly CommandQueue _commandQueue;
 
-        public CommandQueueManager(
-            ICommandRepository repo,
-            ICommandFactory commandFactory,
-            Logger logger)
+        public CommandQueueManager(ICommandRepository repo,
+                                   ICommandFactory commandFactory,
+                                   ILogger<CommandQueueManager> logger)
         {
             _repo = repo;
             _commandFactory = commandFactory;
             _logger = logger;
-
             _commandQueue = new CommandQueue();
         }
 
         public List<CommandModel> PushMany<TCommand>(List<TCommand> commands) where TCommand : Command
         {
-            _logger.Trace("Publishing {0} commands", commands.Count);
+            _logger.LogTrace("Publishing {0} commands", commands.Count);
 
             lock (_commandQueue)
             {
@@ -96,8 +94,8 @@ namespace NzbDrone.Core.Messaging.Commands
         {
             Ensure.That(command, () => command).IsNotNull();
 
-            _logger.Trace("Publishing {0}", command.Name);
-            _logger.Trace("Checking if command is queued or started: {0}", command.Name);
+            _logger.LogTrace("Publishing {Name}", command.Name);
+            _logger.LogTrace("Checking if command is queued or started: {Name}", command.Name);
 
             lock (_commandQueue)
             {
@@ -106,7 +104,7 @@ namespace NzbDrone.Core.Messaging.Commands
 
                 if (existing != null)
                 {
-                    _logger.Trace("Command is already in progress: {0}", command.Name);
+                    _logger.LogTrace("Command is already in progress: {Name}", command.Name);
 
                     return existing;
                 }
@@ -121,7 +119,7 @@ namespace NzbDrone.Core.Messaging.Commands
                     Status = CommandStatus.Queued
                 };
 
-                _logger.Trace("Inserting new command: {0}", commandModel.Name);
+                _logger.LogTrace("Inserting new command: {Name}", commandModel.Name);
 
                 _repo.Insert(commandModel);
                 _commandQueue.Add(commandModel);
@@ -146,7 +144,7 @@ namespace NzbDrone.Core.Messaging.Commands
 
         public List<CommandModel> All()
         {
-            _logger.Trace("Getting all commands");
+            _logger.LogTrace("Getting all commands");
             return _commandQueue.All();
         }
 
@@ -164,7 +162,7 @@ namespace NzbDrone.Core.Messaging.Commands
 
         public List<CommandModel> GetStarted()
         {
-            _logger.Trace("Getting started commands");
+            _logger.LogTrace("Getting started commands");
             return _commandQueue.All().Where(c => c.Status == CommandStatus.Started).ToList();
         }
 
@@ -176,7 +174,7 @@ namespace NzbDrone.Core.Messaging.Commands
         public void Start(CommandModel command)
         {
             // Marks the command as started in the DB, the queue takes care of marking it as started on it's own
-            _logger.Trace("Marking command as started: {0}", command.Name);
+            _logger.LogTrace("Marking command as started: {Name}", command.Name);
             _repo.Start(command);
         }
 
@@ -214,7 +212,7 @@ namespace NzbDrone.Core.Messaging.Commands
 
         public void CleanCommands()
         {
-            _logger.Trace("Cleaning up old commands");
+            _logger.LogTrace("Cleaning up old commands");
 
             var commands = _commandQueue.All()
                                         .Where(c => c.EndedAt < DateTime.UtcNow.AddMinutes(-5))
@@ -240,7 +238,7 @@ namespace NzbDrone.Core.Messaging.Commands
             command.Duration = command.EndedAt.Value.Subtract(command.StartedAt.Value);
             command.Status = status;
 
-            _logger.Trace("Updating command status");
+            _logger.LogTrace("Updating command status");
             _repo.End(command);
         }
 
@@ -253,7 +251,7 @@ namespace NzbDrone.Core.Messaging.Commands
 
         public void Handle(ApplicationStartedEvent message)
         {
-            _logger.Trace("Orphaning incomplete commands");
+            _logger.LogTrace("Orphaning incomplete commands");
             _repo.OrphanStarted();
             Requeue();
         }

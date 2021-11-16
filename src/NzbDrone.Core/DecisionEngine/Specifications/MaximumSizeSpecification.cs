@@ -1,4 +1,4 @@
-﻿using NLog;
+﻿using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.IndexerSearch.Definitions;
@@ -9,9 +9,9 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
     public class MaximumSizeSpecification : IDecisionEngineSpecification
     {
         private readonly IConfigService _configService;
-        private readonly Logger _logger;
+        private readonly ILogger<MaximumSizeSpecification> _logger;
 
-        public MaximumSizeSpecification(IConfigService configService, Logger logger)
+        public MaximumSizeSpecification(IConfigService configService, ILogger<MaximumSizeSpecification> logger)
         {
             _configService = configService;
             _logger = logger;
@@ -27,23 +27,23 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
 
             if (maximumSize == 0)
             {
-                _logger.Debug("Maximum size is not set.");
+                _logger.LogDebug("Maximum size is not set.");
                 return Decision.Accept();
             }
 
             if (size == 0)
             {
-                _logger.Debug("Release has unknown size, skipping size check.");
+                _logger.LogDebug("Release has unknown size, skipping size check.");
                 return Decision.Accept();
             }
 
-            _logger.Debug("Checking if release meets maximum size requirements. {0}", size.SizeSuffix());
+            _logger.LogDebug("Checking if release meets maximum size requirements. {SizeSuffix}", size.SizeSuffix());
 
             if (size > maximumSize)
             {
                 var message = $"{size.SizeSuffix()} is too big, maximum size is {maximumSize.SizeSuffix()} (Settings->Indexers->Maximum Size)";
 
-                _logger.Debug(message);
+                _logger.LogDebug("{Message}", message);
                 return Decision.Reject(message);
             }
 

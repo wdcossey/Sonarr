@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.Configuration;
 using Sonarr.Http.REST;
@@ -12,21 +13,16 @@ namespace Sonarr.Api.V3.Config
         private readonly IConfigService _configService;
 
         protected SonarrConfigController(IConfigService configService)
-        {
-            _configService = configService;
-            /*
-             GetResourceSingle = GetConfig;
-             GetResourceById = GetConfig;
-             UpdateResource = SaveConfig;
-            */
-        }
+            => _configService = configService;
 
         protected abstract TResource ToResource(IConfigService model);
 
+        [ProducesResponseType(StatusCodes.Status202Accepted)]
         [HttpGet]
         public IActionResult GetConfig([FromQuery] int? id = null)
             => Ok(GetConfigResource());
 
+        [ProducesResponseType(StatusCodes.Status202Accepted)]
         [HttpPut]
         public IActionResult SaveConfig([FromBody] TResource resource, [FromQuery] int? id = null)
         {

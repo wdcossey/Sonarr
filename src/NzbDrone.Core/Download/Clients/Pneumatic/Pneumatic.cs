@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using FluentValidation.Results;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
@@ -22,7 +22,7 @@ namespace NzbDrone.Core.Download.Clients.Pneumatic
                          IConfigService configService,
                          IDiskProvider diskProvider,
                          IRemotePathMappingService remotePathMappingService,
-                         Logger logger)
+                         ILogger<Pneumatic> logger)
             : base(configService, diskProvider, remotePathMappingService, logger)
         {
             _httpClient = httpClient;
@@ -47,10 +47,10 @@ namespace NzbDrone.Core.Download.Clients.Pneumatic
             //Save to the Pneumatic directory (The user will need to ensure its accessible by XBMC)
             var nzbFile = Path.Combine(Settings.NzbFolder, title + ".nzb");
 
-            _logger.Debug("Downloading NZB from: {0} to: {1}", url, nzbFile);
+            _logger.LogDebug("Downloading NZB from: {Url} to: {NzbFile}", url, nzbFile);
             _httpClient.DownloadFile(url, nzbFile);
 
-            _logger.Debug("NZB Download succeeded, saved to: {0}", nzbFile);
+            _logger.LogDebug("NZB Download succeeded, saved to: {NzbFile}", nzbFile);
 
             var strmFile = WriteStrmFile(title, nzbFile);
 

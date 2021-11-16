@@ -2,7 +2,7 @@
 using System.Data.SQLite;
 using FluentValidation;
 using Nancy;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Exceptions;
 using Sonarr.Http.Exceptions;
@@ -13,26 +13,26 @@ namespace Sonarr.Http.ErrorManagement
 {
     public class SonarrErrorPipeline
     {
-        private readonly Logger _logger;
+        private readonly ILogger<SonarrErrorPipeline> _logger;
 
-        public SonarrErrorPipeline(Logger logger)
+        public SonarrErrorPipeline(ILogger<SonarrErrorPipeline> logger)
         {
             _logger = logger;
         }
 
         public Response HandleException(NancyContext context, Exception exception)
         {
-            _logger.Trace("Handling Exception");
+            _logger.LogTrace("Handling Exception");
 
             if (exception is ApiException apiException)
             {
-                _logger.Warn(apiException, "API Error");
-                return apiException.ToErrorResponse(context);
+                _logger.LogWarning(apiException, "API Error");
+                //return apiException.ToErrorResponse(context);
             }
-            
+
             if (exception is ValidationException validationException)
             {
-                _logger.Warn("Invalid request {0}", validationException.Message);
+                _logger.LogWarning("Invalid request {Message}", validationException.Message);
 
                 return validationException.Errors.AsResponse(context, HttpStatusCode.BadRequest);
             }
@@ -66,7 +66,7 @@ namespace Sonarr.Http.ErrorManagement
 
             if (exception is SQLiteException sqLiteException)
             {
-                if (context.Request.Method == "PUT" || context.Request.Method == "POST")
+                if (context.Request.Method is "PUT" or "POST")
                 {
                     if (sqLiteException.Message.Contains("constraint failed"))
                         return new ErrorModel
@@ -75,10 +75,10 @@ namespace Sonarr.Http.ErrorManagement
                         }.AsResponse(context, HttpStatusCode.Conflict);
                 }
 
-                _logger.Error(sqLiteException, "[{0} {1}]", context.Request.Method, context.Request.Path);
+                _logger.LogError(sqLiteException, "[{RequestMethod} {RequestPath}]", context.Request.Method, context.Request.Path);
             }
 
-            _logger.Fatal(exception, "Request Failed. {0} {1}", context.Request.Method, context.Request.Path);
+            _logger.LogCritical(exception, "Request Failed. {RequestMethod} {RequestPath}", context.Request.Method, context.Request.Path);
 
             return new ErrorModel
             {

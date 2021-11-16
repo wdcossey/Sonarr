@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Extras.Metadata.Files;
@@ -20,7 +20,7 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
 {
     public class XbmcMetadata : MetadataBase<XbmcMetadataSettings>
     {
-        private readonly Logger _logger;
+        private readonly ILogger<XbmcMetadata> _logger;
         private readonly IMapCoversToLocal _mediaCoverService;
         private readonly ITagService _tagService;
         private readonly IDetectXbmcNfo _detectNfo;
@@ -30,7 +30,7 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
                             IDiskProvider diskProvider,
                             IMapCoversToLocal mediaCoverService,
                             ITagService tagService,
-                            Logger logger)
+                            ILogger<XbmcMetadata> logger)
         {
             _logger = logger;
             _mediaCoverService = mediaCoverService;
@@ -59,7 +59,7 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
                 return GetEpisodeMetadataFilename(episodeFilePath);
             }
 
-            _logger.Debug("Unknown episode file metadata: {0}", metadataFile.RelativePath);
+            _logger.LogDebug("Unknown episode file metadata: {RelativePath}", metadataFile.RelativePath);
             return Path.Combine(series.Path, metadataFile.RelativePath);
         }
 
@@ -141,7 +141,7 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
 
             if (Settings.SeriesMetadata)
             {
-                _logger.Debug("Generating Series Metadata for: {0}", series.Title);
+                _logger.LogDebug("Generating Series Metadata for: {Title}", series.Title);
                 var sb = new StringBuilder();
                 var xws = new XmlWriterSettings();
                 xws.OmitXmlDeclaration = true;
@@ -237,7 +237,7 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
                 return null;
             }
 
-            _logger.Debug("Generating Episode Metadata for: {0}", Path.Combine(series.Path, episodeFile.RelativePath));
+            _logger.LogDebug("Generating Episode Metadata for: {FilePath}", Path.Combine(series.Path, episodeFile.RelativePath));
 
             var watched = GetExistingWatchedStatus(series, episodeFile.RelativePath);
 
@@ -270,7 +270,7 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
                         details.Add(new XElement("displayseason", episode.AiredBeforeSeasonNumber));
                         details.Add(new XElement("displayepisode", episode.AiredBeforeEpisodeNumber ?? -1));
                     }
-                    
+
                     var uniqueId = new XElement("uniqueid", episode.Id);
                     uniqueId.SetAttributeValue("type", "sonarr");
                     uniqueId.SetAttributeValue("default", true);
@@ -384,7 +384,7 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
 
                 if (screenshot == null)
                 {
-                    _logger.Debug("Episode screenshot not available");
+                    _logger.LogDebug("Episode screenshot not available");
                     return new List<ImageFileResult>();
                 }
 
@@ -395,7 +395,7 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Unable to process episode image for file: {0}", Path.Combine(series.Path, episodeFile.RelativePath));
+                _logger.LogError(ex, "Unable to process episode image for file: {FilePath}", Path.Combine(series.Path, episodeFile.RelativePath));
 
                 return new List<ImageFileResult>();
             }
@@ -416,11 +416,11 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
         {
             foreach (var image in season.Images)
             {
-                var filename = string.Format("season{0:00}-{1}.jpg", season.SeasonNumber, image.CoverType.ToString().ToLower());
+                var filename = $"season{season.SeasonNumber:00}-{image.CoverType.ToString().ToLower()}.jpg";
 
                 if (season.SeasonNumber == 0)
                 {
-                    filename = string.Format("season-specials-{0}.jpg", image.CoverType.ToString().ToLower());
+                    filename = $"season-specials-{image.CoverType.ToString().ToLower()}.jpg";
                 }
 
                 yield return new ImageFileResult(filename, image.Url);

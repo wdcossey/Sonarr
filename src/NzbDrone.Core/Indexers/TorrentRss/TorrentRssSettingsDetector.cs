@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.IO;
-using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Indexers.Exceptions;
@@ -19,26 +18,28 @@ namespace NzbDrone.Core.Indexers.TorrentRss
 
     public class TorrentRssSettingsDetector : ITorrentRssSettingsDetector
     {
-        protected readonly Logger _logger;
+        private readonly ILogger<TorrentRssSettingsDetector> _logger;
 
         private readonly IHttpClient _httpClient;
+        private readonly ILoggerFactory _loggerFactory;
 
         private const long ValidSizeThreshold = 2 * 1024 * 1024;
 
-        public TorrentRssSettingsDetector(IHttpClient httpClient, Logger logger)
+        public TorrentRssSettingsDetector(IHttpClient httpClient, ILoggerFactory loggerFactory)
         {
             _httpClient = httpClient;
-            _logger = logger;
+            _loggerFactory = loggerFactory;
+            _logger = loggerFactory.CreateLogger<TorrentRssSettingsDetector>();
         }
 
         /// <summary>
         /// Detect settings for Parser, based on URL
         /// </summary>
-        /// <param name="settings">Indexer Settings to use for Parser</param>
+        /// <param name="indexerSettings">Indexer Settings to use for Parser</param>
         /// <returns>Parsed Settings or <c>null</c></returns>
         public TorrentRssIndexerParserSettings Detect(TorrentRssIndexerSettings indexerSettings)
         {
-            _logger.Debug("Evaluating TorrentRss feed '{0}'", indexerSettings.BaseUrl);
+            _logger.LogDebug("Evaluating TorrentRss feed '{BaseUrl}'", indexerSettings.BaseUrl);
 
             try
             {
@@ -52,7 +53,7 @@ namespace NzbDrone.Core.Indexers.TorrentRss
                 }
                 catch (Exception ex)
                 {
-                    _logger.Warn(ex, string.Format("Unable to connect to indexer {0}: {1}", request.Url, ex.Message));
+                    _logger.LogWarning(ex, "Unable to connect to indexer {Url}: {Message}", request.Url, ex.Message);
                     return null;
                 }
 
@@ -64,7 +65,7 @@ namespace NzbDrone.Core.Indexers.TorrentRss
                 ex.WithData("FeedUrl", indexerSettings.BaseUrl);
                 throw;
             }
-    }
+        }
 
         private TorrentRssIndexerParserSettings GetParserSettings(IndexerResponse response, TorrentRssIndexerSettings indexerSettings)
         {
@@ -90,9 +91,9 @@ namespace NzbDrone.Core.Indexers.TorrentRss
                 return null;
             }
 
-            _logger.Trace("Feed has Ezrss schema");
+            _logger.LogTrace("Feed has Ezrss schema");
 
-            var parser = new EzrssTorrentRssParser();
+            var parser = new EzrssTorrentRssParser(_loggerFactory);
             var releases = ParseResponse(parser, response);
 
             try
@@ -100,7 +101,7 @@ namespace NzbDrone.Core.Indexers.TorrentRss
                 ValidateReleases(releases, indexerSettings);
                 ValidateReleaseSize(releases, indexerSettings);
 
-                _logger.Debug("Feed was parseable by Ezrss Parser");
+                _logger.LogDebug("Feed was parseable by Ezrss Parser");
                 return new TorrentRssIndexerParserSettings
                 {
                     UseEZTVFormat = true
@@ -108,14 +109,14 @@ namespace NzbDrone.Core.Indexers.TorrentRss
             }
             catch (Exception ex)
             {
-                _logger.Trace(ex, "Feed wasn't parsable by Ezrss Parser");
+                _logger.LogTrace(ex, "Feed wasn't parsable by Ezrss Parser");
                 return null;
             }
         }
 
         private TorrentRssIndexerParserSettings GetGenericTorrentRssParserSettings(IndexerResponse response, TorrentRssIndexerSettings indexerSettings)
         {
-            var parser = new TorrentRssParser
+            var parser = new TorrentRssParser(_loggerFactory)
             {
                 UseEnclosureUrl = true,
                 UseEnclosureLength = true,
@@ -145,13 +146,13 @@ namespace NzbDrone.Core.Indexers.TorrentRss
 
             if (!releases.Any(v => v.Seeders.HasValue))
             {
-                _logger.Trace("Feed doesn't have Seeders in Description, disabling option.");
+                _logger.LogTrace("Feed doesn't have Seeders in Description, disabling option.");
                 parser.ParseSeedersInDescription = settings.ParseSeedersInDescription = false;
             }
 
             if (!releases.Any(r => r.Size < ValidSizeThreshold))
             {
-                _logger.Trace("Feed has valid size in enclosure.");
+                _logger.LogTrace("Feed has valid size in enclosure.");
                 return settings;
             }
 
@@ -166,7 +167,7 @@ namespace NzbDrone.Core.Indexers.TorrentRss
 
                 if (!releases.Any(r => r.Size < ValidSizeThreshold))
                 {
-                    _logger.Trace("Feed has valid size in Size element.");
+                    _logger.LogTrace("Feed has valid size in Size element.");
                     return settings;
                 }
             }
@@ -181,15 +182,15 @@ namespace NzbDrone.Core.Indexers.TorrentRss
             {
                 if (releases.Any(r => r.Size < ValidSizeThreshold))
                 {
-                    _logger.Debug("Feed {0} contains very small releases.", response.Request.Url);
+                    _logger.LogDebug("Feed {Url} contains very small releases.", response.Request.Url);
                 }
-                _logger.Trace("Feed has valid size in description.");
+                _logger.LogTrace("Feed has valid size in description.");
                 return settings;
             }
 
             parser.ParseSizeInDescription = settings.ParseSizeInDescription = false;
 
-            _logger.Debug("Feed doesn't have release size.");
+            _logger.LogDebug("Feed doesn't have release size.");
 
             releases = ParseResponse(parser, response);
             ValidateReleases(releases, indexerSettings);
@@ -216,21 +217,21 @@ namespace NzbDrone.Core.Indexers.TorrentRss
                 var ns = document.Root.GetNamespaceOfPrefix("torrent");
                 if (ns == "http://xmlns.ezrss.it/0.1/")
                 {
-                    _logger.Trace("Identified feed as EZTV compatible by EZTV Namespace");
+                    _logger.LogTrace("Identified feed as EZTV compatible by EZTV Namespace");
                     return true;
                 }
 
                 // Check DTD in DocType
                 if (document.DocumentType != null && document.DocumentType.SystemId == "http://xmlns.ezrss.it/0.1/dtd/")
                 {
-                    _logger.Trace("Identified feed as EZTV compatible by EZTV DTD");
+                    _logger.LogTrace("Identified feed as EZTV compatible by EZTV DTD");
                     return true;
                 }
 
                 // Check namespaces
                 if (document.Descendants().Any(v => v.GetDefaultNamespace().NamespaceName == "http://xmlns.ezrss.it/0.1/"))
                 {
-                    _logger.Trace("Identified feed as EZTV compatible by EZTV Namespace");
+                    _logger.LogTrace("Identified feed as EZTV compatible by EZTV Namespace");
                     return true;
                 }
 
@@ -248,8 +249,8 @@ namespace NzbDrone.Core.Indexers.TorrentRss
             }
             catch (Exception ex)
             {
-                _logger.Debug(ex, "Unable to parse indexer feed: " + ex.Message);
-                throw new UnsupportedFeedException("Unable to parse indexer: " + ex.Message);
+                _logger.LogDebug(ex, "Unable to parse indexer feed: {Message}", ex.Message);
+                throw new UnsupportedFeedException($"Unable to parse indexer: {ex.Message}");
             }
         }
 
@@ -262,7 +263,7 @@ namespace NzbDrone.Core.Indexers.TorrentRss
 
             var torrentInfo = releases.First();
 
-            _logger.Trace("TorrentInfo: \n{0}", torrentInfo.ToString("L"));
+            _logger.LogTrace("TorrentInfo: \n{TorrentInfo}", torrentInfo.ToString("L"));
 
             if (releases.Any(r => r.Title.IsNullOrWhiteSpace()))
             {

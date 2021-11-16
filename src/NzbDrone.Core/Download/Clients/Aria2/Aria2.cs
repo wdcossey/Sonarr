@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using CookComputing.XmlRpc;
 using FluentValidation.Results;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
@@ -28,7 +28,7 @@ namespace NzbDrone.Core.Download.Clients.Aria2
                         IConfigService configService,
                         IDiskProvider diskProvider,
                         IRemotePathMappingService remotePathMappingService,
-                        Logger logger)
+                        ILogger<Aria2> logger)
             : base(torrentFileInfoReader, httpClient, configService, diskProvider, remotePathMappingService, logger)
         {
             _proxy = proxy;
@@ -44,11 +44,11 @@ namespace NzbDrone.Core.Download.Clients.Aria2
             // Wait a bit for the magnet to be resolved.
             if (!WaitForTorrent(gid, hash, tries, retryDelay))
             {
-                _logger.Warn($"Aria2 could not add magnent within {tries * retryDelay / 1000} seconds, download may remain stuck: {magnetLink}.");
+                _logger.LogWarning("Aria2 could not add magnet within {Seconds} seconds, download may remain stuck: {MagnetLink}.", tries * retryDelay / 1000, magnetLink);
                 return hash;
             }
 
-            _logger.Debug($"Aria2 AddFromMagnetLink '{hash}' -> '{gid}'");
+            _logger.LogDebug("Aria2 AddFromMagnetLink '{Hash}' -> '{Gid}'", hash, gid);
 
             return hash;
         }
@@ -63,7 +63,7 @@ namespace NzbDrone.Core.Download.Clients.Aria2
             // Wait a bit for the magnet to be resolved.
             if (!WaitForTorrent(gid, hash, tries, retryDelay))
             {
-                _logger.Warn($"Aria2 could not add torrent within {tries * retryDelay / 1000} seconds, download may remain stuck: {filename}.");
+                _logger.LogWarning("Aria2 could not add torrent within {Seconds} seconds, download may remain stuck: {FileName}.", tries * retryDelay / 1000, filename);
                 return hash;
             }
 
@@ -126,7 +126,7 @@ namespace NzbDrone.Core.Download.Clients.Aria2
                         break;
                 }
 
-                _logger.Trace($"- aria2 getstatus hash:'{torrent.InfoHash}' gid:'{torrent.Gid}' status:'{status}' total:{totalLength} completed:'{completedLength}'");
+                _logger.LogTrace("- aria2 getstatus hash:'{InfoHash}' gid:'{Gid}' status:'{Status}' total:{TotalLength} completed:'{CompletedLength}'", torrent.InfoHash, torrent.Gid, status, totalLength, completedLength);
 
                 var outputPath = _remotePathMappingService.RemapRemoteToLocal(Settings.Host, new OsPath(GetOutputPath(torrent)));
 
@@ -147,7 +147,7 @@ namespace NzbDrone.Core.Download.Clients.Aria2
                     Status = status,
                     Title = title,
                     TotalSize = totalLength,
-                };              
+                };
             }
         }
 
@@ -159,17 +159,17 @@ namespace NzbDrone.Core.Download.Clients.Aria2
 
             if(aria2Item == null)
             {
-                _logger.Error($"Aria2 could not find infoHash '{hash}' for deletion.");
+                _logger.LogError("Aria2 could not find infoHash '{Hash}' for deletion.", hash);
                 return;
             }
 
-            _logger.Debug($"Aria2 removing hash:'{hash}' gid:'{aria2Item.Gid}'");
+            _logger.LogDebug("Aria2 removing hash:'{Hash}' gid:'{Gid}'", hash, aria2Item.Gid);
 
             if (aria2Item.Status == "complete" || aria2Item.Status == "error" || aria2Item.Status == "removed")
             {
                 if (!_proxy.RemoveCompletedTorrent(Settings, aria2Item.Gid))
                 {
-                    _logger.Error($"Aria2 error while deleting {hash}.");
+                    _logger.LogError("Aria2 error while deleting {Hash}.", hash);
 
                     return;
                 }
@@ -178,7 +178,7 @@ namespace NzbDrone.Core.Download.Clients.Aria2
             {
                 if (!_proxy.RemoveTorrent(Settings, aria2Item.Gid))
                 {
-                    _logger.Error($"Aria2 error while deleting {hash}.");
+                    _logger.LogError("Aria2 error while deleting {Hash}.", hash);
 
                     return;
                 }
@@ -215,7 +215,7 @@ namespace NzbDrone.Core.Download.Clients.Aria2
                 Thread.Sleep(retryDelay);
             }
 
-            _logger.Debug("Could not find hash {0} in {1} tries at {2} ms intervals.", hash, tries, retryDelay);
+            _logger.LogDebug("Could not find hash {Hash} in {Tries} tries at {RetryDelay} ms intervals.", hash, tries, retryDelay);
 
             return false;
         }
@@ -243,7 +243,7 @@ namespace NzbDrone.Core.Download.Clients.Aria2
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failed to test Aria2");
+                _logger.LogError(ex, "Failed to test Aria2");
 
                 return new NzbDroneValidationFailure("Host", "Unable to connect to Aria2")
                 {

@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using NLog;
+﻿using System.Linq;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Http;
 using NzbDrone.Common.Serializer;
@@ -18,11 +16,11 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation.Proxies
 
     public class FileStationProxy : DiskStationProxyBase, IFileStationProxy
     {
-        public FileStationProxy(IHttpClient httpClient, ICacheManager cacheManager, Logger logger)
+        public FileStationProxy(IHttpClient httpClient, ICacheManager cacheManager, ILogger<FileStationProxy> logger)
             : base(DiskStationApi.FileStationList, "SYNO.FileStation.List", httpClient, cacheManager, logger)
         {
         }
-        
+
         public SharedFolderMapping GetSharedFolderMapping(string sharedFolder, DownloadStationSettings settings)
         {
             var info = GetInfoFileOrDirectory(sharedFolder, settings);

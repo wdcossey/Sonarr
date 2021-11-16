@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
@@ -26,7 +26,7 @@ namespace NzbDrone.Core.RootFolders
         private readonly IRootFolderRepository _rootFolderRepository;
         private readonly IDiskProvider _diskProvider;
         private readonly ISeriesRepository _seriesRepository;
-        private readonly Logger _logger;
+        private readonly ILogger<RootFolderService> _logger;
 
         private static readonly HashSet<string> SpecialFolders = new HashSet<string>
                                                                  {
@@ -45,7 +45,7 @@ namespace NzbDrone.Core.RootFolders
         public RootFolderService(IRootFolderRepository rootFolderRepository,
                                  IDiskProvider diskProvider,
                                  ISeriesRepository seriesRepository,
-                                 Logger logger)
+                                 ILogger<RootFolderService> logger)
         {
             _rootFolderRepository = rootFolderRepository;
             _diskProvider = diskProvider;
@@ -77,7 +77,7 @@ namespace NzbDrone.Core.RootFolders
                 //We don't want an exception to prevent the root folders from loading in the UI, so they can still be deleted
                 catch (Exception ex)
                 {
-                    _logger.Error(ex, "Unable to get free space and unmapped folders for root folder {0}", folder.Path);
+                    _logger.LogError(ex, "Unable to get free space and unmapped folders for root folder {Path}", folder.Path);
                     folder.UnmappedFolders = new List<UnmappedFolder>();
                 }
             });
@@ -124,7 +124,7 @@ namespace NzbDrone.Core.RootFolders
 
         private List<UnmappedFolder> GetUnmappedFolders(string path, List<string> seriesPaths)
         {
-            _logger.Debug("Generating list of unmapped folders");
+            _logger.LogDebug("Generating list of unmapped folders");
 
             if (string.IsNullOrEmpty(path))
             {
@@ -135,7 +135,7 @@ namespace NzbDrone.Core.RootFolders
 
             if (!_diskProvider.FolderExists(path))
             {
-                _logger.Debug("Path supplied does not exist: {0}", path);
+                _logger.LogDebug("Path supplied does not exist: {Path}", path);
                 return results;
             }
 
@@ -151,7 +151,7 @@ namespace NzbDrone.Core.RootFolders
             var setToRemove = SpecialFolders;
             results.RemoveAll(x => setToRemove.Contains(new DirectoryInfo(x.Path.ToLowerInvariant()).Name));
 
-            _logger.Debug("{0} unmapped folders detected.", results.Count);
+            _logger.LogDebug("{Count} unmapped folders detected.", results.Count);
             return results.OrderBy(u => u.Name, StringComparer.InvariantCultureIgnoreCase).ToList();
         }
 

@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
@@ -25,7 +25,7 @@ namespace NzbDrone.Update.UpdateEngine
         private readonly IBackupAppData _backupAppData;
         private readonly IStartNzbDrone _startNzbDrone;
         private readonly IProcessProvider _processProvider;
-        private readonly Logger _logger;
+        private readonly ILogger<InstallUpdateService> _logger;
 
         public InstallUpdateService(IDiskProvider diskProvider,
                                     IDiskTransferService diskTransferService,
@@ -37,7 +37,7 @@ namespace NzbDrone.Update.UpdateEngine
                                     IBackupAppData backupAppData,
                                     IStartNzbDrone startNzbDrone,
                                     IProcessProvider processProvider,
-                                    Logger logger)
+                                    ILogger<InstallUpdateService> logger)
         {
             _diskProvider = diskProvider;
             _diskTransferService = diskTransferService;
@@ -54,7 +54,7 @@ namespace NzbDrone.Update.UpdateEngine
 
         private void Verify(string targetFolder, int processId)
         {
-            _logger.Info("Verifying requirements before update...");
+            _logger.LogInformation("Verifying requirements before update...");
 
             if (string.IsNullOrWhiteSpace(targetFolder))
                 throw new ArgumentException("Target folder can not be null or empty");
@@ -72,22 +72,22 @@ namespace NzbDrone.Update.UpdateEngine
                 throw new ArgumentException("Process with ID doesn't exist " + processId);
             }
 
-            _logger.Info("Verifying Update Folder");
+            _logger.LogInformation("Verifying Update Folder");
             if (!_diskProvider.FolderExists(_appFolderInfo.GetUpdatePackageFolder()))
                 throw new DirectoryNotFoundException("Update folder doesn't exist " + _appFolderInfo.GetUpdatePackageFolder());
         }
 
         public void Start(string installationFolder, int processId)
         {
-            _logger.Info("Installation Folder: {0}", installationFolder);
-            _logger.Info("Updating Sonarr from version {0} to version {1}", _detectExistingVersion.GetExistingVersion(installationFolder), BuildInfo.Version);
+            _logger.LogInformation("Installation Folder: {InstallationFolder}", installationFolder);
+            _logger.LogInformation("Updating Sonarr from version {ExistingVersion} to version {Version}", _detectExistingVersion.GetExistingVersion(installationFolder), BuildInfo.Version);
 
             Verify(installationFolder, processId);
 
             if (installationFolder.EndsWith(@"\bin\Sonarr") || installationFolder.EndsWith(@"/bin/Sonarr"))
             {
                 installationFolder = installationFolder.GetParentPath();
-                _logger.Info("Fixed Installation Folder: {0}", installationFolder);
+                _logger.LogInformation("Fixed Installation Folder: {InstallationFolder}", installationFolder);
             }
 
             var appType = _detectApplicationType.GetAppType();
@@ -109,14 +109,14 @@ namespace NzbDrone.Update.UpdateEngine
                 {
                     if (_processProvider.Exists(ProcessProvider.SONARR_CONSOLE_PROCESS_NAME) || _processProvider.Exists(ProcessProvider.SONARR_PROCESS_NAME))
                     {
-                        _logger.Error("Sonarr was restarted prematurely by external process.");
+                        _logger.LogError("Sonarr was restarted prematurely by external process.");
                         return;
                     }
                 }
 
                 try
                 {
-                    _logger.Info("Copying new files to target folder");
+                    _logger.LogInformation("Copying new files to target folder");
                     _diskTransferService.MirrorFolder(_appFolderInfo.GetUpdatePackageFolder(), installationFolder);
 
                     // Handle OSX package update and set executable flag on Sonarr app
@@ -141,7 +141,7 @@ namespace NzbDrone.Update.UpdateEngine
                 }
                 catch (Exception e)
                 {
-                    _logger.Error(e, "Failed to copy upgrade package to target folder.");
+                    _logger.LogError(e, "Failed to copy upgrade package to target folder.");
                     _backupAndRestore.Restore(installationFolder);
                     throw;
                 }
@@ -156,7 +156,7 @@ namespace NzbDrone.Update.UpdateEngine
                 {
                     _terminateNzbDrone.Terminate(processId);
 
-                    _logger.Info("Waiting for external auto-restart.");
+                    _logger.LogInformation("Waiting for external auto-restart.");
                     var theDakoLimit = 10;
                     for (int i = 0; i < theDakoLimit; i++)
                     {
@@ -164,7 +164,7 @@ namespace NzbDrone.Update.UpdateEngine
 
                         if (_processProvider.Exists(ProcessProvider.SONARR_PROCESS_NAME))
                         {
-                            _logger.Info("Sonarr was restarted by external process.");
+                            _logger.LogInformation("Sonarr was restarted by external process.");
                             break;
                         }
                     }

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using NLog;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Qualities;
 using NzbDrone.Core.Languages;
@@ -20,7 +19,7 @@ namespace NzbDrone.Core.Tv
         private readonly IQualityProfileService _qualityProfileService;
         private readonly ILanguageProfileService _languageProfileService;
 
-        public EpisodeCutoffService(IEpisodeRepository episodeRepository, IQualityProfileService qualityProfileService, ILanguageProfileService languageProfileService, Logger logger)
+        public EpisodeCutoffService(IEpisodeRepository episodeRepository, IQualityProfileService qualityProfileService, ILanguageProfileService languageProfileService)
         {
             _episodeRepository = episodeRepository;
             _qualityProfileService = qualityProfileService;
@@ -33,7 +32,7 @@ namespace NzbDrone.Core.Tv
             var languagesBelowCutoff = new List<LanguagesBelowCutoff>();
             var profiles = _qualityProfileService.All();
             var languageProfiles = _languageProfileService.All();
-            
+
             //Get all items less than the cutoff
             foreach (var profile in profiles)
             {

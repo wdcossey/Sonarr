@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Lifecycle;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Languages;
@@ -25,9 +25,12 @@ namespace NzbDrone.Core.Profiles.Languages
         private readonly ILanguageProfileRepository _profileRepository;
         private readonly IImportListFactory _importListFactory;
         private readonly ISeriesService _seriesService;
-        private readonly Logger _logger;
+        private readonly ILogger<LanguageProfileService> _logger;
 
-        public LanguageProfileService(ILanguageProfileRepository profileRepository, IImportListFactory importListFactory, ISeriesService seriesService, Logger logger)
+        public LanguageProfileService(ILanguageProfileRepository profileRepository,
+                                      IImportListFactory importListFactory,
+                                      ISeriesService seriesService,
+                                      ILogger<LanguageProfileService> logger)
         {
             _profileRepository = profileRepository;
             _importListFactory = importListFactory;
@@ -110,7 +113,7 @@ namespace NzbDrone.Core.Profiles.Languages
         {
             if (All().Any()) return;
 
-            _logger.Info("Setting up default language profiles");
+            _logger.LogInformation("Setting up default language profiles");
 
             AddDefaultProfile("English", Language.English, Language.English);
         }

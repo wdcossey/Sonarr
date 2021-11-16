@@ -1,14 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
-using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Download;
 using NzbDrone.Core.MediaFiles.EpisodeImport.Aggregation.Aggregators;
 using NzbDrone.Core.MediaFiles.MediaInfo;
-using NzbDrone.Core.Parser;
 using NzbDrone.Core.Parser.Model;
 
 namespace NzbDrone.Core.MediaFiles.EpisodeImport.Aggregation
@@ -24,13 +22,13 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Aggregation
         private readonly IDiskProvider _diskProvider;
         private readonly IVideoFileInfoReader _videoFileInfoReader;
         private readonly IConfigService _configService;
-        private readonly Logger _logger;
+        private readonly ILogger<AggregationService> _logger;
 
         public AggregationService(IEnumerable<IAggregateLocalEpisode> augmenters,
                                  IDiskProvider diskProvider,
                                  IVideoFileInfoReader videoFileInfoReader,
                                  IConfigService configService,
-                                 Logger logger)
+                                 ILogger<AggregationService> logger)
         {
             _augmenters = augmenters;
             _diskProvider = diskProvider;
@@ -69,7 +67,7 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Aggregation
                 }
                 catch (Exception ex)
                 {
-                    _logger.Warn(ex, ex.Message);
+                    _logger.LogWarning(ex, "{Message}", ex.Message);
                 }
             }
 

@@ -1,6 +1,6 @@
 using System;
+using Microsoft.Extensions.Logging;
 using FluentValidation.Results;
-using NLog;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 
@@ -15,10 +15,10 @@ namespace NzbDrone.Core.Notifications.Pushover
     public class PushoverProxy : IPushoverProxy
     {
         private readonly IHttpClient _httpClient;
-        private readonly Logger _logger;
-        private const string URL = "https://api.pushover.net/1/messages.json";
+        private readonly ILogger<PushoverProxy> _logger;
+        private const string PushoverUrl = "https://api.pushover.net/1/messages.json";
 
-        public PushoverProxy(IHttpClient httpClient, Logger logger)
+        public PushoverProxy(IHttpClient httpClient, ILogger<PushoverProxy> logger)
         {
             _httpClient = httpClient;
             _logger = logger;
@@ -26,7 +26,7 @@ namespace NzbDrone.Core.Notifications.Pushover
 
         public void SendNotification(string title, string message, PushoverSettings settings)
         {
-            var requestBuilder = new HttpRequestBuilder(URL).Post();
+            var requestBuilder = new HttpRequestBuilder(PushoverUrl).Post();
 
             requestBuilder.AddFormParameter("token", settings.ApiKey)
                           .AddFormParameter("user", settings.UserKey)
@@ -63,7 +63,7 @@ namespace NzbDrone.Core.Notifications.Pushover
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Unable to send test message");
+                _logger.LogError(ex, "Unable to send test message");
                 return new ValidationFailure("ApiKey", "Unable to send test message");
             }
 

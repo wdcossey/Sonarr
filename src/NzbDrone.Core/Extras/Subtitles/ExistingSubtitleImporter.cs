@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Extras.Files;
 using NzbDrone.Core.MediaFiles.EpisodeImport.Aggregation;
@@ -15,11 +15,11 @@ namespace NzbDrone.Core.Extras.Subtitles
     {
         private readonly IExtraFileService<SubtitleFile> _subtitleFileService;
         private readonly IAggregationService _aggregationService;
-        private readonly Logger _logger;
+        private readonly ILogger<ExistingSubtitleImporter> _logger;
 
         public ExistingSubtitleImporter(IExtraFileService<SubtitleFile> subtitleFileService,
                                         IAggregationService aggregationService,
-                                        Logger logger)
+                                        ILogger<ExistingSubtitleImporter> logger)
             : base (subtitleFileService)
         {
             _subtitleFileService = subtitleFileService;
@@ -31,7 +31,7 @@ namespace NzbDrone.Core.Extras.Subtitles
 
         public override IEnumerable<ExtraFile> ProcessFiles(Series series, List<string> filesOnDisk, List<string> importedFiles)
         {
-            _logger.Debug("Looking for existing subtitle files in {0}", series.Path);
+            _logger.LogDebug("Looking for existing subtitle files in {Path}", series.Path);
 
             var subtitleFiles = new List<SubtitleFile>();
             var filterResult = FilterAndClean(series, filesOnDisk, importedFiles);
@@ -55,19 +55,19 @@ namespace NzbDrone.Core.Extras.Subtitles
                     }
                     catch (AugmentingFailedException)
                     {
-                        _logger.Debug("Unable to parse extra file: {0}", possibleSubtitleFile);
+                        _logger.LogDebug("Unable to parse extra file: {PossibleSubtitleFile}", possibleSubtitleFile);
                         continue;
                     }
 
                     if (localEpisode.Episodes.Empty())
                     {
-                        _logger.Debug("Cannot find related episodes for: {0}", possibleSubtitleFile);
+                        _logger.LogDebug("Cannot find related episodes for: {PossibleSubtitleFile}", possibleSubtitleFile);
                         continue;
                     }
 
                     if (localEpisode.Episodes.DistinctBy(e => e.EpisodeFileId).Count() > 1)
                     {
-                        _logger.Debug("Subtitle file: {0} does not match existing files.", possibleSubtitleFile);
+                        _logger.LogDebug("Subtitle file: {PossibleSubtitleFile} does not match existing files.", possibleSubtitleFile);
                         continue;
                     }
 
@@ -85,7 +85,7 @@ namespace NzbDrone.Core.Extras.Subtitles
                 }
             }
 
-            _logger.Info("Found {0} existing subtitle files", subtitleFiles.Count);
+            _logger.LogInformation("Found {Count} existing subtitle files", subtitleFiles.Count);
             _subtitleFileService.Upsert(subtitleFiles);
 
             // Return files that were just imported along with files that were

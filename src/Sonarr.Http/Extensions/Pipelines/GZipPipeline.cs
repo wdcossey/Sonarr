@@ -4,26 +4,22 @@ using System.IO.Compression;
 using System.Linq;
 using Nancy;
 using Nancy.Bootstrapper;
-using NLog;
-using NzbDrone.Common.EnvironmentInfo;
-using NzbDrone.Common.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Sonarr.Http.Extensions.Pipelines
 {
     public class GzipCompressionPipeline : IRegisterNancyPipeline
     {
-        private readonly Logger _logger;
+        private readonly ILogger<GzipCompressionPipeline> _logger;
 
         public int Order => 0;
 
         private readonly Action<Action<Stream>, Stream> _writeGZipStream;
 
-        public GzipCompressionPipeline(Logger logger)
+        public GzipCompressionPipeline(ILogger<GzipCompressionPipeline> logger)
         {
             _logger = logger;
-
-            // On Mono GZipStream/DeflateStream leaks memory if an exception is thrown, use an intermediate buffer in that case.
-            _writeGZipStream = PlatformInfo.IsMono ? WriteGZipStreamMono : (Action<Action<Stream>, Stream>)WriteGZipStream;
+            _writeGZipStream = WriteGZipStream;
         }
 
         public void Register(IPipelines pipelines)
@@ -55,7 +51,7 @@ namespace Sonarr.Http.Extensions.Pipelines
 
             catch (Exception ex)
             {
-                _logger.Error(ex, "Unable to gzip response");
+                _logger.LogError(ex, "Unable to gzip response");
                 throw;
             }
         }

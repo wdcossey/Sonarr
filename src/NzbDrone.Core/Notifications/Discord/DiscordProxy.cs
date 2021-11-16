@@ -1,4 +1,4 @@
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Http;
 using NzbDrone.Common.Serializer;
 using NzbDrone.Core.Notifications.Discord.Payloads;
@@ -13,9 +13,9 @@ namespace NzbDrone.Core.Notifications.Discord
     public class DiscordProxy : IDiscordProxy
     {
         private readonly IHttpClient _httpClient;
-        private readonly Logger _logger;
+        private readonly ILogger<DiscordProxy> _logger;
 
-        public DiscordProxy(IHttpClient httpClient, Logger logger)
+        public DiscordProxy(IHttpClient httpClient, ILogger<DiscordProxy> logger)
         {
             _httpClient = httpClient;
             _logger = logger;
@@ -37,7 +37,7 @@ namespace NzbDrone.Core.Notifications.Discord
             }
             catch (HttpException ex)
             {
-                _logger.Error(ex, "Unable to post payload {0}", payload);
+                _logger.LogError(ex, "Unable to post payload {Payload}", payload.ToJson());
                 throw new DiscordException("Unable to post payload", ex);
             }
         }

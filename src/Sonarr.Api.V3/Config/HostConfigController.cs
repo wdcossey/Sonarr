@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Authentication;
@@ -47,11 +48,12 @@ namespace Sonarr.Api.V3.Config
             SharedValidator.RuleFor(c => c.BackupRetention).InclusiveBetween(1, 90);*/
         }
 
+        [ProducesResponseType( typeof(HostConfigResource), StatusCodes.Status200OK)]
         [HttpGet]
-        [HttpGet("{id:int?}")]
-        public IActionResult GetHostConfig(int? id = null)
+        public IActionResult GetHostConfig([FromQuery] int? id = null)
             => Ok(GetHostConfigResource());
 
+        [ProducesResponseType( typeof(HostConfigResource), StatusCodes.Status202Accepted)]
         [HttpPut]
         public IActionResult SaveHostConfig([FromBody] HostConfigResource resource)
         {

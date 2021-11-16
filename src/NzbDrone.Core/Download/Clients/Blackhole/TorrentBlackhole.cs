@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using FluentValidation.Results;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
@@ -12,7 +12,6 @@ using NzbDrone.Core.MediaFiles.TorrentInfo;
 using NzbDrone.Core.Organizer;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.RemotePathMappings;
-using NzbDrone.Core.ThingiProvider;
 
 namespace NzbDrone.Core.Download.Clients.Blackhole
 {
@@ -30,7 +29,7 @@ namespace NzbDrone.Core.Download.Clients.Blackhole
                                 IConfigService configService,
                                 IDiskProvider diskProvider,
                                 IRemotePathMappingService remotePathMappingService,
-                                Logger logger)
+                                ILogger<TorrentBlackhole> logger)
             : base(torrentFileInfoReader, httpClient, configService, diskProvider, remotePathMappingService, logger)
         {
             _scanWatchFolder = scanWatchFolder;
@@ -57,7 +56,7 @@ namespace NzbDrone.Core.Download.Clients.Blackhole
                 stream.Write(fileContent, 0, fileContent.Length);
             }
 
-            _logger.Debug("Saving magnet link succeeded, saved to: {0}", filepath);
+            _logger.LogDebug("Saving magnet link succeeded, saved to: {FilePath}", filepath);
 
             return null;
         }
@@ -75,7 +74,7 @@ namespace NzbDrone.Core.Download.Clients.Blackhole
                 stream.Write(fileContent, 0, fileContent.Length);
             }
 
-            _logger.Debug("Torrent Download succeeded, saved to: {0}", filepath);
+            _logger.LogDebug("Torrent Download succeeded, saved to: {FilePath}", filepath);
 
             return null;
         }

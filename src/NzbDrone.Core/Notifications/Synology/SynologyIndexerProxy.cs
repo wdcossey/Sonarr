@@ -1,5 +1,5 @@
 ﻿using System;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Processes;
 
 namespace NzbDrone.Core.Notifications.Synology
@@ -20,9 +20,9 @@ namespace NzbDrone.Core.Notifications.Synology
         private const string SynoIndexPath = "/usr/syno/bin/synoindex";
 
         private readonly IProcessProvider _processProvider;
-        private readonly Logger _logger;
+        private readonly ILogger<SynologyIndexerProxy> _logger;
 
-        public SynologyIndexerProxy(IProcessProvider processProvider, Logger logger)
+        public SynologyIndexerProxy(IProcessProvider processProvider, ILogger<SynologyIndexerProxy> logger)
         {
             _processProvider = processProvider;
             _logger = logger;
@@ -37,7 +37,7 @@ namespace NzbDrone.Core.Notifications.Synology
             }
             catch (Exception ex)
             {
-                _logger.Warn(ex, "synoindex not available");
+                _logger.LogWarning(ex, "synoindex not available");
                 return false;
             }
         }
@@ -89,7 +89,7 @@ namespace NzbDrone.Core.Notifications.Synology
 
         private string Escape(string arg)
         {
-            return string.Format("\"{0}\"", arg.Replace("\"", "\\\""));
+            return $"\"{arg.Replace("\"", "\\\"")}\"";
         }
     }
 }

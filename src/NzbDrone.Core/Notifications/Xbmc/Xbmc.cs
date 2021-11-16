@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
+using Microsoft.Extensions.Logging;
 using FluentValidation.Results;
-using NLog;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.Tv;
@@ -12,9 +12,9 @@ namespace NzbDrone.Core.Notifications.Xbmc
     public class Xbmc : NotificationBase<XbmcSettings>
     {
         private readonly IXbmcService _xbmcService;
-        private readonly Logger _logger;
+        private readonly ILogger<Xbmc> _logger;
 
-        public Xbmc(IXbmcService xbmcService, Logger logger)
+        public Xbmc(IXbmcService xbmcService, ILogger<Xbmc> logger)
         {
             _xbmcService = xbmcService;
             _logger = logger;
@@ -88,8 +88,7 @@ namespace NzbDrone.Core.Notifications.Xbmc
             }
             catch (SocketException ex)
             {
-                var logMessage = string.Format("Unable to connect to Kodi Host: {0}:{1}", Settings.Host, Settings.Port);
-                _logger.Debug(ex, logMessage);
+                _logger.LogDebug(ex, "Unable to connect to Kodi Host: {Host}:{Port}", Settings.Host, Settings.Port);
             }
         }
 
@@ -109,8 +108,7 @@ namespace NzbDrone.Core.Notifications.Xbmc
             }
             catch (SocketException ex)
             {
-                var logMessage = string.Format("Unable to connect to Kodi Host: {0}:{1}", Settings.Host, Settings.Port);
-                _logger.Debug(ex, logMessage);
+                _logger.LogDebug(ex, "Unable to connect to Kodi Host: {Host}:{Port}", Settings.Host, Settings.Port);
             }
         }
     }

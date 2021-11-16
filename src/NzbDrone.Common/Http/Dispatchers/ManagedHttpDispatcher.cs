@@ -3,12 +3,10 @@ using System.IO;
 using System.IO.Compression;
 using System.Net;
 using System.Reflection;
-using NLog;
-using NLog.Fluent;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http.Proxy;
-using NzbDrone.Common.Instrumentation.Extensions;
 
 namespace NzbDrone.Common.Http.Dispatchers
 {
@@ -18,9 +16,9 @@ namespace NzbDrone.Common.Http.Dispatchers
         private readonly ICreateManagedWebProxy _createManagedWebProxy;
         private readonly IUserAgentBuilder _userAgentBuilder;
         private readonly IPlatformInfo _platformInfo;
-        private readonly Logger _logger;
+        private readonly ILogger<ManagedHttpDispatcher> _logger;
 
-        public ManagedHttpDispatcher(IHttpProxySettingsProvider proxySettingsProvider, ICreateManagedWebProxy createManagedWebProxy, IUserAgentBuilder userAgentBuilder, IPlatformInfo platformInfo, Logger logger)
+        public ManagedHttpDispatcher(IHttpProxySettingsProvider proxySettingsProvider, ICreateManagedWebProxy createManagedWebProxy, IUserAgentBuilder userAgentBuilder, IPlatformInfo platformInfo, ILogger<ManagedHttpDispatcher> logger)
         {
             _proxySettingsProvider = proxySettingsProvider;
             _createManagedWebProxy = createManagedWebProxy;
@@ -33,19 +31,10 @@ namespace NzbDrone.Common.Http.Dispatchers
         {
             var webRequest = (HttpWebRequest)WebRequest.Create((Uri)request.Url);
 
-            if (PlatformInfo.IsMono && request.ResponseStream == null)
-            {
-                // On Mono GZipStream/DeflateStream leaks memory if an exception is thrown, use an intermediate buffer in that case.
-                webRequest.AutomaticDecompression = DecompressionMethods.None;
-                webRequest.Headers.Add("Accept-Encoding", "gzip");
-            }
-            else
-            {
-                // Deflate is not a standard and could break depending on implementation.
-                // we should just stick with the more compatible Gzip
-                //http://stackoverflow.com/questions/8490718/how-to-decompress-stream-deflated-with-java-util-zip-deflater-in-net
-                webRequest.AutomaticDecompression = DecompressionMethods.GZip;
-            }
+            // Deflate is not a standard and could break depending on implementation.
+            // we should just stick with the more compatible Gzip
+            //http://stackoverflow.com/questions/8490718/how-to-decompress-stream-deflated-with-java-util-zip-deflater-in-net
+            webRequest.AutomaticDecompression = DecompressionMethods.GZip;
 
             webRequest.Method = request.Method.ToString();
             webRequest.UserAgent = _userAgentBuilder.GetUserAgent(request.UseSimplifiedUserAgent);
@@ -130,19 +119,6 @@ namespace NzbDrone.Common.Http.Dispatchers
                         else
                         {
                             data = responseStream.ToBytes();
-
-                            if (PlatformInfo.IsMono && httpWebResponse.ContentEncoding == "gzip")
-                            {
-                                using (var compressedStream = new MemoryStream(data))
-                                using (var gzip = new GZipStream(compressedStream, CompressionMode.Decompress))
-                                using (var decompressedStream = new MemoryStream())
-                                {
-                                    gzip.CopyTo(decompressedStream);
-                                    data = decompressedStream.ToArray();
-                                }
-
-                                httpWebResponse.Headers.Remove("Content-Encoding");
-                            }
                         }
                     }
                     catch (Exception ex)
@@ -235,11 +211,12 @@ namespace NzbDrone.Common.Http.Dispatchers
                 catch (Exception ex)
                 {
                     // This can fail randomly on future mono versions that have been changed/fixed. Log to sentry and ignore.
-                    _logger.Trace()
-                           .Exception(ex)
-                           .Message("Unable to dispose responseStream on mono {0}", _platformInfo.Version)
-                           .WriteSentryWarn("MonoCloseWaitPatchFailed", ex.Message)
-                           .Write();
+                    //TODO: Check `WriteSentryWarn` (NLog.Fluent)
+                    _logger.LogTrace(ex, "Unable to dispose responseStream on mono {Version}", _platformInfo.Version);
+                           //.Exception(ex)
+                           //.Message("Unable to dispose responseStream on mono {0}", _platformInfo.Version)
+                           //.WriteSentryWarn("MonoCloseWaitPatchFailed", ex.Message)
+                           //.Write();
                 }
             }
         }

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 
 namespace NzbDrone.Core.Tv
 {
@@ -12,9 +12,9 @@ namespace NzbDrone.Core.Tv
     public class ShouldRefreshSeries : ICheckIfSeriesShouldBeRefreshed
     {
         private readonly IEpisodeService _episodeService;
-        private readonly Logger _logger;
+        private readonly ILogger<ShouldRefreshSeries> _logger;
 
-        public ShouldRefreshSeries(IEpisodeService episodeService, Logger logger)
+        public ShouldRefreshSeries(IEpisodeService episodeService, ILogger<ShouldRefreshSeries> logger)
         {
             _episodeService = episodeService;
             _logger = logger;
@@ -24,19 +24,19 @@ namespace NzbDrone.Core.Tv
         {
             if (series.LastInfoSync < DateTime.UtcNow.AddDays(-30))
             {
-                _logger.Trace("Series {0} last updated more than 30 days ago, should refresh.", series.Title);
+                _logger.LogTrace("Series {Title} last updated more than 30 days ago, should refresh.", series.Title);
                 return true;
             }
 
             if (series.LastInfoSync >= DateTime.UtcNow.AddHours(-6))
             {
-                _logger.Trace("Series {0} last updated less than 6 hours ago, should not be refreshed.", series.Title);
+                _logger.LogTrace("Series {Title} last updated less than 6 hours ago, should not be refreshed.", series.Title);
                 return false;
             }
 
             if (series.Status != SeriesStatusType.Ended)
             {
-                _logger.Trace("Series {0} is not ended, should refresh.", series.Title);
+                _logger.LogTrace("Series {Title} is not ended, should refresh.", series.Title);
                 return true;
             }
 
@@ -44,11 +44,11 @@ namespace NzbDrone.Core.Tv
 
             if (lastEpisode != null && lastEpisode.AirDateUtc > DateTime.UtcNow.AddDays(-30))
             {
-                _logger.Trace("Last episode in {0} aired less than 30 days ago, should refresh.", series.Title);
+                _logger.LogTrace("Last episode in {Title} aired less than 30 days ago, should refresh.", series.Title);
                 return true;
             }
 
-            _logger.Trace("Series {0} ended long ago, should not be refreshed.", series.Title);
+            _logger.LogTrace("Series {Title} ended long ago, should not be refreshed.", series.Title);
             return false;
         }
     }

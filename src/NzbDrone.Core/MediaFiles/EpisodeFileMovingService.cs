@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnsureThat;
 using NzbDrone.Common.Extensions;
@@ -33,7 +33,7 @@ namespace NzbDrone.Core.MediaFiles
         private readonly IMediaFileAttributeService _mediaFileAttributeService;
         private readonly IEventAggregator _eventAggregator;
         private readonly IConfigService _configService;
-        private readonly Logger _logger;
+        private readonly ILogger<EpisodeFileMovingService> _logger;
 
         public EpisodeFileMovingService(IEpisodeService episodeService,
                                 IUpdateEpisodeFileService updateEpisodeFileService,
@@ -43,7 +43,7 @@ namespace NzbDrone.Core.MediaFiles
                                 IMediaFileAttributeService mediaFileAttributeService,
                                 IEventAggregator eventAggregator,
                                 IConfigService configService,
-                                Logger logger)
+                                ILogger<EpisodeFileMovingService> logger)
         {
             _episodeService = episodeService;
             _updateEpisodeFileService = updateEpisodeFileService;
@@ -63,7 +63,7 @@ namespace NzbDrone.Core.MediaFiles
 
             EnsureEpisodeFolder(episodeFile, series, episodes.Select(v => v.SeasonNumber).First(), filePath);
 
-            _logger.Debug("Renaming episode file: {0} to {1}", episodeFile, filePath);
+            _logger.LogDebug("Renaming episode file: {EpisodeFile} to {FilePath}", episodeFile, filePath);
 
             return TransferFile(episodeFile, series, episodes, filePath, TransferMode.Move);
         }
@@ -74,7 +74,7 @@ namespace NzbDrone.Core.MediaFiles
 
             EnsureEpisodeFolder(episodeFile, localEpisode, filePath);
 
-            _logger.Debug("Moving episode file: {0} to {1}", episodeFile.Path, filePath);
+            _logger.LogDebug("Moving episode file: {Path} to {FilePath}", episodeFile.Path, filePath);
 
             return TransferFile(episodeFile, localEpisode.Series, localEpisode.Episodes, filePath, TransferMode.Move);
         }
@@ -87,11 +87,11 @@ namespace NzbDrone.Core.MediaFiles
 
             if (_configService.CopyUsingHardlinks)
             {
-                _logger.Debug("Hardlinking episode file: {0} to {1}", episodeFile.Path, filePath);
+                _logger.LogDebug("Hardlinking episode file: {Path} to {FilePath}", episodeFile.Path, filePath);
                 return TransferFile(episodeFile, localEpisode.Series, localEpisode.Episodes, filePath, TransferMode.HardLinkOrCopy);
             }
 
-            _logger.Debug("Copying episode file: {0} to {1}", episodeFile.Path, filePath);
+            _logger.LogDebug("Copying episode file: {Path} to {FilePath}", episodeFile.Path, filePath);
             return TransferFile(episodeFile, localEpisode.Series, localEpisode.Episodes, filePath, TransferMode.Copy);
         }
 
@@ -133,7 +133,7 @@ namespace NzbDrone.Core.MediaFiles
 
             catch (Exception ex)
             {
-                _logger.Warn(ex, "Unable to set last write time");
+                _logger.LogWarning(ex, "Unable to set last write time");
             }
 
             _mediaFileAttributeService.SetFilePermissions(destinationFilePath);
@@ -204,7 +204,7 @@ namespace NzbDrone.Core.MediaFiles
             }
             catch (IOException ex)
             {
-                _logger.Error(ex, "Unable to create directory: {0}", directoryName);
+                _logger.LogError(ex, "Unable to create directory: {DirectoryName}", directoryName);
             }
 
             _mediaFileAttributeService.SetFolderPermissions(directoryName);

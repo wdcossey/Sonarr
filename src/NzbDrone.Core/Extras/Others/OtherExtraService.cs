@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Configuration;
@@ -22,7 +20,7 @@ namespace NzbDrone.Core.Extras.Others
                                  IDiskTransferService diskTransferService,
                                  IOtherExtraFileService otherExtraFileService,
                                  IMediaFileAttributeService mediaFileAttributeService,
-                                 Logger logger)
+                                 ILogger<OtherExtraService> logger)
             : base(configService, diskProvider, diskTransferService, logger)
         {
             _otherExtraFileService = otherExtraFileService;

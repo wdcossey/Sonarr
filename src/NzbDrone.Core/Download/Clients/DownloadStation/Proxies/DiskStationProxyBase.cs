@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Http;
 using NzbDrone.Common.Serializer;
@@ -17,7 +16,7 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation.Proxies
 
     public abstract class DiskStationProxyBase : IDiskStationProxy
     {
-        protected readonly Logger _logger;
+        protected readonly ILogger _logger;
 
         private readonly IHttpClient _httpClient;
         private readonly ICached<DiskStationApiInfo> _infoCache;
@@ -44,7 +43,7 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation.Proxies
                                     string apiName,
                                     IHttpClient httpClient,
                                     ICacheManager cacheManager,
-                                    Logger logger)
+                                    ILogger logger)
         {
             _httpClient = httpClient;
             _logger = logger;
@@ -92,7 +91,7 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation.Proxies
                 throw new DownloadClientUnavailableException("Unable to connect to Diskstation, please check your settings", ex);
             }
 
-            _logger.Debug("Trying to {0}", operation);
+            _logger.LogDebug("Trying to {Operation}", operation);
 
             if (response.StatusCode == HttpStatusCode.OK)
             {
@@ -105,7 +104,7 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation.Proxies
                 else
                 {
                     var msg = $"Failed to {operation}. Reason: {responseContent.Error.GetMessage(api)}";
-                    _logger.Error(msg);
+                    _logger.LogError("{Msg}", msg);
 
                     if (responseContent.Error.SessionError)
                     {
@@ -245,7 +244,7 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation.Proxies
                 {
                     if (api == DiskStationApi.DownloadStation2Task)
                     {
-                        _logger.Warn("Info of {0} not found on {1}:{2}", api, settings.Host, settings.Port);
+                        _logger.LogWarning("Info of {Api} not found on {Host}:{Port}", api, settings.Host, settings.Port);
                     }
                     else
                     {

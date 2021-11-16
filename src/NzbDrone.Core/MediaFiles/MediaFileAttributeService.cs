@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Core.Configuration;
@@ -18,11 +18,11 @@ namespace NzbDrone.Core.MediaFiles
     {
         private readonly IConfigService _configService;
         private readonly IDiskProvider _diskProvider;
-        private readonly Logger _logger;
+        private readonly ILogger<MediaFileAttributeService> _logger;
 
         public MediaFileAttributeService(IConfigService configService,
                                          IDiskProvider diskProvider,
-                                         Logger logger)
+                                         ILogger<MediaFileAttributeService> logger)
         {
             _configService = configService;
             _diskProvider = diskProvider;
@@ -42,13 +42,13 @@ namespace NzbDrone.Core.MediaFiles
                 {
                     if (ex is UnauthorizedAccessException || ex is InvalidOperationException || ex is FileNotFoundException)
                     {
-                        _logger.Debug("Unable to apply folder permissions to {0}", path);
-                        _logger.Debug(ex, ex.Message);
+                        _logger.LogDebug("Unable to apply folder permissions to {Path}", path);
+                        _logger.LogDebug(ex, "{Message}", ex.Message);
                     }
                     else
                     {
-                        _logger.Warn("Unable to apply folder permissions to: {0}", path);
-                        _logger.Warn(ex, ex.Message);
+                        _logger.LogWarning("Unable to apply folder permissions to: {Path}", path);
+                        _logger.LogWarning(ex, "{Message}", ex.Message);
                     }
                 }
             }
@@ -71,7 +71,7 @@ namespace NzbDrone.Core.MediaFiles
         {
             if (OsInfo.IsWindows)
             {
-                _logger.Debug("Setting last write time on series folder: {0}", path);
+                _logger.LogDebug("Setting last write time on series folder: {Path}", path);
                 _diskProvider.FolderSetLastWriteTime(path, time);
             }
         }
@@ -87,11 +87,9 @@ namespace NzbDrone.Core.MediaFiles
             {
                 _diskProvider.SetPermissions(path, _configService.ChmodFolder, _configService.ChownGroup);
             }
-
             catch (Exception ex)
             {
-
-                _logger.Warn(ex, "Unable to apply permissions to: " + path);
+                _logger.LogWarning(ex, "Unable to apply permissions to: {Path}", path);
             }
         }
     }

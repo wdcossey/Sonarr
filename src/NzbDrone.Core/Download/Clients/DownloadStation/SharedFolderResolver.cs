@@ -1,5 +1,5 @@
 ﻿using System;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Disk;
 using NzbDrone.Core.Download.Clients.DownloadStation.Proxies;
@@ -15,11 +15,11 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation
     {
         private readonly IFileStationProxy _proxy;
         private ICached<SharedFolderMapping> _cache;
-        private readonly ILogger _logger;
+        private readonly ILogger<SharedFolderResolver> _logger;
 
         public SharedFolderResolver(ICacheManager cacheManager,
                                     IFileStationProxy proxy,
-                                    Logger logger)
+                                    ILogger<SharedFolderResolver> logger)
         {
             _proxy = proxy;
             _cache = cacheManager.GetCache<SharedFolderMapping>(GetType());
@@ -34,7 +34,7 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation
             }
             catch (Exception ex)
             {
-                _logger.Warn(ex, "Failed to get shared folder {0} from Disk Station {1}:{2}", sharedFolder, settings.Host, settings.Port);
+                _logger.LogWarning(ex, "Failed to get shared folder {SharedFolder} from Disk Station {Host}:{Port}", sharedFolder, settings.Host, settings.Port);
 
                 throw;
             }

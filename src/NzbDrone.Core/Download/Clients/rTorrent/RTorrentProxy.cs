@@ -1,12 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Net.Sockets;
-using System.Runtime.InteropServices.ComTypes;
-using NLog;
 using NzbDrone.Common.Extensions;
 using CookComputing.XmlRpc;
+using Microsoft.Extensions.Logging;
 
 namespace NzbDrone.Core.Download.Clients.RTorrent
 {
@@ -58,16 +55,16 @@ namespace NzbDrone.Core.Download.Clients.RTorrent
 
     public class RTorrentProxy : IRTorrentProxy
     {
-        private readonly Logger _logger;
+        private readonly ILogger<RTorrentProxy> _logger;
 
-        public RTorrentProxy(Logger logger)
+        public RTorrentProxy(ILogger<RTorrentProxy> logger)
         {
             _logger = logger;
         }
 
         public string GetVersion(RTorrentSettings settings)
         {
-            _logger.Debug("Executing remote method: system.client_version");
+            _logger.LogDebug("Executing remote method: system.client_version");
 
             var client = BuildClient(settings);
             var version = ExecuteRequest(() => client.GetVersion());
@@ -77,7 +74,7 @@ namespace NzbDrone.Core.Download.Clients.RTorrent
 
         public List<RTorrentTorrent> GetTorrents(RTorrentSettings settings)
         {
-            _logger.Debug("Executing remote method: d.multicall2");
+            _logger.LogDebug("Executing remote method: d.multicall2");
 
             var client = BuildClient(settings);
             var ret = ExecuteRequest(() => client.TorrentMulticall("", "",
@@ -128,12 +125,12 @@ namespace NzbDrone.Core.Download.Clients.RTorrent
             {
                 if (settings.AddStopped)
                 {
-                    _logger.Debug("Executing remote method: load.normal");
+                    _logger.LogDebug("Executing remote method: load.normal");
                     return client.LoadNormal("", torrentUrl, GetCommands(label, priority, directory));
                 }
                 else
                 {
-                    _logger.Debug("Executing remote method: load.start");
+                    _logger.LogDebug("Executing remote method: load.start");
                     return client.LoadStart("", torrentUrl, GetCommands(label, priority, directory));
                 }
             });
@@ -151,12 +148,12 @@ namespace NzbDrone.Core.Download.Clients.RTorrent
             {
                 if (settings.AddStopped)
                 {
-                    _logger.Debug("Executing remote method: load.raw");
+                    _logger.LogDebug("Executing remote method: load.raw");
                     return client.LoadRaw("", fileContent, GetCommands(label, priority, directory));
                 }
                 else
                 {
-                    _logger.Debug("Executing remote method: load.raw_start");
+                    _logger.LogDebug("Executing remote method: load.raw_start");
                     return client.LoadRawStart("", fileContent, GetCommands(label, priority, directory));
                 }
             });
@@ -169,7 +166,7 @@ namespace NzbDrone.Core.Download.Clients.RTorrent
 
         public void SetTorrentLabel(string hash, string label, RTorrentSettings settings)
         {
-            _logger.Debug("Executing remote method: d.custom1.set");
+            _logger.LogDebug("Executing remote method: d.custom1.set");
 
             var client = BuildClient(settings);
             var response = ExecuteRequest(() => client.SetLabel(hash, label));
@@ -182,7 +179,7 @@ namespace NzbDrone.Core.Download.Clients.RTorrent
 
         public void PushTorrentUniqueView(string hash, string view, RTorrentSettings settings)
         {
-            _logger.Debug("Executing remote method: d.views.push_back_unique");
+            _logger.LogDebug("Executing remote method: d.views.push_back_unique");
 
             var client = BuildClient(settings);
             var response = ExecuteRequest(() => client.PushUniqueView(hash, view));
@@ -194,7 +191,7 @@ namespace NzbDrone.Core.Download.Clients.RTorrent
 
         public void RemoveTorrent(string hash, RTorrentSettings settings)
         {
-            _logger.Debug("Executing remote method: d.erase");
+            _logger.LogDebug("Executing remote method: d.erase");
 
             var client = BuildClient(settings);
             var response = ExecuteRequest(() => client.Remove(hash));
@@ -207,7 +204,7 @@ namespace NzbDrone.Core.Download.Clients.RTorrent
 
         public bool HasHashTorrent(string hash, RTorrentSettings settings)
         {
-            _logger.Debug("Executing remote method: d.name");
+            _logger.LogDebug("Executing remote method: d.name");
 
             var client = BuildClient(settings);
 

@@ -1,4 +1,4 @@
-﻿using NLog;
+﻿using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Http;
 using NzbDrone.Common.Serializer;
 
@@ -7,9 +7,9 @@ namespace NzbDrone.Core.Notifications.Emby
     public class MediaBrowserProxy
     {
         private readonly IHttpClient _httpClient;
-        private readonly Logger _logger;
+        private readonly ILogger<MediaBrowserProxy> _logger;
 
-        public MediaBrowserProxy(IHttpClient httpClient, Logger logger)
+        public MediaBrowserProxy(IHttpClient httpClient, ILogger<MediaBrowserProxy> logger)
         {
             _httpClient = httpClient;
             _logger = logger;
@@ -57,7 +57,7 @@ namespace NzbDrone.Core.Notifications.Emby
             request.Headers.Add("X-MediaBrowser-Token", settings.ApiKey);
 
             var response = _httpClient.Post(request);
-            _logger.Trace("Response: {0}", response.Content);
+            _logger.LogTrace("Response: {Content}", response.Content);
 
             CheckForError(response);
 
@@ -68,13 +68,13 @@ namespace NzbDrone.Core.Notifications.Emby
         {
             var scheme = settings.UseSsl ? "https" : "http";
             var url = $@"{scheme}://{settings.Address}/mediabrowser";
-            
+
             return new HttpRequestBuilder(url).Resource(path).Build();
         }
 
         private void CheckForError(HttpResponse response)
         {
-            _logger.Debug("Looking for error in response: {0}", response);
+            _logger.LogDebug("Looking for error in response: {Response}", response);
 
             //TODO: actually check for the error
         }

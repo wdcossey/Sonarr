@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using System.Text.RegularExpressions;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.Parser.Model;
@@ -18,9 +18,9 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
         private static readonly string[] _dvdContainerTypes = new[] { "vob", "iso" };
         private static readonly string[] _blurayContainerTypes = new[] { "m2ts" };
 
-        private readonly Logger _logger;
+        private readonly ILogger<RawDiskSpecification> _logger;
 
-        public RawDiskSpecification(Logger logger)
+        public RawDiskSpecification(ILogger<RawDiskSpecification> logger)
         {
             _logger = logger;
         }
@@ -39,7 +39,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
             {
                 if (regex.IsMatch(subject.Release.Title))
                 {
-                    _logger.Debug("Release contains raw Bluray, rejecting.");
+                    _logger.LogDebug("Release contains raw Bluray, rejecting.");
                     return Decision.Reject("Raw Bluray release");
                 }
             }
@@ -51,13 +51,13 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
 
             if (_dvdContainerTypes.Contains(subject.Release.Container.ToLower()))
             {
-                _logger.Debug("Release contains raw DVD, rejecting.");
+                _logger.LogDebug("Release contains raw DVD, rejecting.");
                 return Decision.Reject("Raw DVD release");
             }
 
             if (_blurayContainerTypes.Contains(subject.Release.Container.ToLower()))
             {
-                _logger.Debug("Release contains raw Bluray, rejecting.");
+                _logger.LogDebug("Release contains raw Bluray, rejecting.");
                 return Decision.Reject("Raw Bluray release");
             }
 

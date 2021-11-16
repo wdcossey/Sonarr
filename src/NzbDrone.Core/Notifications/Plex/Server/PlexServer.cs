@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentValidation.Results;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Exceptions;
@@ -17,7 +17,7 @@ namespace NzbDrone.Core.Notifications.Plex.Server
     {
         private readonly IPlexServerService _plexServerService;
         private readonly IPlexTvService _plexTvService;
-        private readonly Logger _logger;
+        private readonly ILogger<PlexServer> _logger;
 
         class PlexUpdateQueue
         {
@@ -27,7 +27,7 @@ namespace NzbDrone.Core.Notifications.Plex.Server
 
         private readonly ICached<PlexUpdateQueue> _pendingSeriesCache;
 
-        public PlexServer(IPlexServerService plexServerService, IPlexTvService plexTvService, ICacheManager cacheManager, Logger logger)
+        public PlexServer(IPlexServerService plexServerService, IPlexTvService plexTvService, ICacheManager cacheManager, ILogger<PlexServer> logger)
         {
             _plexServerService = plexServerService;
             _plexTvService = plexTvService;
@@ -66,7 +66,7 @@ namespace NzbDrone.Core.Notifications.Plex.Server
         {
             if (Settings.UpdateLibrary)
             {
-                _logger.Debug("Scheduling library update for series {0} {1}", series.Id, series.Title);
+                _logger.LogDebug("Scheduling library update for series {SeriesId} {SeriesTitle}", series.Id, series.Title);
                 var queue = _pendingSeriesCache.Get(Settings.Host, () => new PlexUpdateQueue());
                 lock (queue)
                 {
@@ -110,7 +110,7 @@ namespace NzbDrone.Core.Notifications.Plex.Server
 
                     if (Settings.UpdateLibrary)
                     {
-                        _logger.Debug("Performing library update for {0} series", refreshingSeries.Count);
+                        _logger.LogDebug("Performing library update for {Count} series", refreshingSeries.Count);
                         _plexServerService.UpdateLibrary(refreshingSeries, Settings);
                     }
                 }

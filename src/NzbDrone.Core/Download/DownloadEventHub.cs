@@ -1,5 +1,5 @@
 ﻿using System;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Download.TrackedDownloads;
 using NzbDrone.Core.Messaging.Events;
@@ -12,11 +12,11 @@ namespace NzbDrone.Core.Download
     {
         private readonly IConfigService _configService;
         private readonly IProvideDownloadClient _downloadClientProvider;
-        private readonly Logger _logger;
+        private readonly ILogger<DownloadEventHub> _logger;
 
         public DownloadEventHub(IConfigService configService,
             IProvideDownloadClient downloadClientProvider,
-            Logger logger)
+            ILogger<DownloadEventHub> logger)
         {
             _configService = configService;
             _downloadClientProvider = downloadClientProvider;
@@ -88,17 +88,17 @@ namespace NzbDrone.Core.Download
         {
             try
             {
-                _logger.Debug("[{0}] Removing download from {1} history", trackedDownload.DownloadItem.Title, trackedDownload.DownloadItem.DownloadClientInfo.Name);
+                _logger.LogDebug("[{Title}] Removing download from {Name} history", trackedDownload.DownloadItem.Title, trackedDownload.DownloadItem.DownloadClientInfo.Name);
                 downloadClient.RemoveItem(trackedDownload.DownloadItem, true);
                 trackedDownload.DownloadItem.Removed = true;
             }
             catch (NotSupportedException)
             {
-                _logger.Warn("Removing item not supported by your download client ({0}).", downloadClient.Definition.Name);
+                _logger.LogWarning("Removing item not supported by your download client ({Name}).", downloadClient.Definition.Name);
             }
             catch (Exception e)
             {
-                _logger.Error(e, "Couldn't remove item {0} from client {1}", trackedDownload.DownloadItem.Title, downloadClient.Name);
+                _logger.LogError(e, "Couldn't remove item {Title} from client {Name}", trackedDownload.DownloadItem.Title, downloadClient.Name);
             }
         }
 
@@ -106,16 +106,16 @@ namespace NzbDrone.Core.Download
         {
             try
             {
-                _logger.Debug("[{0}] Marking download as imported from {1}", trackedDownload.DownloadItem.Title, trackedDownload.DownloadItem.DownloadClientInfo.Name);
+                _logger.LogDebug("[{Title}] Marking download as imported from {Name}", trackedDownload.DownloadItem.Title, trackedDownload.DownloadItem.DownloadClientInfo.Name);
                 downloadClient.MarkItemAsImported(trackedDownload.DownloadItem);
             }
             catch (NotSupportedException e)
             {
-                _logger.Debug(e.Message);
+                _logger.LogDebug("{Message}", e.Message);
             }
             catch (Exception e)
             {
-                _logger.Error(e, "Couldn't mark item {0} as imported from client {1}", trackedDownload.DownloadItem.Title, downloadClient.Name);
+                _logger.LogError(e, "Couldn't mark item {Title} as imported from client {Name}", trackedDownload.DownloadItem.Title, downloadClient.Name);
             }
         }
     }

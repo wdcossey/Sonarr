@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NLog;
-using NLog.Fluent;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
-using NzbDrone.Common.Instrumentation.Extensions;
 using NzbDrone.Core.Download.TrackedDownloads;
 using NzbDrone.Core.History;
 using NzbDrone.Core.MediaFiles;
@@ -33,7 +31,7 @@ namespace NzbDrone.Core.Download
         private readonly IParsingService _parsingService;
         private readonly ISeriesService _seriesService;
         private readonly ITrackedDownloadAlreadyImported _trackedDownloadAlreadyImported;
-        private readonly Logger _logger;
+        private readonly ILogger<CompletedDownloadService> _logger;
 
         public CompletedDownloadService(IEventAggregator eventAggregator,
                                         IHistoryService historyService,
@@ -42,7 +40,7 @@ namespace NzbDrone.Core.Download
                                         IParsingService parsingService,
                                         ISeriesService seriesService,
                                         ITrackedDownloadAlreadyImported trackedDownloadAlreadyImported,
-                                        Logger logger)
+                                        ILogger<CompletedDownloadService> logger)
         {
             _eventAggregator = eventAggregator;
             _historyService = historyService;
@@ -162,7 +160,7 @@ namespace NzbDrone.Core.Download
 
             if (allEpisodesImported)
             {
-                _logger.Debug("All episodes were imported for {0}", trackedDownload.DownloadItem.Title);
+                _logger.LogDebug("All episodes were imported for {Title}", trackedDownload.DownloadItem.Title);
                 trackedDownload.State = TrackedDownloadState.Imported;
                 _eventAggregator.PublishEvent(new DownloadCompletedEvent(trackedDownload, trackedDownload.RemoteEpisode.Series.Id));
                 return true;
@@ -172,7 +170,7 @@ namespace NzbDrone.Core.Download
             // file was imported. This will allow the decision engine to reject already imported
             // episode files and still mark the download complete when all files are imported.
 
-            // EDGE CASE: This process relies on EpisodeIds being consistent between executions, if a series is updated 
+            // EDGE CASE: This process relies on EpisodeIds being consistent between executions, if a series is updated
             // and an episode is removed, but later comes back with a different ID then Sonarr will treat it as incomplete.
             // Since imports should be relatively fast and these types of data changes are infrequent this should be quite
             // safe, but commenting for future benefit.
@@ -192,18 +190,19 @@ namespace NzbDrone.Core.Download
 
                 if (atLeastOneEpisodeImported)
                 {
-                    _logger.Debug("All episodes were imported in history for {0}", trackedDownload.DownloadItem.Title);
+                    _logger.LogDebug("All episodes were imported in history for {Title}", trackedDownload.DownloadItem.Title);
                 }
                 else
                 {
-                    _logger.Debug()
-                           .Message("No Episodes were just imported, but all episodes were previously imported, possible issue with download history.")
-                           .Property("SeriesId", trackedDownload.RemoteEpisode.Series.Id)
-                           .Property("DownloadId", trackedDownload.DownloadItem.DownloadId)
-                           .Property("Title", trackedDownload.DownloadItem.Title)
-                           .Property("Path", trackedDownload.ImportItem.OutputPath.ToString())
-                           .WriteSentryWarn("DownloadHistoryIncomplete")
-                           .Write();
+                    //TODO: NLog.Fluent
+                    _logger.LogDebug("No Episodes were just imported, but all episodes were previously imported, possible issue with download history.");
+                    //.Message("No Episodes were just imported, but all episodes were previously imported, possible issue with download history.")
+                    //.Property("SeriesId", trackedDownload.RemoteEpisode.Series.Id)
+                    //.Property("DownloadId", trackedDownload.DownloadItem.DownloadId)
+                    //.Property("Title", trackedDownload.DownloadItem.Title)
+                    //.Property("Path", trackedDownload.ImportItem.OutputPath.ToString())
+                    //.WriteSentryWarn("DownloadHistoryIncomplete")
+                    //.Write();
                 }
 
                 trackedDownload.State = TrackedDownloadState.Imported;
@@ -212,7 +211,7 @@ namespace NzbDrone.Core.Download
                 return true;
             }
 
-            _logger.Debug("Not all episodes have been imported for {0}", trackedDownload.DownloadItem.Title);
+            _logger.LogDebug("Not all episodes have been imported for {Title}", trackedDownload.DownloadItem.Title);
             return false;
         }
 

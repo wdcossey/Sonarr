@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cache;
 using NzbDrone.Core.Indexers;
 using NzbDrone.Core.IndexerSearch.Definitions;
@@ -12,15 +12,14 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
     public class BlockedIndexerSpecification : IDecisionEngineSpecification
     {
         private readonly IIndexerStatusService _indexerStatusService;
-        private readonly Logger _logger;
+        private readonly ILogger<BlockedIndexerSpecification> _logger;
 
         private readonly ICachedDictionary<IndexerStatus> _blockedIndexerCache;
 
-        public BlockedIndexerSpecification(IIndexerStatusService indexerStatusService, ICacheManager cacheManager, Logger logger)
+        public BlockedIndexerSpecification(IIndexerStatusService indexerStatusService, ICacheManager cacheManager, ILogger<BlockedIndexerSpecification> logger)
         {
             _indexerStatusService = indexerStatusService;
             _logger = logger;
-
             _blockedIndexerCache = cacheManager.GetCacheDictionary(GetType(), "blocked", FetchBlockedIndexer, TimeSpan.FromSeconds(15));
         }
 

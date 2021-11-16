@@ -1,11 +1,11 @@
 using System.Linq;
-using NLog;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Qualities;
 using NzbDrone.Core.Tv;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 
 namespace NzbDrone.Core.DecisionEngine.Specifications
 {
@@ -13,9 +13,11 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
     {
         private readonly IQualityDefinitionService _qualityDefinitionService;
         private readonly IEpisodeService _episodeService;
-        private readonly Logger _logger;
+        private readonly ILogger<AcceptableSizeSpecification> _logger;
 
-        public AcceptableSizeSpecification(IQualityDefinitionService qualityDefinitionService, IEpisodeService episodeService, Logger logger)
+        public AcceptableSizeSpecification(IQualityDefinitionService qualityDefinitionService,
+                                           IEpisodeService episodeService,
+                                           ILogger<AcceptableSizeSpecification> logger)
         {
             _qualityDefinitionService = qualityDefinitionService;
             _episodeService = episodeService;
@@ -27,19 +29,19 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
 
         public Decision IsSatisfiedBy(RemoteEpisode subject, SearchCriteriaBase searchCriteria)
         {
-            _logger.Debug("Beginning size check for: {0}", subject);
+            _logger.LogDebug("Beginning size check for: {Subject}", subject);
 
             var quality = subject.ParsedEpisodeInfo.Quality.Quality;
 
             if (subject.ParsedEpisodeInfo.Special)
             {
-                _logger.Debug("Special release found, skipping size check.");
+                _logger.LogDebug("Special release found, skipping size check.");
                 return Decision.Accept();
             }
 
             if (subject.Release.Size == 0)
             {
-                _logger.Debug("Release has unknown size, skipping size check");
+                _logger.LogDebug("Release has unknown size, skipping size check");
                 return Decision.Accept();
             }
 
@@ -56,17 +58,17 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
                 {
                     var runtimeMessage = subject.Episodes.Count == 1 ? $"{subject.Series.Runtime}min" : $"{subject.Episodes.Count}x {subject.Series.Runtime}min";
 
-                    _logger.Debug("Item: {0}, Size: {1} is smaller than minimum allowed size ({2} bytes for {3}), rejecting.", subject, subject.Release.Size, minSize, runtimeMessage);
+                    _logger.LogDebug("Item: {Subject}, Size: {Size} is smaller than minimum allowed size ({MinSize} bytes for {RuntimeMessage}), rejecting.", subject, subject.Release.Size, minSize, runtimeMessage);
                     return Decision.Reject("{0} is smaller than minimum allowed {1} (for {2})", subject.Release.Size.SizeSuffix(), minSize.SizeSuffix(), runtimeMessage);
                 }
             }
             if (!qualityDefinition.MaxSize.HasValue || qualityDefinition.MaxSize.Value == 0)
             {
-                _logger.Debug("Max size is unlimited, skipping size check");
+                _logger.LogDebug("Max size is unlimited, skipping size check");
             }
             else if (subject.Series.Runtime == 0)
             {
-                _logger.Debug("Series runtime is 0, unable to validate size until it is available, rejecting");
+                _logger.LogDebug("Series runtime is 0, unable to validate size until it is available, rejecting");
                 return Decision.Reject("Series runtime is 0, unable to validate size until it is available");
             }
             else
@@ -95,7 +97,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
                     //or is the last episode in a season that has 10 or more episodes
                     if (seasonEpisodes.First().Id == episode.Id || (seasonEpisodes.Count() >= 10 && seasonEpisodes.Last().Id == episode.Id))
                     {
-                        _logger.Debug("Possible double episode, doubling allowed size.");
+                        _logger.LogDebug("Possible double episode, doubling allowed size.");
                         maxSize = maxSize * 2;
                     }
                 }
@@ -105,12 +107,12 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
                 {
                     var runtimeMessage = subject.Episodes.Count == 1 ? $"{subject.Series.Runtime}min" : $"{subject.Episodes.Count}x {subject.Series.Runtime}min";
 
-                    _logger.Debug("Item: {0}, Size: {1} is greater than maximum allowed size ({2} for {3}), rejecting", subject, subject.Release.Size, maxSize, runtimeMessage);
+                    _logger.LogDebug("Item: {Subject}, Size: {Size} is greater than maximum allowed size ({MaxSize} for {RuntimeMessage}), rejecting", subject, subject.Release.Size, maxSize, runtimeMessage);
                     return Decision.Reject("{0} is larger than maximum allowed {1} (for {2})", subject.Release.Size.SizeSuffix(), maxSize.SizeSuffix(), runtimeMessage);
                 }
             }
 
-            _logger.Debug("Item: {0}, meets size constraints", subject);
+            _logger.LogDebug("Item: {Subject}, meets size constraints", subject);
             return Decision.Accept();
         }
     }

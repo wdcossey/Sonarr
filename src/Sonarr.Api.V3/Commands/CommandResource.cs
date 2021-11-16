@@ -102,9 +102,9 @@ namespace Sonarr.Api.V3.Commands
             };
         }
 
-        public static List<CommandResource> ToResource(this IEnumerable<CommandModel> models)
+        public static IEnumerable<CommandResource> ToResource(this IEnumerable<CommandModel> models)
         {
-            return models.Select(ToResource).ToList();
+            return models.Select(ToResource);
         }
     }
 }

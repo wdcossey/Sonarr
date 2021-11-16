@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentValidation.Results;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.IndexerSearch.Definitions;
@@ -18,7 +18,7 @@ namespace NzbDrone.Core.Indexers
         protected readonly IIndexerStatusService _indexerStatusService;
         protected readonly IConfigService _configService;
         protected readonly IParsingService _parsingService;
-        protected readonly Logger _logger;
+        protected readonly ILogger _logger;
 
         public abstract string Name { get; }
         public abstract DownloadProtocol Protocol { get; }
@@ -27,12 +27,12 @@ namespace NzbDrone.Core.Indexers
         public abstract bool SupportsRss { get; }
         public abstract bool SupportsSearch { get; }
 
-        public IndexerBase(IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, Logger logger)
+        public IndexerBase(IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, ILoggerFactory loggerFactory)
         {
             _indexerStatusService = indexerStatusService;
             _configService = configService;
             _parsingService = parsingService;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(GetType());
         }
 
         public Type ConfigContract => typeof(TSettings);
@@ -96,7 +96,7 @@ namespace NzbDrone.Core.Indexers
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Test aborted due to exception");
+                _logger.LogError(ex, "Test aborted due to exception");
                 failures.Add(new ValidationFailure(string.Empty, "Test was aborted due to an error: " + ex.Message));
             }
 

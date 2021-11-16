@@ -35,10 +35,12 @@ namespace Sonarr.Api.V3
             PostValidator.RuleFor(c => c.Fields).NotNull();*/
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet("{id:int}")]
         public IActionResult GetProviderById(int id)
             => Ok(_resourceMapper.ToResource(GetProviderDefinitionById(id)));
 
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet]
         public IActionResult GetAll()
         {
@@ -56,6 +58,7 @@ namespace Sonarr.Api.V3
             return Ok(result.OrderBy(p => p.Name).ToList());
         }
 
+        [ProducesResponseType(StatusCodes.Status201Created)]
         [HttpPost]
         public IActionResult CreateProvider([FromBody] TProviderResource providerResource)
         {
@@ -69,6 +72,7 @@ namespace Sonarr.Api.V3
             return Created(Request.Path, providerDefinition);
         }
 
+        [ProducesResponseType(StatusCodes.Status202Accepted)]
         [HttpPut]
         [HttpPut("{id:int?}")]
         public Task<IActionResult> UpdateProvider(int? id, [FromBody] TProviderResource providerResource, [FromQuery] bool forceSave = false)
@@ -87,10 +91,12 @@ namespace Sonarr.Api.V3
             return Task.FromResult<IActionResult>(Accepted(GetProviderDefinitionById(providerDefinition.Id)));
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpDelete("{id:int}")]
         public void DeleteProvider(int id)
             => _providerFactory.Delete(id);
 
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet("schema")]
         public IActionResult GetTemplates()
         {
@@ -116,6 +122,7 @@ namespace Sonarr.Api.V3
             return Ok(result);
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpPost("test")]
         public IActionResult Test([FromBody] TProviderResource providerResource)
         {
@@ -126,6 +133,8 @@ namespace Sonarr.Api.V3
             return Ok("{}");
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost("testall")]
         public IActionResult TestAll()
         {
@@ -150,6 +159,7 @@ namespace Sonarr.Api.V3
                 result);
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpPost("action/{actionAction:required:regex(.*)}")]
         public IActionResult RequestAction(string actionAction, [FromBody] TProviderResource providerResource)
         {
@@ -158,13 +168,7 @@ namespace Sonarr.Api.V3
             var query = Request.Query.ToDictionary(k => k.Key, v => v.Value.ToString());
             var data = _providerFactory.RequestAction(providerDefinition, actionAction, query);
 
-            //TODO: Incomplete!
-            return Ok(data)/* new ContentResult
-            {
-                Content = data.ToJson(),
-                ContentType = MediaTypeNames.Application.Json,
-                StatusCode = StatusCodes.Status200OK,
-            }*/;
+            return Ok(data);
         }
 
         private TProviderDefinition GetProviderDefinitionById(int id)

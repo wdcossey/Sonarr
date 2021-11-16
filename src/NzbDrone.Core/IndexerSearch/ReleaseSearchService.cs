@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
-using NLog;
 using NzbDrone.Common.Instrumentation.Extensions;
 using NzbDrone.Core.DataAugmentation.Scene;
 using NzbDrone.Core.DecisionEngine;
@@ -11,6 +10,7 @@ using NzbDrone.Core.Indexers;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Tv;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.TPL;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Exceptions;
@@ -33,14 +33,14 @@ namespace NzbDrone.Core.IndexerSearch
         private readonly ISeriesService _seriesService;
         private readonly IEpisodeService _episodeService;
         private readonly IMakeDownloadDecision _makeDownloadDecision;
-        private readonly Logger _logger;
+        private readonly ILogger<ReleaseSearchService> _logger;
 
         public ReleaseSearchService(IIndexerFactory indexerFactory,
                                 ISceneMappingService sceneMapping,
                                 ISeriesService seriesService,
                                 IEpisodeService episodeService,
                                 IMakeDownloadDecision makeDownloadDecision,
-                                Logger logger)
+                                ILogger<ReleaseSearchService> logger)
         {
             _indexerFactory = indexerFactory;
             _sceneMapping = sceneMapping;
@@ -65,7 +65,7 @@ namespace NzbDrone.Core.IndexerSearch
             {
                 if (string.IsNullOrWhiteSpace(episode.AirDate))
                 {
-                    _logger.Error("Daily episode is missing an air date. Try refreshing the series info.");
+                    _logger.LogError("Daily episode is missing an air date. Try refreshing the series info.");
                     throw new SearchFailedException("Air date is missing");
                 }
 
@@ -359,7 +359,7 @@ namespace NzbDrone.Core.IndexerSearch
             }
             else
             {
-                _logger.Error($"Can not search for {series.Title} - S{episode.SeasonNumber:00}E{episode.EpisodeNumber:00} it does not have an absolute episode number");
+                _logger.LogError("Can not search for {Title} - S{SeasonNumber:00}E{EpisodeNumber:00} it does not have an absolute episode number", series.Title, episode.SeasonNumber, episode.EpisodeNumber);
                 throw new SearchFailedException("Absolute episode number is missing");
             }
 
@@ -369,7 +369,7 @@ namespace NzbDrone.Core.IndexerSearch
         private List<DownloadDecision> SearchSpecial(Series series, List<Episode> episodes,bool monitoredOnly, bool userInvokedSearch, bool interactiveSearch)
         {
             var downloadDecisions = new List<DownloadDecision>();
-            
+
             var searchSpec = Get<SpecialEpisodeSearchCriteria>(series, episodes, monitoredOnly, userInvokedSearch, interactiveSearch);
             // build list of queries for each episode in the form: "<series> <episode-title>"
             searchSpec.EpisodeQueryTitles = episodes.Where(e => !string.IsNullOrWhiteSpace(e.Title))
@@ -386,7 +386,7 @@ namespace NzbDrone.Core.IndexerSearch
                 {
                     continue;
                 }
-                
+
                 downloadDecisions.AddRange(SearchSingle(series, episode, monitoredOnly, userInvokedSearch, interactiveSearch));
             }
 
@@ -451,7 +451,7 @@ namespace NzbDrone.Core.IndexerSearch
             spec.SceneTitles = _sceneMapping.GetSceneNames(series.TvdbId,
                                                            episodes.Select(e => e.SeasonNumber).Distinct().ToList(),
                                                            episodes.Select(e => e.SceneSeasonNumber ?? e.SeasonNumber).Distinct().ToList());
-            
+
             spec.Episodes = episodes;
             spec.MonitoredEpisodesOnly = monitoredOnly;
             spec.UserInvokedSearch = userInvokedSearch;
@@ -530,20 +530,20 @@ namespace NzbDrone.Core.IndexerSearch
                     }
                     catch (Exception e)
                     {
-                        _logger.Error(e, "Error while searching for {0}", criteriaBase);
+                        _logger.LogError(e, "Error while searching for {CriteriaBase}", criteriaBase);
                     }
                 }).LogExceptions());
             }
 
             Task.WaitAll(taskList.ToArray());
 
-            _logger.Debug("Total of {0} reports were found for {1} from {2} indexers", reports.Count, criteriaBase, indexers.Count);
+            _logger.LogDebug("Total of {ReportsCount} reports were found for {CriteriaBase} from {IndexersCount} indexers", reports.Count, criteriaBase, indexers.Count);
 
             // Update the last search time for all episodes if at least 1 indexer was searched.
             if (indexers.Any())
             {
                 var lastSearchTime = DateTime.UtcNow;
-                _logger.Debug("Setting last search time to: {0}", lastSearchTime);
+                _logger.LogDebug("Setting last search time to: {LastSearchTime}", lastSearchTime);
 
                 criteriaBase.Episodes.ForEach(e => e.LastSearchTime = lastSearchTime);
                 _episodeService.UpdateEpisodes(criteriaBase.Episodes);

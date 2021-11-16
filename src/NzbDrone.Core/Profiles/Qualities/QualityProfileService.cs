@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.ImportLists;
 using NzbDrone.Core.Lifecycle;
 using NzbDrone.Core.Messaging.Events;
@@ -25,9 +25,12 @@ namespace NzbDrone.Core.Profiles.Qualities
         private readonly IProfileRepository _profileRepository;
         private readonly IImportListFactory _importListFactory;
         private readonly ISeriesService _seriesService;
-        private readonly Logger _logger;
+        private readonly ILogger<QualityProfileService> _logger;
 
-        public QualityProfileService(IProfileRepository profileRepository, IImportListFactory importListFactory, ISeriesService seriesService, Logger logger)
+        public QualityProfileService(IProfileRepository profileRepository,
+                                     IImportListFactory importListFactory,
+                                     ISeriesService seriesService,
+                                     ILogger<QualityProfileService> logger)
         {
             _profileRepository = profileRepository;
             _importListFactory = importListFactory;
@@ -75,7 +78,7 @@ namespace NzbDrone.Core.Profiles.Qualities
         {
             if (All().Any()) return;
 
-            _logger.Info("Setting up default quality profiles");
+            _logger.LogInformation("Setting up default quality profiles");
 
             AddDefaultProfile("Any", Quality.SDTV,
                 Quality.SDTV,

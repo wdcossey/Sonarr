@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.MediaFiles;
@@ -45,9 +45,9 @@ namespace NzbDrone.Core.Tv
     {
         private readonly IEpisodeRepository _episodeRepository;
         private readonly IConfigService _configService;
-        private readonly Logger _logger;
+        private readonly ILogger<EpisodeService> _logger;
 
-        public EpisodeService(IEpisodeRepository episodeRepository, IConfigService configService, Logger logger)
+        public EpisodeService(IEpisodeRepository episodeRepository, IConfigService configService, ILogger<EpisodeService> logger)
         {
             _episodeRepository = episodeRepository;
             _configService = configService;
@@ -169,7 +169,7 @@ namespace NzbDrone.Core.Tv
             var episode = _episodeRepository.Get(episodeId);
             _episodeRepository.SetMonitoredFlat(episode, monitored);
 
-            _logger.Debug("Monitored flag for Episode:{0} was set to {1}", episodeId, monitored);
+            _logger.LogDebug("Monitored flag for Episode:{EpisodeId} was set to {Monitored}", episodeId, monitored);
         }
 
         public void SetMonitored(IEnumerable<int> ids, bool monitored)
@@ -219,7 +219,7 @@ namespace NzbDrone.Core.Tv
         {
             foreach (var episode in GetEpisodesByFileId(message.EpisodeFile.Id))
             {
-                _logger.Debug("Detaching episode {0} from file.", episode.Id);
+                _logger.LogDebug("Detaching episode {EpisodeId} from file.", episode.Id);
 
                 var unmonitorForReason = message.Reason != DeleteMediaFileReason.Upgrade &&
                                          message.Reason != DeleteMediaFileReason.ManualOverride;
@@ -234,7 +234,7 @@ namespace NzbDrone.Core.Tv
             foreach (var episode in message.EpisodeFile.Episodes.Value)
             {
                 _episodeRepository.SetFileId(episode, message.EpisodeFile.Id);
-                _logger.Debug("Linking [{0}] > [{1}]", message.EpisodeFile.RelativePath, episode);
+                _logger.LogDebug("Linking [{RelativePath}] > [{Episode}]", message.EpisodeFile.RelativePath, episode);
             }
         }
 
@@ -246,13 +246,13 @@ namespace NzbDrone.Core.Tv
 
             if (episodes.Count == 1) return episodes.First();
 
-            _logger.Debug("Multiple episodes with the same air date were found, will exclude specials");
+            _logger.LogDebug("Multiple episodes with the same air date were found, will exclude specials");
 
             var regularEpisodes = episodes.Where(e => e.SeasonNumber > 0).ToList();
 
             if (regularEpisodes.Count == 1 && !part.HasValue)
             {
-                _logger.Debug("Left with one episode after excluding specials");
+                _logger.LogDebug("Left with one episode after excluding specials");
                 return regularEpisodes.First();
             }
             else if (part.HasValue && part.Value <= regularEpisodes.Count)

@@ -31,7 +31,8 @@ namespace Sonarr.Api.V3.CustomFilters
 
         public static CustomFilter ToModel(this CustomFilterResource resource)
         {
-            if (resource == null) return null;
+            if (resource == null)
+                return null;
 
             return new CustomFilter
                    {
@@ -42,9 +43,7 @@ namespace Sonarr.Api.V3.CustomFilters
                    };
         }
 
-        public static List<CustomFilterResource> ToResource(this IEnumerable<CustomFilter> filters)
-        {
-            return filters.Select(ToResource).ToList();
-        }
+        public static IEnumerable<CustomFilterResource> ToResource(this IEnumerable<CustomFilter> filters)
+            => filters.Select(ToResource);
     }
 }

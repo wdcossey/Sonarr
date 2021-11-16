@@ -1,13 +1,11 @@
-using NLog;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Lifecycle;
 using NzbDrone.Core.Messaging.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NzbDrone.Core.Update
 {
@@ -18,11 +16,11 @@ namespace NzbDrone.Core.Update
 
     public class UpdaterConfigProvider : IUpdaterConfigProvider, IHandle<ApplicationStartedEvent>
     {
-        private Logger _logger;
+        private ILogger<UpdaterConfigProvider> _logger;
         private IConfigFileProvider _configFileProvider;
         private IDeploymentInfoProvider _deploymentInfoProvider;
 
-        public UpdaterConfigProvider(IDeploymentInfoProvider deploymentInfoProvider, IConfigFileProvider configFileProvider, Logger logger)
+        public UpdaterConfigProvider(IDeploymentInfoProvider deploymentInfoProvider, IConfigFileProvider configFileProvider, ILogger<UpdaterConfigProvider> logger)
         {
             _deploymentInfoProvider = deploymentInfoProvider;
             _configFileProvider = configFileProvider;
@@ -44,7 +42,7 @@ namespace NzbDrone.Core.Update
                 if (packageUpdateMechanism != externalMechanism && updateMechanism == externalMechanism ||
                     packageUpdateMechanism == externalMechanism && updateMechanism == UpdateMechanism.BuiltIn)
                 {
-                    _logger.Info("Update mechanism {0} not supported in the current configuration, changing to {1}.", updateMechanism, packageUpdateMechanism);
+                    _logger.LogInformation("Update mechanism {UpdateMechanism} not supported in the current configuration, changing to {PackageUpdateMechanism}.", updateMechanism, packageUpdateMechanism);
                     ChangeUpdateMechanism(packageUpdateMechanism);
                     break;
                 }
@@ -56,12 +54,12 @@ namespace NzbDrone.Core.Update
                 var packageBranch = _deploymentInfoProvider.PackageBranch;
                 if (packageBranch.IsNotNullOrWhiteSpace() & packageBranch != currentBranch)
                 {
-                    _logger.Info("External updater uses branch {0} instead of the currently selected {1}, changing to {0}.", packageBranch, currentBranch);
+                    _logger.LogInformation("External updater uses branch {PackageBranch} instead of the currently selected {CurrentBranch}, changing to {ToPackageBranch}.", packageBranch, currentBranch, packageBranch);
                     ChangeBranch(packageBranch);
                 }
             }
         }
-        
+
         private void ChangeUpdateMechanism(UpdateMechanism updateMechanism)
         {
             var config = new Dictionary<string, object>

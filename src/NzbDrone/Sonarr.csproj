@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net5.0-windows</TargetFramework>
-    <Platforms>x86;AnyCPU</Platforms>
+    <Platforms>AnyCPU</Platforms>
 
     <ApplicationIcon>..\NzbDrone.Host\Sonarr.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>

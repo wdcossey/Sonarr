@@ -1,22 +1,23 @@
-﻿using NzbDrone.Common.Http;
+﻿using Microsoft.Extensions.Logging;
+using NzbDrone.Common.Http;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Parser;
-using NLog;
 
 namespace NzbDrone.Core.Indexers.Torrentleech
 {
     public class Torrentleech : HttpIndexerBase<TorrentleechSettings>
     {
+        private readonly ILoggerFactory _loggerFactory;
         public override string Name => "TorrentLeech";
 
         public override DownloadProtocol Protocol => DownloadProtocol.Torrent;
         public override bool SupportsSearch => false;
         public override int PageSize => 0;
 
-        public Torrentleech(IHttpClient httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, Logger logger)
-            : base(httpClient, indexerStatusService, configService, parsingService, logger)
+        public Torrentleech(IHttpClient httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, ILoggerFactory loggerFactory)
+            : base(httpClient, indexerStatusService, configService, parsingService, loggerFactory)
         {
-
+            _loggerFactory = loggerFactory;
         }
 
         public override IIndexerRequestGenerator GetRequestGenerator()
@@ -26,7 +27,7 @@ namespace NzbDrone.Core.Indexers.Torrentleech
 
         public override IParseIndexerResponse GetParser()
         {
-            return new TorrentRssParser() { UseGuidInfoUrl = true, ParseSeedersInDescription = true };
+            return new TorrentRssParser(_loggerFactory) { UseGuidInfoUrl = true, ParseSeedersInDescription = true };
         }
     }
 }

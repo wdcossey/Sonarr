@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentValidation.Results;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.ThingiProvider;
 
@@ -18,14 +18,14 @@ namespace NzbDrone.Core.Indexers
     public class IndexerFactory : ProviderFactory<IIndexer, IndexerDefinition>, IIndexerFactory
     {
         private readonly IIndexerStatusService _indexerStatusService;
-        private readonly Logger _logger;
+        private readonly ILogger<IndexerFactory> _logger;
 
         public IndexerFactory(IIndexerStatusService indexerStatusService,
                               IIndexerRepository providerRepository,
                               IEnumerable<IIndexer> providers,
                               IServiceProvider serviceProvider,
                               IEventAggregator eventAggregator,
-                              Logger logger)
+                              ILogger<IndexerFactory> logger)
             : base(providerRepository, providers, serviceProvider, eventAggregator, logger)
         {
             _indexerStatusService = indexerStatusService;
@@ -91,7 +91,7 @@ namespace NzbDrone.Core.Indexers
                 IndexerStatus blockedIndexerStatus;
                 if (blockedIndexers.TryGetValue(indexer.Definition.Id, out blockedIndexerStatus))
                 {
-                    _logger.Debug("Temporarily ignoring indexer {0} till {1} due to recent failures.", indexer.Definition.Name, blockedIndexerStatus.DisabledTill.Value.ToLocalTime());
+                    _logger.LogDebug("Temporarily ignoring indexer {Name} till {LocalTime} due to recent failures.", indexer.Definition.Name, blockedIndexerStatus.DisabledTill.Value.ToLocalTime());
                     continue;
                 }
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using FluentValidation.Results;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Indexers;
@@ -18,7 +18,7 @@ namespace NzbDrone.Core.Download
         protected readonly IConfigService _configService;
         protected readonly IDiskProvider _diskProvider;
         protected readonly IRemotePathMappingService _remotePathMappingService;
-        protected readonly Logger _logger;
+        protected readonly ILogger _logger;
 
         public abstract string Name { get; }
 
@@ -34,10 +34,10 @@ namespace NzbDrone.Core.Download
 
         protected TSettings Settings => (TSettings)Definition.Settings;
 
-        protected DownloadClientBase(IConfigService configService, 
-            IDiskProvider diskProvider, 
+        protected DownloadClientBase(IConfigService configService,
+            IDiskProvider diskProvider,
             IRemotePathMappingService remotePathMappingService,
-            Logger logger)
+            ILogger logger)
         {
             _configService = configService;
             _diskProvider = diskProvider;
@@ -75,7 +75,7 @@ namespace NzbDrone.Core.Download
 
             if (item.OutputPath.IsEmpty)
             {
-                _logger.Trace("[{0}] Doesn't have an outputPath, skipping delete data.", item.Title);
+                _logger.LogTrace("[{Title}] Doesn't have an outputPath, skipping delete data.", item.Title);
                 return;
             }
 
@@ -83,24 +83,24 @@ namespace NzbDrone.Core.Download
             {
                 if (_diskProvider.FolderExists(item.OutputPath.FullPath))
                 {
-                    _logger.Debug("[{0}] Deleting folder '{1}'.", item.Title, item.OutputPath);
+                    _logger.LogDebug("[{Title}] Deleting folder '{OutputPath}'.", item.Title, item.OutputPath);
 
                     _diskProvider.DeleteFolder(item.OutputPath.FullPath, true);
                 }
                 else if (_diskProvider.FileExists(item.OutputPath.FullPath))
                 {
-                    _logger.Debug("[{0}] Deleting file '{1}'.", item.Title, item.OutputPath);
+                    _logger.LogDebug("[{Title}] Deleting file '{OutputPath}'.", item.Title, item.OutputPath);
 
                     _diskProvider.DeleteFile(item.OutputPath.FullPath);
                 }
                 else
                 {
-                    _logger.Trace("[{0}] File or folder '{1}' doesn't exist, skipping cleanup.", item.Title, item.OutputPath);
+                    _logger.LogTrace("[{Title}] File or folder '{OutputPath}' doesn't exist, skipping cleanup.", item.Title, item.OutputPath);
                 }
             }
             catch (Exception ex)
             {
-                _logger.Warn(ex, string.Format("[{0}] Error occurred while trying to delete data from '{1}'.", item.Title, item.OutputPath));
+                _logger.LogWarning(ex, "[{Title}] Error occurred while trying to delete data from '{OutputPath}'.", item.Title, item.OutputPath);
             }
         }
 
@@ -114,7 +114,7 @@ namespace NzbDrone.Core.Download
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Test aborted due to exception");
+                _logger.LogError(ex, "Test aborted due to exception");
                 failures.Add(new ValidationFailure(string.Empty, "Test was aborted due to an error: " + ex.Message));
             }
 
@@ -135,7 +135,7 @@ namespace NzbDrone.Core.Download
 
             if (mustBeWritable && !_diskProvider.FolderWritable(folder))
             {
-                _logger.Error("Folder '{0}' is not writable.", folder);
+                _logger.LogError("Folder '{Folder}' is not writable.", folder);
                 return new NzbDroneValidationFailure(propertyName, "Unable to write to folder")
                 {
                     DetailedDescription = string.Format("The folder you specified is not writable. Please verify the folder permissions for the user account '{0}', which is used to execute Sonarr.", Environment.UserName)

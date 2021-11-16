@@ -1,5 +1,5 @@
 ﻿using FluentValidation.Results;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Configuration;
@@ -19,7 +19,7 @@ namespace NzbDrone.Core.Download.Clients.Vuze
                     IConfigService configService,
                     IDiskProvider diskProvider,
                     IRemotePathMappingService remotePathMappingService,
-                    Logger logger)
+                    ILogger<Vuze> logger)
             : base(proxy, torrentFileInfoReader, httpClient, configService, diskProvider, remotePathMappingService, logger)
         {
         }
@@ -37,12 +37,12 @@ namespace NzbDrone.Core.Download.Clients.Vuze
             // We have to make sure the return value points to the job folder OR file.
             if (outputPath == null || outputPath.FileName == torrent.Name || torrent.FileCount > 1)
             {
-                _logger.Trace("Vuze output directory: {0}", outputPath);
+                _logger.LogTrace("Vuze output directory: {OutputPath}", outputPath);
             }
             else
             {
                 outputPath = outputPath + torrent.Name;
-                _logger.Trace("Vuze output file: {0}", outputPath);
+                _logger.LogTrace("Vuze output file: {OutputPath}", outputPath);
             }
 
             return outputPath;
@@ -52,7 +52,7 @@ namespace NzbDrone.Core.Download.Clients.Vuze
         {
             var versionString = _proxy.GetProtocolVersion(Settings);
 
-            _logger.Debug("Vuze protocol version information: {0}", versionString);
+            _logger.LogDebug("Vuze protocol version information: {VersionString}", versionString);
 
             int version;
             if (!int.TryParse(versionString, out version) || version < MINIMUM_SUPPORTED_PROTOCOL_VERSION)

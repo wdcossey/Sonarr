@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Instrumentation.Extensions;
 using NzbDrone.Common.Serializer;
@@ -26,13 +26,13 @@ namespace NzbDrone.Core.DecisionEngine
         private readonly IParsingService _parsingService;
         private readonly IRemoteEpisodeAggregationService _aggregationService;
         private readonly ISceneMappingService _sceneMappingService;
-        private readonly Logger _logger;
+        private readonly ILogger<DownloadDecisionMaker> _logger;
 
         public DownloadDecisionMaker(IEnumerable<IDecisionEngineSpecification> specifications,
                                      IParsingService parsingService,
                                      IRemoteEpisodeAggregationService aggregationService,
                                      ISceneMappingService sceneMappingService,
-                                     Logger logger)
+                                     ILogger<DownloadDecisionMaker> logger)
         {
             _specifications = specifications;
             _parsingService = parsingService;
@@ -68,8 +68,8 @@ namespace NzbDrone.Core.DecisionEngine
             foreach (var report in reports)
             {
                 DownloadDecision decision = null;
-                _logger.ProgressTrace("Processing release {0}/{1}", reportNumber, reports.Count);
-                _logger.Debug("Processing release '{0}' from '{1}'", report.Title, report.Indexer);
+                _logger.ProgressTrace("Processing release {ReportNumber}/{Count}", reportNumber, reports.Count);
+                _logger.LogDebug("Processing release '{Title}' from '{Indexer}'", report.Title, report.Indexer);
 
                 try
                 {
@@ -139,7 +139,7 @@ namespace NzbDrone.Core.DecisionEngine
                 }
                 catch (Exception e)
                 {
-                    _logger.Error(e, "Couldn't process release.");
+                    _logger.LogError(e, "Couldn't process release.");
 
                     var remoteEpisode = new RemoteEpisode { Release = report };
                     decision = new DownloadDecision(remoteEpisode, new Rejection("Unexpected error processing release"));
@@ -151,12 +151,12 @@ namespace NzbDrone.Core.DecisionEngine
                 {
                     if (decision.Rejections.Any())
                     {
-                        _logger.Debug("Release rejected for the following reasons: {0}", string.Join(", ", decision.Rejections));
+                        _logger.LogDebug("Release rejected for the following reasons: {Rejections}", string.Join(", ", decision.Rejections));
                     }
 
                     else
                     {
-                        _logger.Debug("Release accepted");
+                        _logger.LogDebug("Release accepted");
                     }
 
                     yield return decision;
@@ -195,7 +195,7 @@ namespace NzbDrone.Core.DecisionEngine
             {
                 e.Data.Add("report", remoteEpisode.Release.ToJson());
                 e.Data.Add("parsed", remoteEpisode.ParsedEpisodeInfo.ToJson());
-                _logger.Error(e, "Couldn't evaluate decision on {0}", remoteEpisode.Release.Title);
+                _logger.LogError(e, "Couldn't evaluate decision on {Title}", remoteEpisode.Release.Title);
                 return new Rejection($"{spec.GetType().Name}: {e.Message}");
             }
 

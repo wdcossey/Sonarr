@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using FluentValidation.Results;
-using NLog;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Processes;
@@ -20,9 +20,9 @@ namespace NzbDrone.Core.Notifications.CustomScript
     {
         private readonly IDiskProvider _diskProvider;
         private readonly IProcessProvider _processProvider;
-        private readonly Logger _logger;
+        private readonly ILogger<CustomScript> _logger;
 
-        public CustomScript(IDiskProvider diskProvider, IProcessProvider processProvider, Logger logger)
+        public CustomScript(IDiskProvider diskProvider, IProcessProvider processProvider, ILogger<CustomScript> logger)
         {
             _diskProvider = diskProvider;
             _processProvider = processProvider;
@@ -231,7 +231,7 @@ namespace NzbDrone.Core.Notifications.CustomScript
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error(ex);
+                    _logger.LogError(ex, "{Message}", ex.Message);
                     failures.Add(new NzbDroneValidationFailure(string.Empty, ex.Message));
                 }
             }
@@ -241,12 +241,12 @@ namespace NzbDrone.Core.Notifications.CustomScript
 
         private ProcessOutput ExecuteScript(StringDictionary environmentVariables)
         {
-            _logger.Debug("Executing external script: {0}", Settings.Path);
+            _logger.LogDebug("Executing external script: {Path}", Settings.Path);
 
             var processOutput = _processProvider.StartAndCapture(Settings.Path, Settings.Arguments, environmentVariables);
 
-            _logger.Debug("Executed external script: {0} - Status: {1}", Settings.Path, processOutput.ExitCode);
-            _logger.Debug("Script Output: \r\n{0}", string.Join("\r\n", processOutput.Lines));
+            _logger.LogDebug("Executed external script: {Path} - Status: {ExitCode}", Settings.Path, processOutput.ExitCode);
+            _logger.LogDebug("Script Output: \r\n{Output}", string.Join("\r\n", processOutput.Lines));
 
             return processOutput;
         }

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Extensions;
 
@@ -15,9 +15,9 @@ namespace NzbDrone.Common.TPL
     public class RateLimitService : IRateLimitService
     {
         private readonly ConcurrentDictionary<string, DateTime> _rateLimitStore;
-        private readonly Logger _logger;
+        private readonly ILogger<RateLimitService> _logger;
 
-        public RateLimitService(ICacheManager cacheManager, Logger logger)
+        public RateLimitService(ICacheManager cacheManager, ILogger<RateLimitService> logger)
         {
             _rateLimitStore = cacheManager.GetCache<ConcurrentDictionary<string, DateTime>>(GetType(), "rateLimitStore").Get("rateLimitStore", () => new ConcurrentDictionary<string, DateTime>());
             _logger = logger;
@@ -33,7 +33,7 @@ namespace NzbDrone.Common.TPL
             var waitUntil = DateTime.UtcNow.Add(interval);
 
             if (subKey.IsNotNullOrWhiteSpace())
-            { 
+            {
                 // Expand the base key timer, but don't extend it beyond now+interval.
                 var baseUntil = _rateLimitStore.AddOrUpdate(key,
                     (s) => waitUntil,
@@ -63,7 +63,7 @@ namespace NzbDrone.Common.TPL
 
             if (delay.TotalSeconds > 0.0)
             {
-                _logger.Trace("Rate Limit triggered, delaying '{0}' for {1:0.000} sec", key, delay.TotalSeconds);
+                _logger.LogTrace("Rate Limit triggered, delaying '{Key}' for {TotalSeconds:0.000} sec", key, delay.TotalSeconds);
                 System.Threading.Thread.Sleep(delay);
             }
         }

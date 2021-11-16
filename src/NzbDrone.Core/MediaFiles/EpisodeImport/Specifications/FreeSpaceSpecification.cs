@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.DecisionEngine;
@@ -13,9 +13,9 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
     {
         private readonly IDiskProvider _diskProvider;
         private readonly IConfigService _configService;
-        private readonly Logger _logger;
+        private readonly ILogger<FreeSpaceSpecification> _logger;
 
-        public FreeSpaceSpecification(IDiskProvider diskProvider, IConfigService configService, Logger logger)
+        public FreeSpaceSpecification(IDiskProvider diskProvider, IConfigService configService, ILogger<FreeSpaceSpecification> logger)
         {
             _diskProvider = diskProvider;
             _configService = configService;
@@ -26,7 +26,7 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
         {
             if (_configService.SkipFreeSpaceCheckWhenImporting)
             {
-                _logger.Debug("Skipping free space check when importing");
+                _logger.LogDebug("Skipping free space check when importing");
                 return Decision.Accept();
             }
 
@@ -34,7 +34,7 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
             {
                 if (localEpisode.ExistingFile)
                 {
-                    _logger.Debug("Skipping free space check for existing episode");
+                    _logger.LogDebug("Skipping free space check for existing episode");
                     return Decision.Accept();
                 }
 
@@ -43,23 +43,23 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
 
                 if (!freeSpace.HasValue)
                 {
-                    _logger.Debug("Free space check returned an invalid result for: {0}", path);
+                    _logger.LogDebug("Free space check returned an invalid result for: {Path}", path);
                     return Decision.Accept();
                 }
 
                 if (freeSpace < localEpisode.Size + _configService.MinimumFreeSpaceWhenImporting.Megabytes())
                 {
-                    _logger.Warn("Not enough free space ({0}) to import: {1} ({2})", freeSpace, localEpisode, localEpisode.Size);
+                    _logger.LogWarning("Not enough free space ({FreeSpace}) to import: {LocalEpisode} ({Size})", freeSpace, localEpisode, localEpisode.Size);
                     return Decision.Reject("Not enough free space");
                 }
             }
             catch (DirectoryNotFoundException ex)
             {
-                _logger.Error(ex, "Unable to check free disk space while importing.");
+                _logger.LogError(ex, "Unable to check free disk space while importing.");
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Unable to check free disk space while importing. {0}", localEpisode.Path);
+                _logger.LogError(ex, "Unable to check free disk space while importing. {Path}", localEpisode.Path);
             }
 
             return Decision.Accept();

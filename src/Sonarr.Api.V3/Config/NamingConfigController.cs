@@ -2,6 +2,7 @@
 using System.Linq;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Organizer;
@@ -65,12 +66,12 @@ namespace Sonarr.Api.V3.Config
             }
         }
 
-
+        [ProducesResponseType( typeof(NamingConfigResource), StatusCodes.Status200OK)]
         [HttpGet]
-        [HttpGet("{id:int?}")]
-        public IActionResult GetNamingConfig(int? id = null)
+        public IActionResult GetNamingConfig([FromQuery] int? id = null)
             => Ok(GetNamingConfigResource());
 
+        [ProducesResponseType( typeof(NamingConfigResource), StatusCodes.Status202Accepted)]
         [HttpPut]
         [HttpPut("{id:int?}")]
         public IActionResult UpdateResource(int? id, [FromBody] NamingConfigResource resource)
@@ -80,6 +81,7 @@ namespace Sonarr.Api.V3.Config
             return Accepted(GetNamingConfigResource());
         }
 
+        [ProducesResponseType( typeof(NamingConfigResource), StatusCodes.Status200OK)]
         [HttpGet("examples")]
         public IActionResult Examples()
             //=> Ok(GetExamples(this.Bind<NamingConfigResource>()));

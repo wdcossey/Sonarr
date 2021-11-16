@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Download;
 using NzbDrone.Core.HealthCheck;
@@ -27,9 +27,9 @@ namespace NzbDrone.Core.Notifications
           IHandleAsync<HealthCheckCompleteEvent>
     {
         private readonly INotificationFactory _notificationFactory;
-        private readonly Logger _logger;
+        private readonly ILogger<NotificationService> _logger;
 
-        public NotificationService(INotificationFactory notificationFactory, Logger logger)
+        public NotificationService(INotificationFactory notificationFactory, ILogger<NotificationService> logger)
         {
             _notificationFactory = notificationFactory;
             _logger = logger;
@@ -80,17 +80,17 @@ namespace NzbDrone.Core.Notifications
         {
             if (definition.Tags.Empty())
             {
-                _logger.Debug("No tags set for this notification.");
+                _logger.LogDebug("No tags set for this notification.");
                 return true;
             }
 
             if (definition.Tags.Intersect(series.Tags).Any())
             {
-                _logger.Debug("Notification and series have one or more intersecting tags.");
+                _logger.LogDebug("Notification and series have one or more intersecting tags.");
                 return true;
             }
 
-            _logger.Debug("{0} does not have any intersecting tags with {1}. Notification will not be sent.", definition.Name, series.Title);
+            _logger.LogDebug("{DefinitionName} does not have any intersecting tags with {SeriesTitle}. Notification will not be sent.", definition.Name, series.Title);
             return false;
         }
 
@@ -131,7 +131,7 @@ namespace NzbDrone.Core.Notifications
 
                 catch (Exception ex)
                 {
-                    _logger.Error(ex, "Unable to send OnGrab notification to {0}", notification.Definition.Name);
+                    _logger.LogError(ex, "Unable to send OnGrab notification to {DefinitionName}", notification.Definition.Name);
                 }
             }
         }
@@ -169,7 +169,7 @@ namespace NzbDrone.Core.Notifications
 
                 catch (Exception ex)
                 {
-                    _logger.Warn(ex, "Unable to send OnDownload notification to: " + notification.Definition.Name);
+                    _logger.LogWarning(ex, "Unable to send OnDownload notification to: {DefinitionName}", notification.Definition.Name);
                 }
             }
         }
@@ -188,7 +188,7 @@ namespace NzbDrone.Core.Notifications
 
                 catch (Exception ex)
                 {
-                    _logger.Warn(ex, "Unable to send OnRename notification to: " + notification.Definition.Name);
+                    _logger.LogWarning(ex, "Unable to send OnRename notification to: {DefinitionName}", notification.Definition.Name);
                 }
             }
         }
@@ -197,7 +197,7 @@ namespace NzbDrone.Core.Notifications
         {
             if (message.EpisodeFile.Episodes.Value.Empty())
             {
-                _logger.Trace("Skipping notification for deleted file without an episode (episode metadata was removed)");
+                _logger.LogTrace("Skipping notification for deleted file without an episode (episode metadata was removed)");
 
                 return;
             }
@@ -222,7 +222,7 @@ namespace NzbDrone.Core.Notifications
                 }
                 catch (Exception ex)
                 {
-                    _logger.Warn(ex, "Unable to send OnDelete notification to: " + notification.Definition.Name);
+                    _logger.LogWarning(ex, "Unable to send OnDelete notification to: {DefinitionName}", notification.Definition.Name);
                 }
             }
         }
@@ -242,7 +242,7 @@ namespace NzbDrone.Core.Notifications
                 }
                 catch (Exception ex)
                 {
-                    _logger.Warn(ex, "Unable to send OnDelete notification to: " + notification.Definition.Name);
+                    _logger.LogWarning(ex, "Unable to send OnDelete notification to: {DefinitionName}", notification.Definition.Name);
                 }
             }
         }
@@ -261,7 +261,7 @@ namespace NzbDrone.Core.Notifications
 
                 catch (Exception ex)
                 {
-                    _logger.Warn(ex, "Unable to send OnHealthIssue notification to: " + notification.Definition.Name);
+                    _logger.LogWarning(ex, "Unable to send OnHealthIssue notification to: {DefinitionName}", notification.Definition.Name);
                 }
             }
         }
@@ -296,7 +296,7 @@ namespace NzbDrone.Core.Notifications
                 }
                 catch (Exception ex)
                 {
-                    _logger.Warn(ex, "Unable to process notification queue for " + notification.Definition.Name);
+                    _logger.LogWarning(ex, "Unable to process notification queue for {DefinitionName}", notification.Definition.Name);
                 }
             }
         }

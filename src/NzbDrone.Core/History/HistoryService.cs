@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Download;
@@ -40,9 +40,9 @@ namespace NzbDrone.Core.History
     {
         private readonly IHistoryRepository _historyRepository;
         private readonly IEpisodeFilePreferredWordCalculator _episodeFilePreferredWordCalculator;
-        private readonly Logger _logger;
+        private readonly ILogger<HistoryService> _logger;
 
-        public HistoryService(IHistoryRepository historyRepository, IEpisodeFilePreferredWordCalculator episodeFilePreferredWordCalculator, Logger logger)
+        public HistoryService(IHistoryRepository historyRepository, IEpisodeFilePreferredWordCalculator episodeFilePreferredWordCalculator, ILogger<HistoryService> logger)
         {
             _historyRepository = historyRepository;
             _episodeFilePreferredWordCalculator = episodeFilePreferredWordCalculator;
@@ -96,7 +96,7 @@ namespace NzbDrone.Core.History
 
         public string FindDownloadId(EpisodeImportedEvent trackedDownload)
         {
-            _logger.Debug("Trying to find downloadId for {0} from history", trackedDownload.ImportedEpisode.Path);
+            _logger.LogDebug("Trying to find downloadId for {Path} from history", trackedDownload.ImportedEpisode.Path);
 
             var episodeIds = trackedDownload.EpisodeInfo.Episodes.Select(c => c.Id).ToList();
             var allHistory = _historyRepository.FindDownloadHistory(trackedDownload.EpisodeInfo.Series.Id, trackedDownload.ImportedEpisode.Quality);
@@ -253,12 +253,12 @@ namespace NzbDrone.Core.History
         {
             if (message.Reason == DeleteMediaFileReason.NoLinkedEpisodes)
             {
-                _logger.Debug("Removing episode file from DB as part of cleanup routine, not creating history event.");
+                _logger.LogDebug("Removing episode file from DB as part of cleanup routine, not creating history event.");
                 return;
             }
             else if (message.Reason == DeleteMediaFileReason.ManualOverride)
             {
-                _logger.Debug("Removing episode file from DB as part of manual override of existing file, not creating history event.");
+                _logger.LogDebug("Removing episode file from DB as part of manual override of existing file, not creating history event.");
                 return;
             }
 

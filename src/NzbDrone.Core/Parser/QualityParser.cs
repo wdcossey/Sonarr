@@ -455,14 +455,14 @@ namespace NzbDrone.Core.Parser
             if (codecRegex.Groups["x264"].Success)
             {
                 result.Quality = Quality.SDTV;
-                
+
                 return result;
             }
 
             if (normalizedName.Contains("848x480"))
             {
                 result.ResolutionDetectionSource = QualityDetectionSource.Name;
-                
+
                 if (normalizedName.Contains("dvd"))
                 {
                     result.SourceDetectionSource = QualityDetectionSource.Name;
@@ -484,7 +484,7 @@ namespace NzbDrone.Core.Parser
             if (normalizedName.ContainsIgnoreCase("1280x720"))
             {
                 result.ResolutionDetectionSource = QualityDetectionSource.Name;
-                
+
                 if (normalizedName.ContainsIgnoreCase("bluray"))
                 {
                     result.SourceDetectionSource = QualityDetectionSource.Name;
@@ -501,7 +501,7 @@ namespace NzbDrone.Core.Parser
             if (normalizedName.ContainsIgnoreCase("1920x1080"))
             {
                 result.ResolutionDetectionSource = QualityDetectionSource.Name;
-                
+
                 if (normalizedName.ContainsIgnoreCase("bluray"))
                 {
                     result.SourceDetectionSource = QualityDetectionSource.Name;

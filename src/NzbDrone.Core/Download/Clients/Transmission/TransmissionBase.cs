@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using FluentValidation.Results;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
@@ -24,7 +24,7 @@ namespace NzbDrone.Core.Download.Clients.Transmission
             IConfigService configService,
             IDiskProvider diskProvider,
             IRemotePathMappingService remotePathMappingService,
-            Logger logger)
+            ILogger logger)
             : base(torrentFileInfoReader, httpClient, configService, diskProvider, remotePathMappingService, logger)
         {
             _proxy = proxy;
@@ -112,7 +112,7 @@ namespace NzbDrone.Core.Download.Clients.Transmission
         {
             var isStopped = torrent.Status == TransmissionTorrentStatus.Stopped;
             var isSeeding = torrent.Status == TransmissionTorrentStatus.Seeding;
-            
+
             if (torrent.SeedRatioMode == 1)
             {
                 if (isStopped && ratio.HasValue && ratio >= torrent.SeedRatioLimit)
@@ -237,7 +237,7 @@ namespace NzbDrone.Core.Download.Clients.Transmission
             }
             catch (DownloadClientAuthenticationException ex)
             {
-                _logger.Error(ex, ex.Message);
+                _logger.LogError(ex, "{Message}", ex.Message);
                 return new NzbDroneValidationFailure("Username", "Authentication failure")
                 {
                     DetailedDescription = string.Format("Please verify your username and password. Also verify if the host running Sonarr isn't blocked from accessing {0} by WhiteList limitations in the {0} configuration.", Name)
@@ -245,7 +245,7 @@ namespace NzbDrone.Core.Download.Clients.Transmission
             }
             catch (DownloadClientUnavailableException ex)
             {
-                _logger.Error(ex, ex.Message);
+                _logger.LogError(ex, "{Message}", ex.Message);
 
                 return new NzbDroneValidationFailure("Host", "Unable to connect to Transmission")
                        {
@@ -254,7 +254,7 @@ namespace NzbDrone.Core.Download.Clients.Transmission
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failed to test");
+                _logger.LogError(ex, "Failed to test");
 
                 return new NzbDroneValidationFailure(string.Empty, "Unknown exception: " + ex.Message);
             }
@@ -270,7 +270,7 @@ namespace NzbDrone.Core.Download.Clients.Transmission
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failed to get torrents");
+                _logger.LogError(ex, "Failed to get torrents");
                 return new NzbDroneValidationFailure(string.Empty, "Failed to get the list of torrents: " + ex.Message);
             }
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cloud;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
@@ -18,7 +18,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
     public class SkyHookProxy : IProvideSeriesInfo, ISearchForNewSeries
     {
         private readonly IHttpClient _httpClient;
-        private readonly Logger _logger;
+        private readonly ILogger<SkyHookProxy> _logger;
         private readonly ISeriesService _seriesService;
         private readonly IDailySeriesService _dailySeriesService;
         private readonly IHttpRequestBuilderFactory _requestBuilder;
@@ -27,7 +27,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                             ISonarrCloudRequestBuilder requestBuilder,
                             ISeriesService seriesService,
                             IDailySeriesService dailySeriesService,
-                            Logger logger)
+                            ILogger<SkyHookProxy> logger)
         {
             _httpClient = httpClient;
              _requestBuilder = requestBuilder.SkyHookTvdb;
@@ -111,17 +111,17 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             }
             catch (HttpException ex)
             {
-                _logger.Warn(ex);
+                _logger.LogWarning(ex, "{Message}", ex.Message);
                 throw new SkyHookException("Search for '{0}' failed. Unable to communicate with SkyHook.", ex, title);
             }
             catch (WebException ex)
             {
-                _logger.Warn(ex);
+                _logger.LogWarning(ex, "{Message}", ex.Message);
                 throw new SkyHookException("Search for '{0}' failed. Unable to communicate with SkyHook.", ex, title, ex.Message);
             }
             catch (Exception ex)
             {
-                _logger.Warn(ex);
+                _logger.LogWarning(ex, "{Message}", ex.Message);
                 throw new SkyHookException("Search for '{0}' failed. Invalid response received from SkyHook.", ex, title);
             }
         }

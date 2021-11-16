@@ -1,5 +1,5 @@
 ﻿using System;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Processes;
 using NzbDrone.Core.Configuration;
@@ -16,9 +16,12 @@ namespace NzbDrone.Host
         private readonly IProcessProvider _processProvider;
         private readonly IConfigFileProvider _configFileProvider;
         private readonly IRuntimeInfo _runtimeInfo;
-        private readonly Logger _logger;
+        private readonly ILogger<BrowserService> _logger;
 
-        public BrowserService(IProcessProvider processProvider, IConfigFileProvider configFileProvider, IRuntimeInfo runtimeInfo, Logger logger)
+        public BrowserService(IProcessProvider processProvider,
+                              IConfigFileProvider configFileProvider,
+                              IRuntimeInfo runtimeInfo,
+                              ILogger<BrowserService> logger)
         {
             _processProvider = processProvider;
             _configFileProvider = configFileProvider;
@@ -28,22 +31,22 @@ namespace NzbDrone.Host
 
         public void LaunchWebUI()
         {
-            var url = string.Format("http://localhost:{0}", _configFileProvider.Port);
+            var url = $"http://localhost:{_configFileProvider.Port}";
             try
             {
                 if (_runtimeInfo.IsUserInteractive)
                 {
-                    _logger.Info("Starting default browser. {0}", url);
+                    _logger.LogInformation("Starting default browser. {Url}", url);
                     _processProvider.OpenDefaultBrowser(url);
                 }
                 else
                 {
-                    _logger.Debug("non-interactive runtime. Won't attempt to open browser.");
+                    _logger.LogDebug("non-interactive runtime. Won't attempt to open browser.");
                 }
             }
             catch (Exception e)
             {
-                _logger.Error(e, "Couldn't open default browser to {0}", url);
+                _logger.LogError(e, "Couldn't open default browser to {Url}", url);
             }
         }
     }

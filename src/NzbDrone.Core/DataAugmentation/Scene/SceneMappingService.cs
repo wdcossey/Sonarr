@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Messaging.Commands;
@@ -30,7 +30,7 @@ namespace NzbDrone.Core.DataAugmentation.Scene
         private readonly ISceneMappingRepository _repository;
         private readonly IEnumerable<ISceneMappingProvider> _sceneMappingProviders;
         private readonly IEventAggregator _eventAggregator;
-        private readonly Logger _logger;
+        private readonly ILogger<SceneMappingService> _logger;
         private readonly ICachedDictionary<List<SceneMapping>> _getTvdbIdCache;
         private readonly ICachedDictionary<List<SceneMapping>> _findByTvdbIdCache;
         private bool _updatedAfterStartup;
@@ -39,7 +39,7 @@ namespace NzbDrone.Core.DataAugmentation.Scene
                                    ICacheManager cacheManager,
                                    IEnumerable<ISceneMappingProvider> sceneMappingProviders,
                                    IEventAggregator eventAggregator,
-                                   Logger logger)
+                                   ILogger<SceneMappingService> logger)
         {
             _repository = repository;
             _sceneMappingProviders = sceneMappingProviders;
@@ -111,7 +111,7 @@ namespace NzbDrone.Core.DataAugmentation.Scene
             if (distinctMappings.Count == 1)
             {
                 var mapping = distinctMappings.First();
-                _logger.Debug("Found scene mapping for: {0}. TVDB ID for mapping: {1}", seriesTitle, mapping.TvdbId);
+                _logger.LogDebug("Found scene mapping for: {SeriesTitle}. TVDB ID for mapping: {TvdbId}", seriesTitle, mapping.TvdbId);
                 return distinctMappings.First();
             }
 
@@ -125,7 +125,7 @@ namespace NzbDrone.Core.DataAugmentation.Scene
 
         private void UpdateMappings()
         {
-            _logger.Info("Updating Scene mappings");
+            _logger.LogInformation("Updating Scene mappings");
 
             _updatedAfterStartup = true;
 
@@ -144,7 +144,7 @@ namespace NzbDrone.Core.DataAugmentation.Scene
                             if (sceneMapping.Title.IsNullOrWhiteSpace() ||
                                 sceneMapping.SearchTerm.IsNullOrWhiteSpace())
                             {
-                                _logger.Warn("Invalid scene mapping found for: {0}, skipping", sceneMapping.TvdbId);
+                                _logger.LogWarning("Invalid scene mapping found for: {TvdbId}, skipping", sceneMapping.TvdbId);
                                 return true;
                             }
 
@@ -161,12 +161,12 @@ namespace NzbDrone.Core.DataAugmentation.Scene
                     }
                     else
                     {
-                        _logger.Warn("Received empty list of mapping. will not update");
+                        _logger.LogWarning("Received empty list of mapping. will not update");
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error(ex, "Failed to Update Scene Mappings");
+                    _logger.LogError(ex, "Failed to Update Scene Mappings");
                 }
             }
 
@@ -280,7 +280,7 @@ namespace NzbDrone.Core.DataAugmentation.Scene
                 UpdateMappings();
             }
         }
-                
+
         public void Handle(SeriesAddedEvent message)
         {
             if (!_updatedAfterStartup)

@@ -1,5 +1,5 @@
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Download.Pending;
 using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.Parser.Model;
@@ -13,11 +13,11 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.RssSync
     {
         private readonly IPendingReleaseService _pendingReleaseService;
         private readonly IDelayProfileService _delayProfileService;
-        private readonly Logger _logger;
+        private readonly ILogger<DelaySpecification> _logger;
 
         public DelaySpecification(IPendingReleaseService pendingReleaseService,
                                   IDelayProfileService delayProfileService,
-                                  Logger logger)
+                                  ILogger<DelaySpecification> logger)
         {
             _pendingReleaseService = pendingReleaseService;
             _delayProfileService = delayProfileService;
@@ -31,7 +31,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.RssSync
         {
             if (searchCriteria != null && searchCriteria.UserInvokedSearch)
             {
-                _logger.Debug("Ignoring delay for user invoked search");
+                _logger.LogDebug("Ignoring delay for user invoked search");
                 return Decision.Accept();
             }
 
@@ -43,7 +43,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.RssSync
 
             if (delay == 0)
             {
-                _logger.Debug("QualityProfile does not require a waiting period before download for {0}.", subject.Release.DownloadProtocol);
+                _logger.LogDebug("QualityProfile does not require a waiting period before download for {DownloadProtocol}.", subject.Release.DownloadProtocol);
                 return Decision.Accept();
             }
 
@@ -60,7 +60,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.RssSync
 
                     if (qualityCompare == 0 && newQuality?.Revision.CompareTo(currentQuality.Revision) > 0)
                     {
-                        _logger.Debug("New quality is a better revision for existing quality, skipping delay");
+                        _logger.LogDebug("New quality is a better revision for existing quality, skipping delay");
                         return Decision.Accept();
                     }
                 }
@@ -75,7 +75,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.RssSync
 
                 if (isBestInProfile && isBestInProfileLanguage && isPreferredProtocol)
                 {
-                    _logger.Debug("Quality and language is highest in profile for preferred protocol, will not delay");
+                    _logger.LogDebug("Quality and language is highest in profile for preferred protocol, will not delay");
                     return Decision.Accept();
                 }
             }
@@ -91,7 +91,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.RssSync
 
             if (subject.Release.AgeMinutes < delay)
             {
-                _logger.Debug("Waiting for better quality release, There is a {0} minute delay on {1}", delay, subject.Release.DownloadProtocol);
+                _logger.LogDebug("Waiting for better quality release, There is a {Delay} minute delay on {DownloadProtocol}", delay, subject.Release.DownloadProtocol);
                 return Decision.Reject("Waiting for better quality release");
             }
 

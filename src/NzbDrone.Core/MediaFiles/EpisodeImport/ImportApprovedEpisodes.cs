@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.MediaFiles.Events;
@@ -27,14 +27,14 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport
         private readonly IExtraService _extraService;
         private readonly IDiskProvider _diskProvider;
         private readonly IEventAggregator _eventAggregator;
-        private readonly Logger _logger;
+        private readonly ILogger<ImportApprovedEpisodes> _logger;
 
         public ImportApprovedEpisodes(IUpgradeMediaFiles episodeFileUpgrader,
                                       IMediaFileService mediaFileService,
                                       IExtraService extraService,
                                       IDiskProvider diskProvider,
                                       IEventAggregator eventAggregator,
-                                      Logger logger)
+                                      ILogger<ImportApprovedEpisodes> logger)
         {
             _episodeFileUpgrader = episodeFileUpgrader;
             _mediaFileService = mediaFileService;
@@ -134,19 +134,19 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport
                 }
                 catch (RootFolderNotFoundException e)
                 {
-                    _logger.Warn(e, "Couldn't import episode " + localEpisode);
+                    _logger.LogWarning(e, "Couldn't import episode {LocalEpisode}", localEpisode);
                     _eventAggregator.PublishEvent(new EpisodeImportFailedEvent(e, localEpisode, newDownload, downloadClientItem));
 
                     importResults.Add(new ImportResult(importDecision, "Failed to import episode, Root folder missing."));
                 }
                 catch (DestinationAlreadyExistsException e)
                 {
-                    _logger.Warn(e, "Couldn't import episode " + localEpisode);
+                    _logger.LogWarning(e, "Couldn't import episode {LocalEpisode}",localEpisode);
                     importResults.Add(new ImportResult(importDecision, "Failed to import episode, Destination already exists."));
                 }
                 catch (Exception e)
                 {
-                    _logger.Warn(e, "Couldn't import episode " + localEpisode);
+                    _logger.LogWarning(e, "Couldn't import episode {LocalEpisode}", localEpisode);
                     importResults.Add(new ImportResult(importDecision, "Failed to import episode"));
                 }
             }

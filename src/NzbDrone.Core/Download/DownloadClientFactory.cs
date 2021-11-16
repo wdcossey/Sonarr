@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using FluentValidation.Results;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.ThingiProvider;
 
@@ -16,14 +16,14 @@ namespace NzbDrone.Core.Download
     public class DownloadClientFactory : ProviderFactory<IDownloadClient, DownloadClientDefinition>, IDownloadClientFactory
     {
         private readonly IDownloadClientStatusService _downloadClientStatusService;
-        private readonly Logger _logger;
+        private readonly ILogger<DownloadClientFactory> _logger;
 
         public DownloadClientFactory(IDownloadClientStatusService downloadClientStatusService,
                                      IDownloadClientRepository providerRepository,
                                      IEnumerable<IDownloadClient> providers,
                                      IServiceProvider serviceProvider,
                                      IEventAggregator eventAggregator,
-                                     Logger logger)
+                                     ILogger<DownloadClientFactory> logger)
             : base(providerRepository, providers, serviceProvider, eventAggregator, logger)
         {
             _downloadClientStatusService = downloadClientStatusService;
@@ -63,7 +63,7 @@ namespace NzbDrone.Core.Download
                 DownloadClientStatus downloadClientStatus;
                 if (blockedIndexers.TryGetValue(client.Definition.Id, out downloadClientStatus))
                 {
-                    _logger.Debug("Temporarily ignoring download client {0} till {1} due to recent failures.", client.Definition.Name, downloadClientStatus.DisabledTill.Value.ToLocalTime());
+                    _logger.LogDebug("Temporarily ignoring download client {Name} till {LocalTime} due to recent failures.", client.Definition.Name, downloadClientStatus.DisabledTill.Value.ToLocalTime());
                     continue;
                 }
 

@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using Microsoft.Extensions.Logging;
 using FluentValidation.Results;
 using Newtonsoft.Json;
-using NLog;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 
@@ -20,9 +20,9 @@ namespace NzbDrone.Core.ImportLists.Sonarr
     public class SonarrV3Proxy : ISonarrV3Proxy
     {
         private readonly IHttpClient _httpClient;
-        private readonly Logger _logger;
+        private readonly ILogger<SonarrV3Proxy> _logger;
 
-        public SonarrV3Proxy(IHttpClient httpClient, Logger logger)
+        public SonarrV3Proxy(IHttpClient httpClient, ILogger<SonarrV3Proxy> logger)
         {
             _httpClient = httpClient;
             _logger = logger;
@@ -53,16 +53,16 @@ namespace NzbDrone.Core.ImportLists.Sonarr
             {
                 if (ex.Response.StatusCode == HttpStatusCode.Unauthorized)
                 {
-                    _logger.Error(ex, "API Key is invalid");
+                    _logger.LogError(ex, "API Key is invalid");
                     return new ValidationFailure("ApiKey", "API Key is invalid");
                 }
 
-                _logger.Error(ex, "Unable to send test message");
+                _logger.LogError(ex, "Unable to send test message");
                 return new ValidationFailure("ApiKey", "Unable to send test message");
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Unable to send test message");
+                _logger.LogError(ex, "Unable to send test message");
                 return new ValidationFailure("", "Unable to send test message");
             }
 

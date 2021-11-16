@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using Microsoft.Extensions.Logging;
 using MonoTorrent;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
@@ -11,7 +12,6 @@ using NzbDrone.Core.Organizer;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.ThingiProvider;
 using NzbDrone.Core.Configuration;
-using NLog;
 using NzbDrone.Core.RemotePathMappings;
 
 namespace NzbDrone.Core.Download
@@ -27,7 +27,7 @@ namespace NzbDrone.Core.Download
                                     IConfigService configService,
                                     IDiskProvider diskProvider,
                                     IRemotePathMappingService remotePathMappingService,
-                                    Logger logger)
+                                    ILogger logger)
             : base(configService, diskProvider, remotePathMappingService, logger)
         {
             _httpClient = httpClient;
@@ -77,7 +77,7 @@ namespace NzbDrone.Core.Download
                             throw;
                         }
 
-                        _logger.Debug("Torrent download failed, trying magnet. ({0})", ex.Message);
+                        _logger.LogDebug("Torrent download failed, trying magnet. ({Message})", ex.Message);
                     }
                 }
 
@@ -108,7 +108,7 @@ namespace NzbDrone.Core.Download
                             throw new ReleaseDownloadException(remoteEpisode.Release, "Magnet not supported by download client. ({0})", ex.Message);
                         }
 
-                        _logger.Debug("Magnet not supported by download client, trying torrent. ({0})", ex.Message);
+                        _logger.LogDebug("Magnet not supported by download client, trying torrent. ({Message})", ex.Message);
                     }
                 }
 
@@ -140,7 +140,7 @@ namespace NzbDrone.Core.Download
                 {
                     var locationHeader = response.Headers.GetSingleValue("Location");
 
-                    _logger.Trace("Torrent request is being redirected to: {0}", locationHeader);
+                    _logger.LogTrace("Torrent request is being redirected to: {LocationHeader}", locationHeader);
 
                     if (locationHeader != null)
                     {
@@ -157,30 +157,30 @@ namespace NzbDrone.Core.Download
 
                 torrentFile = response.ResponseData;
 
-                _logger.Debug("Downloading torrent for episode '{0}' finished ({1} bytes from {2})", remoteEpisode.Release.Title, torrentFile.Length, torrentUrl);
+                _logger.LogDebug("Downloading torrent for episode '{Title}' finished ({Length} bytes from {TorrentUrl})", remoteEpisode.Release.Title, torrentFile.Length, torrentUrl);
             }
             catch (HttpException ex)
             {
                 if (ex.Response.StatusCode == HttpStatusCode.NotFound)
                 {
-                    _logger.Error(ex, "Downloading torrent file for episode '{0}' failed since it no longer exists ({1})", remoteEpisode.Release.Title, torrentUrl);
+                    _logger.LogError(ex, "Downloading torrent file for episode '{Title}' failed since it no longer exists ({TorrentUrl})", remoteEpisode.Release.Title, torrentUrl);
                     throw new ReleaseUnavailableException(remoteEpisode.Release, "Downloading torrent failed", ex);
                 }
 
                 if ((int)ex.Response.StatusCode == 429)
                 {
-                    _logger.Error("API Grab Limit reached for {0}", torrentUrl);
+                    _logger.LogError("API Grab Limit reached for {TorrentUrl}", torrentUrl);
                 }
                 else
                 {
-                    _logger.Error(ex, "Downloading torrent file for episode '{0}' failed ({1})", remoteEpisode.Release.Title, torrentUrl);
+                    _logger.LogError(ex, "Downloading torrent file for episode '{Title}' failed ({TorrentUrl})", remoteEpisode.Release.Title, torrentUrl);
                 }
 
                 throw new ReleaseDownloadException(remoteEpisode.Release, "Downloading torrent failed", ex);
             }
             catch (WebException ex)
             {
-                _logger.Error(ex, "Downloading torrent file for episode '{0}' failed ({1})", remoteEpisode.Release.Title, torrentUrl);
+                _logger.LogError(ex, "Downloading torrent file for episode '{Title}' failed ({TorrentUrl})", remoteEpisode.Release.Title, torrentUrl);
 
                 throw new ReleaseDownloadException(remoteEpisode.Release, "Downloading torrent failed", ex);
             }
@@ -191,8 +191,8 @@ namespace NzbDrone.Core.Download
 
             if (actualHash.IsNotNullOrWhiteSpace() && hash != actualHash)
             {
-                _logger.Debug(
-                    "{0} did not return the expected InfoHash for '{1}', Sonarr could potentially lose track of the download in progress.",
+                _logger.LogDebug(
+                    "{Implementation} did not return the expected InfoHash for '{DownloadUrl}', Sonarr could potentially lose track of the download in progress.",
                     Definition.Implementation, remoteEpisode.Release.DownloadUrl);
             }
 
@@ -210,7 +210,7 @@ namespace NzbDrone.Core.Download
             }
             catch (FormatException ex)
             {
-                _logger.Error(ex, "Failed to parse magnetlink for episode '{0}': '{1}'", remoteEpisode.Release.Title, magnetUrl);
+                _logger.LogError(ex, "Failed to parse magnetlink for episode '{Title}': '{MagnetUrl}'", remoteEpisode.Release.Title, magnetUrl);
 
                 return null;
             }
@@ -222,8 +222,8 @@ namespace NzbDrone.Core.Download
 
             if (actualHash.IsNotNullOrWhiteSpace() && hash != actualHash)
             {
-                _logger.Debug(
-                    "{0} did not return the expected InfoHash for '{1}', Sonarr could potentially lose track of the download in progress.",
+                _logger.LogDebug(
+                    "{Implementation} did not return the expected InfoHash for '{DownloadUrl}', Sonarr could potentially lose track of the download in progress.",
                     Definition.Implementation, remoteEpisode.Release.DownloadUrl);
             }
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using FluentValidation.Results;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
@@ -34,7 +34,7 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation
                                      IDiskProvider diskProvider,
                                      IRemotePathMappingService remotePathMappingService,
                                      IValidateNzbs nzbValidationService,
-                                     Logger logger
+                                     ILogger<UsenetDownloadStation> logger
                                      )
             : base(httpClient, configService, diskProvider, remotePathMappingService, nzbValidationService, logger)
         {
@@ -150,7 +150,7 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation
             }
             catch (DownloadClientException e)
             {
-                _logger.Debug(e, "Failed to get config from Download Station");
+                _logger.LogDebug(e, "Failed to get config from Download Station");
 
                 throw;
             }
@@ -164,7 +164,7 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation
             }
 
             DsTaskProxy.RemoveTask(ParseDownloadId(item.DownloadId), Settings);
-            _logger.Debug("{0} removed correctly", item.DownloadId);
+            _logger.LogDebug("{DownloadId} removed correctly", item.DownloadId);
         }
 
         protected override string AddFromNzbFile(RemoteEpisode remoteEpisode, string filename, byte[] fileContent)
@@ -179,11 +179,11 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation
 
             if (item != null)
             {
-                _logger.Debug("{0} added correctly", remoteEpisode);
+                _logger.LogDebug("{RemoteEpisode} added correctly", remoteEpisode);
                 return CreateDownloadId(item.Id, hashedSerialNumber);
             }
 
-            _logger.Debug("No such task {0} in Download Station", filename);
+            _logger.LogDebug("No such task {FileName} in Download Station", filename);
 
             throw new DownloadClientException("Failed to add NZB task to Download Station");
         }
@@ -240,12 +240,12 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation
             }
             catch (DownloadClientAuthenticationException ex) // User could not have permission to access to downloadstation
             {
-                _logger.Error(ex, ex.Message);
+                _logger.LogError(ex, "{Message}", ex.Message);
                 return new NzbDroneValidationFailure(string.Empty, ex.Message);
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Error testing Usenet Download Station");
+                _logger.LogError(ex, "Error testing Usenet Download Station");
                 return new NzbDroneValidationFailure(string.Empty, $"Unknown exception: {ex.Message}");
             }
         }
@@ -258,7 +258,7 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation
             }
             catch (DownloadClientAuthenticationException ex)
             {
-                _logger.Error(ex, ex.Message);
+                _logger.LogError(ex, "{Message}", ex.Message);
                 return new NzbDroneValidationFailure("Username", "Authentication failure")
                 {
                     DetailedDescription = $"Please verify your username and password. Also verify if the host running Sonarr isn't blocked from accessing {Name} by WhiteList limitations in the {Name} configuration."
@@ -266,7 +266,7 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation
             }
             catch (WebException ex)
             {
-                _logger.Error(ex, "Unable to connect to Usenet Download Station");
+                _logger.LogError(ex, "Unable to connect to Usenet Download Station");
 
                 if (ex.Status == WebExceptionStatus.ConnectFailure)
                 {
@@ -279,7 +279,7 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Error testing Torrent Download Station");
+                _logger.LogError(ex, "Error testing Torrent Download Station");
 
                 return new NzbDroneValidationFailure("Host", "Unable to connect to Usenet Download Station")
                        {
@@ -292,7 +292,7 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation
         {
             var info = DsTaskProxy.GetApiInfo(Settings);
 
-            _logger.Debug("Download Station api version information: Min {0} - Max {1}", info.MinVersion, info.MaxVersion);
+            _logger.LogDebug("Download Station api version information: Min {MinVersion} - Max {MaxVersion}", info.MinVersion, info.MaxVersion);
 
             if (info.MinVersion > 2 || info.MaxVersion < 2)
             {
@@ -347,7 +347,7 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation
 
             if (downloadedString.IsNullOrWhiteSpace() || !long.TryParse(downloadedString, out downloadedSize))
             {
-                _logger.Debug("Task {0} has invalid size_downloaded: {1}", task.Title, downloadedString);
+                _logger.LogDebug("Task {Title} has invalid size_downloaded: {DownloadedString}", task.Title, downloadedString);
                 downloadedSize = 0;
             }
 
@@ -361,7 +361,7 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation
 
             if (speedString.IsNullOrWhiteSpace() || !long.TryParse(speedString, out downloadSpeed))
             {
-                _logger.Debug("Task {0} has invalid speed_download: {1}", task.Title, speedString);
+                _logger.LogDebug("Task {Title} has invalid speed_download: {SpeedString}", task.Title, speedString);
                 downloadSpeed = 0;
             }
 

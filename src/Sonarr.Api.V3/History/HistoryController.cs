@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.DecisionEngine.Specifications;
@@ -32,6 +34,7 @@ namespace Sonarr.Api.V3.History
             _failedDownloadService = failedDownloadService;
         }
 
+        [ProducesResponseType(typeof(PagingResource<HistoryResource>), StatusCodes.Status200OK)]
         [HttpGet]
         public IActionResult GetHistory(
             [FromQuery] [ModelBinder(typeof(PagingResourceModelBinder))] PagingResource<HistoryResource> pagingResource,
@@ -65,6 +68,8 @@ namespace Sonarr.Api.V3.History
             return Ok(pagingSpec.ApplyToPage(_historyService.Paged, h => MapToResource(h, includeSeries, includeEpisode)));
         }
 
+        [ProducesResponseType(typeof(IEnumerable<HistoryResource>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpGet("since")]
         public IActionResult GetHistorySince(
             [FromQuery] DateTime? date = null,
@@ -75,9 +80,10 @@ namespace Sonarr.Api.V3.History
             if (!date.HasValue)
                 return BadRequest($"{nameof(date)} is missing");
 
-            return Ok(_historyService.Since(date.Value, eventType).Select(h => MapToResource(h, includeSeries, includeEpisode)).ToList());
+            return Ok(_historyService.Since(date.Value, eventType).Select(h => MapToResource(h, includeSeries, includeEpisode)));
         }
 
+        [ProducesResponseType(typeof(IEnumerable<HistoryResource>), StatusCodes.Status200OK)]
         [HttpGet("series")]
         public IActionResult GetSeriesHistory(
             [FromQuery] int? seriesId = null,
@@ -90,15 +96,17 @@ namespace Sonarr.Api.V3.History
                 return BadRequest("seriesId is missing");
 
             return Ok(seasonNumber.HasValue
-                ? _historyService.GetBySeason(seriesId.Value, seasonNumber.Value, eventType).Select(h => MapToResource(h, includeSeries, includeEpisode)).ToList()
-                : _historyService.GetBySeries(seriesId.Value, eventType).Select(h => MapToResource(h, includeSeries, includeEpisode)).ToList());
+                ? _historyService.GetBySeason(seriesId.Value, seasonNumber.Value, eventType).Select(h => MapToResource(h, includeSeries, includeEpisode))
+                : _historyService.GetBySeries(seriesId.Value, eventType).Select(h => MapToResource(h, includeSeries, includeEpisode)));
         }
 
         // v4 TODO: Getting the ID from the form is atypical, consider removing.
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpPost("failed")]
         public IActionResult MarkAsFailedFromForm([FromForm] int id)
             => MarkAsFailed(id);
 
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpPost("failed/{id:int:required}")]
         public IActionResult MarkAsFailed(int id)
         {

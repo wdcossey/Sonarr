@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using FluentValidation.Results;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Configuration;
@@ -12,7 +12,6 @@ using NzbDrone.Core.Indexers.Exceptions;
 using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.Parser;
 using NzbDrone.Core.Parser.Model;
-using NzbDrone.Core.ThingiProvider;
 
 namespace NzbDrone.Core.Indexers
 {
@@ -33,8 +32,8 @@ namespace NzbDrone.Core.Indexers
         public abstract IIndexerRequestGenerator GetRequestGenerator();
         public abstract IParseIndexerResponse GetParser();
 
-        public HttpIndexerBase(IHttpClient httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, Logger logger)
-            : base(indexerStatusService, configService, parsingService, logger)
+        public HttpIndexerBase(IHttpClient httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, ILoggerFactory loggerFactory)
+            : base(indexerStatusService, configService, parsingService, loggerFactory)
         {
             _httpClient = httpClient;
         }
@@ -193,7 +192,7 @@ namespace NzbDrone.Core.Indexers
                     {
                         var gapStart = lastReleaseInfo.PublishDate;
                         var gapEnd = ordered.Last().PublishDate;
-                        _logger.Warn("Indexer {0} rss sync didn't cover the period between {1} and {2} UTC. Search may be required.", Definition.Name, gapStart, gapEnd);
+                        _logger.LogWarning("Indexer {Name} rss sync didn't cover the period between {GapStart} and {GapEnd} UTC. Search may be required.", Definition.Name, gapStart, gapEnd);
                     }
                     lastReleaseInfo = ordered.First();
                     _indexerStatusService.UpdateRssSyncStatus(Definition.Id, lastReleaseInfo);
@@ -216,11 +215,11 @@ namespace NzbDrone.Core.Indexers
                 if (webException.Message.Contains("502") || webException.Message.Contains("503") ||
                     webException.Message.Contains("timed out"))
                 {
-                    _logger.Warn("{0} server is currently unavailable. {1} {2}", this, url, webException.Message);
+                    _logger.LogWarning("{Type} server is currently unavailable. {Url} {Message}", this.GetType(), url, webException.Message);
                 }
                 else
                 {
-                    _logger.Warn("{0} {1} {2}", this, url, webException.Message);
+                    _logger.LogWarning("{Type} {Url} {Message}", this.GetType(), url, webException.Message);
                 }
             }
             catch (TooManyRequestsException ex)
@@ -233,22 +232,22 @@ namespace NzbDrone.Core.Indexers
                 {
                     _indexerStatusService.RecordFailure(Definition.Id, TimeSpan.FromHours(1));
                 }
-                _logger.Warn("API Request Limit reached for {0}", this);
+                _logger.LogWarning("API Request Limit reached for {Type}", this.GetType());
             }
             catch (HttpException ex)
             {
                 _indexerStatusService.RecordFailure(Definition.Id);
-                _logger.Warn("{0} {1}", this, ex.Message);
+                _logger.LogWarning("{Type} {Message}", this.GetType(), ex.Message);
             }
             catch (RequestLimitReachedException)
             {
                 _indexerStatusService.RecordFailure(Definition.Id, TimeSpan.FromHours(1));
-                _logger.Warn("API Request Limit reached for {0}", this);
+                _logger.LogWarning("API Request Limit reached for {Type}", this.GetType());
             }
             catch (ApiKeyException)
             {
                 _indexerStatusService.RecordFailure(Definition.Id);
-                _logger.Warn("Invalid API Key for {0} {1}", this, url);
+                _logger.LogWarning("Invalid API Key for {Type} {Url}", this.GetType(), url);
             }
             catch (CloudFlareCaptchaException ex)
             {
@@ -256,23 +255,23 @@ namespace NzbDrone.Core.Indexers
                 ex.WithData("FeedUrl", url);
                 if (ex.IsExpired)
                 {
-                    _logger.Error(ex, "Expired CAPTCHA token for {0}, please refresh in indexer settings.", this);
+                    _logger.LogError(ex, "Expired CAPTCHA token for {Type}, please refresh in indexer settings.", this.GetType());
                 }
                 else
                 {
-                    _logger.Error(ex, "CAPTCHA token required for {0}, check indexer settings.", this);
+                    _logger.LogError(ex, "CAPTCHA token required for {Type}, check indexer settings.", this.GetType());
                 }
             }
             catch (IndexerException ex)
             {
                 _indexerStatusService.RecordFailure(Definition.Id);
-                _logger.Warn(ex, "{0}", url);
+                _logger.LogWarning(ex, "{Url}", url);
             }
             catch (Exception ex)
             {
                 _indexerStatusService.RecordFailure(Definition.Id);
                 ex.WithData("FeedUrl", url);
-                _logger.Error(ex, "An error occurred while processing feed. {0}", url);
+                _logger.LogError(ex, "An error occurred while processing feed. {Url}", url);
             }
 
             return CleanupReleases(releases);
@@ -282,7 +281,7 @@ namespace NzbDrone.Core.Indexers
         {
             if (release.DownloadUrl.IsNullOrWhiteSpace())
             {
-                _logger.Trace("Invalid Release: '{0}' from indexer: {1}. No Download URL provided.", release.Title, release.Indexer);
+                _logger.LogTrace("Invalid Release: '{Title}' from indexer: {Indexer}. No Download URL provided.", release.Title, release.Indexer);
                 return false;
             }
 
@@ -305,14 +304,14 @@ namespace NzbDrone.Core.Indexers
             catch (Exception ex)
             {
                 ex.WithData(response.HttpResponse, 128*1024);
-                _logger.Trace("Unexpected Response content ({0} bytes): {1}", response.HttpResponse.ResponseData.Length, response.HttpResponse.Content);
+                _logger.LogTrace("Unexpected Response content ({Length} bytes): {Content}", response.HttpResponse.ResponseData.Length, response.HttpResponse.Content);
                 throw;
             }
         }
 
         protected virtual IndexerResponse FetchIndexerResponse(IndexerRequest request)
         {
-            _logger.Debug("Downloading Feed " + request.HttpRequest.ToString(false));
+            _logger.LogDebug("Downloading Feed {HttpRequestString}", request.HttpRequest.ToString(false));
 
             if (request.HttpRequest.RateLimit < RateLimit)
             {
@@ -350,13 +349,13 @@ namespace NzbDrone.Core.Indexers
             }
             catch (ApiKeyException ex)
             {
-                _logger.Warn("Indexer returned result for RSS URL, API Key appears to be invalid: " + ex.Message);
+                _logger.LogWarning("Indexer returned result for RSS URL, API Key appears to be invalid: {Message}", ex.Message);
 
                 return new ValidationFailure("ApiKey", "Invalid API Key");
             }
             catch (RequestLimitReachedException ex)
             {
-                _logger.Warn("Request limit reached: " + ex.Message);
+                _logger.LogWarning("Request limit reached: {Message}", ex.Message);
             }
             catch (CloudFlareCaptchaException ex)
             {
@@ -371,19 +370,19 @@ namespace NzbDrone.Core.Indexers
             }
             catch (UnsupportedFeedException ex)
             {
-                _logger.Warn(ex, "Indexer feed is not supported");
+                _logger.LogWarning(ex, "Indexer feed is not supported");
 
-                return new ValidationFailure(string.Empty, "Indexer feed is not supported: " + ex.Message);
+                return new ValidationFailure(string.Empty, "Indexer feed is not supported: {Message}", ex.Message);
             }
             catch (IndexerException ex)
             {
-                _logger.Warn(ex, "Unable to connect to indexer");
+                _logger.LogWarning(ex, "Unable to connect to indexer");
 
-                return new ValidationFailure(string.Empty, "Unable to connect to indexer. " + ex.Message);
+                return new ValidationFailure(string.Empty, "Unable to connect to indexer. {Message}", ex.Message);
             }
             catch (Exception ex)
             {
-                _logger.Warn(ex, "Unable to connect to indexer");
+                _logger.LogWarning(ex, "Unable to connect to indexer");
 
                 return new ValidationFailure(string.Empty, "Unable to connect to indexer, check the log for more details");
             }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Indexers.Exceptions;
 using NzbDrone.Core.Parser.Model;
@@ -12,7 +13,7 @@ namespace NzbDrone.Core.Indexers.Torznab
     {
         public const string ns = "{http://torznab.com/schemas/2015/feed}";
 
-        public TorznabRssParser()
+        public TorznabRssParser(ILoggerFactory loggerFactory) : base(loggerFactory)
         {
             UseEnclosureUrl = true;
         }
@@ -49,11 +50,11 @@ namespace NzbDrone.Core.Indexers.Torznab
             {
                 if (enclosureTypes.Intersect(UsenetEnclosureMimeTypes).Any())
                 {
-                    _logger.Warn("{0} does not contain {1}, found {2}, did you intend to add a Newznab indexer?", indexerResponse.Request.Url, TorrentEnclosureMimeType, enclosureTypes[0]);
+                    _logger.LogWarning("{Url} does not contain {TorrentEnclosureMimeType}, found {EnclosureType}, did you intend to add a Newznab indexer?", indexerResponse.Request.Url, TorrentEnclosureMimeType, enclosureTypes[0]);
                 }
                 else
                 {
-                    _logger.Warn("{1} does not contain {1}, found {2}.", indexerResponse.Request.Url, TorrentEnclosureMimeType, enclosureTypes[0]);
+                    _logger.LogWarning("{Url} does not contain {TorrentEnclosureMimeType}, found {EnclosureType}.", indexerResponse.Request.Url, TorrentEnclosureMimeType, enclosureTypes[0]);
                 }
             }
 

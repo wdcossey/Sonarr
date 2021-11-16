@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Http;
 using NzbDrone.Common.Serializer;
@@ -23,13 +23,11 @@ namespace NzbDrone.Core.Download.Clients.Flood
     public class FloodProxy : IFloodProxy
     {
         private readonly IHttpClient _httpClient;
-        private readonly Logger _logger;
         private readonly ICached<Dictionary<string, string>> _authCookieCache;
 
-        public FloodProxy(IHttpClient httpClient, ICacheManager cacheManager, Logger logger)
+        public FloodProxy(IHttpClient httpClient, ICacheManager cacheManager)
         {
             _httpClient = httpClient;
-            _logger = logger;
             _authCookieCache = cacheManager.GetCache<Dictionary<string, string>>(GetType(), "authCookies");
         }
 

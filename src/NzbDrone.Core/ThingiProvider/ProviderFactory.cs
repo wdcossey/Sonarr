@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using FluentValidation.Results;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Lifecycle;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.ThingiProvider.Events;
@@ -16,7 +16,7 @@ namespace NzbDrone.Core.ThingiProvider
         private readonly IProviderRepository<TProviderDefinition> _providerRepository;
         private readonly IServiceProvider _serviceProvider;
         private readonly IEventAggregator _eventAggregator;
-        private readonly Logger _logger;
+        private readonly ILogger _logger;
 
         protected readonly List<TProvider> _providers;
 
@@ -24,7 +24,7 @@ namespace NzbDrone.Core.ThingiProvider
                                   IEnumerable<TProvider> providers,
                                   IServiceProvider serviceProvider,
                                   IEventAggregator eventAggregator,
-                                  Logger logger)
+                                  ILogger logger)
         {
             _providerRepository = providerRepository;
             _serviceProvider = serviceProvider;
@@ -136,7 +136,7 @@ namespace NzbDrone.Core.ThingiProvider
 
         public void Handle(ApplicationStartedEvent message)
         {
-            _logger.Debug("Initializing Providers. Count {0}", _providers.Count);
+            _logger.LogDebug("Initializing Providers. Count {Count}", _providers.Count);
 
             RemoveMissingImplementations();
 
@@ -170,7 +170,7 @@ namespace NzbDrone.Core.ThingiProvider
 
             foreach (var invalidDefinition in storedProvider.Where(def => GetImplementation(def) == null))
             {
-                _logger.Debug("Removing {0} ", invalidDefinition.Name);
+                _logger.LogDebug("Removing {Name} ", invalidDefinition.Name);
                 _providerRepository.Delete(invalidDefinition);
             }
         }

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.DecisionEngine.Specifications;
 using NzbDrone.Core.Tv;
@@ -17,6 +19,7 @@ namespace Sonarr.Api.V3.Calendar
                               IUpgradableSpecification upgradableSpecification)
             : base(episodeService, seriesService, upgradableSpecification) { }
 
+        [ProducesResponseType(typeof(IEnumerable<EpisodeResource>), StatusCodes.Status201Created)]
         [HttpGet]
         public IActionResult GetCalendar(
             [FromQuery] bool unmonitored = false,
@@ -27,7 +30,7 @@ namespace Sonarr.Api.V3.Calendar
             [FromQuery] bool includeEpisodeImages = false)
         {
             var resources = MapToResource(_episodeService.EpisodesBetweenDates(start ?? DateTime.Today, end ?? DateTime.Today.AddDays(2), unmonitored), includeSeries, includeEpisodeFile, includeEpisodeImages);
-            return Ok(resources.OrderBy(e => e.AirDateUtc).ToList());
+            return Ok(resources.OrderBy(e => e.AirDateUtc));
         }
     }
 }

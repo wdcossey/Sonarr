@@ -1,6 +1,6 @@
 ﻿using System;
 using FluentValidation.Results;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Http;
 
 namespace NzbDrone.Core.Notifications.Plex.HomeTheater
@@ -14,9 +14,9 @@ namespace NzbDrone.Core.Notifications.Plex.HomeTheater
     public class PlexClientService : IPlexClientService
     {
         private readonly IHttpProvider _httpProvider;
-        private readonly Logger _logger;
+        private readonly ILogger<PlexClientService> _logger;
 
-        public PlexClientService(IHttpProvider httpProvider, Logger logger)
+        public PlexClientService(IHttpProvider httpProvider, ILogger<PlexClientService> logger)
         {
             _httpProvider = httpProvider;
             _logger = logger;
@@ -26,18 +26,18 @@ namespace NzbDrone.Core.Notifications.Plex.HomeTheater
         {
             try
             {
-                var command = string.Format("ExecBuiltIn(Notification({0}, {1}))", header, message);
+                var command = $"ExecBuiltIn(Notification({header}, {message}))";
                 SendCommand(settings.Host, settings.Port, command, settings.Username, settings.Password);
             }
             catch(Exception ex)
             {
-                _logger.Warn(ex, "Failed to send notification to Plex Client: " + settings.Host);
+                _logger.LogWarning(ex, "Failed to send notification to Plex Client: {Host}", settings.Host);
             }
         }
 
         private string SendCommand(string host, int port, string command, string username, string password)
         {
-            var url = string.Format("http://{0}:{1}/xbmcCmds/xbmcHttp?command={2}", host, port, command);
+            var url = $"http://{host}:{port}/xbmcCmds/xbmcHttp?command={command}";
 
             if (!string.IsNullOrEmpty(username))
             {
@@ -51,7 +51,7 @@ namespace NzbDrone.Core.Notifications.Plex.HomeTheater
         {
             try
             {
-                _logger.Debug("Sending Test Notifcation to Plex Client: {0}", settings.Host);
+                _logger.LogDebug("Sending Test Notifcation to Plex Client: {Host}", settings.Host);
                 var command = string.Format("ExecBuiltIn(Notification({0}, {1}))", "Test Notification", "Success! Notifications are setup correctly");
                 var result = SendCommand(settings.Host, settings.Port, command, settings.Username, settings.Password);
 
@@ -63,7 +63,7 @@ namespace NzbDrone.Core.Notifications.Plex.HomeTheater
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Unable to send test message");
+                _logger.LogError(ex, "Unable to send test message");
                 return new ValidationFailure("Host", "Unable to send test message");
             }
 

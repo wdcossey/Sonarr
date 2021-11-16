@@ -1,6 +1,6 @@
 ﻿using System;
 using Newtonsoft.Json.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Serializer;
 using NzbDrone.Core.Download.Clients.Sabnzbd.Responses;
@@ -25,9 +25,9 @@ namespace NzbDrone.Core.Download.Clients.Sabnzbd
     public class SabnzbdProxy : ISabnzbdProxy
     {
         private readonly IHttpClient _httpClient;
-        private readonly Logger _logger;
+        private readonly ILogger<SabnzbdProxy> _logger;
 
-        public SabnzbdProxy(IHttpClient httpClient, Logger logger)
+        public SabnzbdProxy(IHttpClient httpClient, ILogger<SabnzbdProxy> logger)
         {
             _httpClient = httpClient;
             _logger = logger;
@@ -177,7 +177,7 @@ namespace NzbDrone.Core.Download.Clients.Sabnzbd
 
             HttpResponse response;
 
-            _logger.Debug("Url: {0}", httpRequest.Url);
+            _logger.LogDebug("Url: {Url}", httpRequest.Url);
 
             try
             {

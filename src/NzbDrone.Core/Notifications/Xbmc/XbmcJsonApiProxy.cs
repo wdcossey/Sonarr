@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 using NzbDrone.Common.Serializer;
@@ -20,9 +20,9 @@ namespace NzbDrone.Core.Notifications.Xbmc
     public class XbmcJsonApiProxy : IXbmcJsonApiProxy
     {
         private readonly IHttpClient _httpClient;
-        private readonly Logger _logger;
+        private readonly ILogger<XbmcJsonApiProxy> _logger;
 
-        public XbmcJsonApiProxy(IHttpClient httpClient, Logger logger)
+        public XbmcJsonApiProxy(IHttpClient httpClient, ILogger<XbmcJsonApiProxy> logger)
         {
             _httpClient = httpClient;
             _logger = logger;
@@ -88,7 +88,7 @@ namespace NzbDrone.Core.Notifications.Xbmc
             }
 
             var response = _httpClient.Execute(request);
-            _logger.Trace("Response: {0}", response.Content);
+            _logger.LogTrace("Response: {Content}", response.Content);
 
             CheckForError(response);
 
@@ -103,7 +103,7 @@ namespace NzbDrone.Core.Notifications.Xbmc
                 throw new XbmcJsonException("Invalid response from XBMC, the response is not valid JSON");
             }
 
-            _logger.Trace("Looking for error in response, {0}", response.Content);
+            _logger.LogTrace("Looking for error in response, {Content}", response.Content);
 
             if (response.Content.StartsWith("{\"error\""))
             {

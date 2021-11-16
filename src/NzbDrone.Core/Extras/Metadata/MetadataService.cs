@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
@@ -27,7 +27,7 @@ namespace NzbDrone.Core.Extras.Metadata
         private readonly IHttpClient _httpClient;
         private readonly IMediaFileAttributeService _mediaFileAttributeService;
         private readonly IMetadataFileService _metadataFileService;
-        private readonly Logger _logger;
+        private readonly ILogger<MetadataService> _logger;
 
         public MetadataService(IConfigService configService,
                                IDiskProvider diskProvider,
@@ -39,7 +39,7 @@ namespace NzbDrone.Core.Extras.Metadata
                                IHttpClient httpClient,
                                IMediaFileAttributeService mediaFileAttributeService,
                                IMetadataFileService metadataFileService,
-                               Logger logger)
+                               ILogger<MetadataService> logger)
             : base(configService, diskProvider, diskTransferService, logger)
         {
             _metadataFactory = metadataFactory;
@@ -63,7 +63,7 @@ namespace NzbDrone.Core.Extras.Metadata
 
             if (!_diskProvider.FolderExists(series.Path))
             {
-                _logger.Info("Series folder does not exist, skipping metadata image creation");
+                _logger.LogInformation("Series folder does not exist, skipping metadata image creation");
                 return Enumerable.Empty<MetadataFile>();
             }
 
@@ -88,7 +88,7 @@ namespace NzbDrone.Core.Extras.Metadata
 
             if (!_diskProvider.FolderExists(series.Path))
             {
-                _logger.Info("Series folder does not exist, skipping metadata creation");
+                _logger.LogInformation("Series folder does not exist, skipping metadata creation");
                 return Enumerable.Empty<MetadataFile>();
             }
 
@@ -190,7 +190,7 @@ namespace NzbDrone.Core.Extras.Metadata
                             }
                             catch (Exception ex)
                             {
-                                _logger.Warn(ex, "Unable to move metadata file after rename: {0}", existingFileName);
+                                _logger.LogWarning(ex, "Unable to move metadata file after rename: {0}", existingFileName);
                             }
                         }
                     }
@@ -245,7 +245,7 @@ namespace NzbDrone.Core.Extras.Metadata
 
             var fullPath = Path.Combine(series.Path, seriesMetadata.RelativePath);
 
-            _logger.Debug("Writing Series Metadata to: {0}", fullPath);
+            _logger.LogDebug("Writing Series Metadata to: {FullPath}", fullPath);
             SaveMetadataFile(fullPath, seriesMetadata.Contents);
 
             metadata.Hash = hash;
@@ -300,7 +300,7 @@ namespace NzbDrone.Core.Extras.Metadata
                 return null;
             }
 
-            _logger.Debug("Writing Episode Metadata to: {0}", fullPath);
+            _logger.LogDebug("Writing Episode Metadata to: {FullPath}", fullPath);
             SaveMetadataFile(fullPath, episodeMetadata.Contents);
 
             metadata.Hash = hash;
@@ -318,7 +318,7 @@ namespace NzbDrone.Core.Extras.Metadata
 
                 if (_diskProvider.FileExists(fullPath))
                 {
-                    _logger.Debug("Series image already exists: {0}", fullPath);
+                    _logger.LogDebug("Series image already exists: {FullPath}", fullPath);
                     continue;
                 }
 
@@ -355,7 +355,7 @@ namespace NzbDrone.Core.Extras.Metadata
 
                     if (_diskProvider.FileExists(fullPath))
                     {
-                        _logger.Debug("Season image already exists: {0}", fullPath);
+                        _logger.LogDebug("Season image already exists: {FullPath}", fullPath);
                         continue;
                     }
 
@@ -393,7 +393,7 @@ namespace NzbDrone.Core.Extras.Metadata
 
                 if (_diskProvider.FileExists(fullPath))
                 {
-                    _logger.Debug("Episode image already exists: {0}", fullPath);
+                    _logger.LogDebug("Episode image already exists: {FullPath}", fullPath);
                     continue;
                 }
 
@@ -452,15 +452,15 @@ namespace NzbDrone.Core.Extras.Metadata
             }
             catch (HttpException ex)
             {
-                _logger.Warn(ex, "Couldn't download image {0} for {1}. {2}", image.Url, series, ex.Message);
+                _logger.LogWarning(ex, "Couldn't download image {Url} for {Series}. {Message}", image.Url, series, ex.Message);
             }
             catch (WebException ex)
             {
-                _logger.Warn(ex, "Couldn't download image {0} for {1}. {2}", image.Url, series, ex.Message);
+                _logger.LogWarning(ex, "Couldn't download image {Url} for {Series}. {Message}", image.Url, series, ex.Message);
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Couldn't download image {0} for {1}. {2}", image.Url, series, ex.Message);
+                _logger.LogError(ex, "Couldn't download image {Url} for {Series}. {Message}", image.Url, series, ex.Message);
             }
         }
 
@@ -484,7 +484,7 @@ namespace NzbDrone.Core.Extras.Metadata
             {
                 var path = Path.Combine(series.Path, file.RelativePath);
 
-                _logger.Debug("Removing duplicate Metadata file: {0}", path);
+                _logger.LogDebug("Removing duplicate Metadata file: {Path}", path);
 
                 var subfolder = _diskProvider.GetParentFolder(series.Path).GetRelativePath(_diskProvider.GetParentFolder(path));
                 _recycleBinProvider.DeleteFile(path, subfolder);

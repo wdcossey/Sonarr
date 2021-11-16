@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Lifecycle;
 using NzbDrone.Core.Messaging.Events;
 using System;
@@ -21,9 +21,9 @@ namespace NzbDrone.Core.Qualities
     {
         private readonly IQualityDefinitionRepository _repo;
         private readonly ICached<Dictionary<Quality, QualityDefinition>> _cache;
-        private readonly Logger _logger;
+        private readonly ILogger<QualityDefinitionService> _logger;
 
-        public QualityDefinitionService(IQualityDefinitionRepository repo, ICacheManager cacheManager, Logger logger)
+        public QualityDefinitionService(IQualityDefinitionRepository repo, ICacheManager cacheManager, ILogger<QualityDefinitionService> logger)
         {
             _repo = repo;
             _cache = cacheManager.GetCache<Dictionary<Quality, QualityDefinition>>(this.GetType());
@@ -104,7 +104,7 @@ namespace NzbDrone.Core.Qualities
 
         public void Handle(ApplicationStartedEvent message)
         {
-            _logger.Debug("Setting up default quality config");
+            _logger.LogDebug("Setting up default quality config");
 
             InsertMissingDefinitions();
         }

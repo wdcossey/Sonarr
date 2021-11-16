@@ -1,5 +1,4 @@
-using System;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.DecisionEngine;
 using NzbDrone.Core.Download;
 using NzbDrone.Core.Parser;
@@ -10,10 +9,10 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
     public class NotSampleSpecification : IImportDecisionEngineSpecification
     {
         private readonly IDetectSample _detectSample;
-        private readonly Logger _logger;
+        private readonly ILogger<NotSampleSpecification> _logger;
 
         public NotSampleSpecification(IDetectSample detectSample,
-                                      Logger logger)
+                                      ILogger<NotSampleSpecification> logger)
         {
             _detectSample = detectSample;
             _logger = logger;
@@ -23,7 +22,7 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
         {
             if (localEpisode.ExistingFile)
             {
-                _logger.Debug("Existing file, skipping sample check");
+                _logger.LogDebug("Existing file, skipping sample check");
                 return Decision.Accept();
             }
 
@@ -43,7 +42,7 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
             }
             catch (InvalidSeasonException e)
             {
-                _logger.Warn(e, "Invalid season detected during sample check");
+                _logger.LogWarning(e, "Invalid season detected during sample check");
             }
 
             return Decision.Accept();

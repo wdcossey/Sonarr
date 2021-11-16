@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.DataAugmentation.Scene;
 using NzbDrone.Core.DataAugmentation.Xem.Model;
@@ -20,13 +20,13 @@ namespace NzbDrone.Core.DataAugmentation.Xem
     {
         private const string ROOT_URL = "http://thexem.info/map/";
 
-        private readonly Logger _logger;
+        private readonly ILogger<XemProxy> _logger;
         private readonly IHttpClient _httpClient;
         private readonly IHttpRequestBuilderFactory _xemRequestBuilder;
 
         private static readonly string[] IgnoredErrors = { "no single connection", "no show with the tvdb_id" };
 
-        public XemProxy(IHttpClient httpClient, Logger logger)
+        public XemProxy(IHttpClient httpClient, ILogger<XemProxy> logger)
         {
             _httpClient = httpClient;
             _logger = logger;
@@ -38,7 +38,7 @@ namespace NzbDrone.Core.DataAugmentation.Xem
 
         public List<int> GetXemSeriesIds()
         {
-            _logger.Debug("Fetching Series IDs from");
+            _logger.LogDebug("Fetching Series IDs from");
 
             var request = _xemRequestBuilder.Create()
                                             .Resource("/havemap")
@@ -58,7 +58,7 @@ namespace NzbDrone.Core.DataAugmentation.Xem
 
         public List<XemSceneTvdbMapping> GetSceneTvdbMappings(int id)
         {
-            _logger.Debug("Fetching Mappings for: {0}", id);
+            _logger.LogDebug("Fetching Mappings for: {Id}", id);
 
             var request = _xemRequestBuilder.Create()
                                             .Resource("/all")
@@ -72,7 +72,7 @@ namespace NzbDrone.Core.DataAugmentation.Xem
 
         public List<SceneMapping> GetSceneTvdbNames()
         {
-            _logger.Debug("Fetching alternate names");
+            _logger.LogDebug("Fetching alternate names");
 
             var request = _xemRequestBuilder.Create()
                                             .Resource("/allNames")
@@ -94,7 +94,7 @@ namespace NzbDrone.Core.DataAugmentation.Xem
                             continue;
                         }
 
-                        //hack to deal with Fate/Zero 
+                        //hack to deal with Fate/Zero
                         if (series.Key == 79151 && seasonNumber > 1)
                         {
                             continue;

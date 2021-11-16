@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using NLog;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
@@ -25,11 +25,11 @@ namespace NzbDrone.Core.Download.Clients.NzbVortex
     public class NzbVortexProxy : INzbVortexProxy
     {
         private readonly IHttpClient _httpClient;
-        private readonly Logger _logger;
+        private readonly ILogger<NzbVortexProxy> _logger;
 
         private readonly ICached<string> _authSessionIdCache;
 
-        public NzbVortexProxy(IHttpClient httpClient, ICacheManager cacheManager, Logger logger)
+        public NzbVortexProxy(IHttpClient httpClient, ICacheManager cacheManager, ILogger<NzbVortexProxy> logger)
         {
             _httpClient = httpClient;
             _logger = logger;
@@ -42,12 +42,12 @@ namespace NzbDrone.Core.Download.Clients.NzbVortex
             var requestBuilder = BuildRequest(settings).Resource("nzb/add")
                                                        .Post()
                                                        .AddQueryParam("priority", priority.ToString());
-            
+
             if (settings.TvCategory.IsNotNullOrWhiteSpace())
             {
                 requestBuilder.AddQueryParam("groupname", settings.TvCategory);
             }
-            
+
             requestBuilder.AddFormUpload("name", filename, nzbData, "application/x-nzb");
 
             var response = ProcessRequest<NzbVortexAddResponse>(requestBuilder, true, settings);
@@ -91,7 +91,7 @@ namespace NzbDrone.Core.Download.Clients.NzbVortex
         public List<NzbVortexQueueItem> GetQueue(int doneLimit, NzbVortexSettings settings)
         {
             var requestBuilder = BuildRequest(settings).Resource("nzb");
-                
+
 
             if (settings.TvCategory.IsNotNullOrWhiteSpace())
             {
@@ -113,7 +113,7 @@ namespace NzbDrone.Core.Download.Clients.NzbVortex
 
             return response.Files;
         }
-        
+
         private HttpRequestBuilder BuildRequest(NzbVortexSettings settings)
         {
             var baseUrl = HttpRequestBuilder.BuildBaseUrl(true, settings.Host, settings.Port, settings.UrlBase);
@@ -141,7 +141,7 @@ namespace NzbDrone.Core.Download.Clients.NzbVortex
 
                 if (result.Result == NzbVortexResultType.NotLoggedIn)
                 {
-                    _logger.Debug("Not logged in response received, reauthenticating and retrying");
+                    _logger.LogDebug("Not logged in response received, reauthenticating and retrying");
                     AuthenticateClient(requestBuilder, settings, true);
 
                     response = _httpClient.Execute(requestBuilder.Build());

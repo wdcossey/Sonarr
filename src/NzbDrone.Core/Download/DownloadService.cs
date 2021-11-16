@@ -1,5 +1,5 @@
 using System;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.EnsureThat;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
@@ -27,7 +27,7 @@ namespace NzbDrone.Core.Download
         private readonly IRateLimitService _rateLimitService;
         private readonly IEventAggregator _eventAggregator;
         private readonly ISeedConfigProvider _seedConfigProvider;
-        private readonly Logger _logger;
+        private readonly ILogger<DownloadService> _logger;
 
         public DownloadService(IProvideDownloadClient downloadClientProvider,
                                IDownloadClientStatusService downloadClientStatusService,
@@ -35,7 +35,7 @@ namespace NzbDrone.Core.Download
                                IRateLimitService rateLimitService,
                                IEventAggregator eventAggregator,
                                ISeedConfigProvider seedConfigProvider,
-                               Logger logger)
+                               ILogger<DownloadService> logger)
         {
             _downloadClientProvider = downloadClientProvider;
             _downloadClientStatusService = downloadClientStatusService;
@@ -78,12 +78,12 @@ namespace NzbDrone.Core.Download
             }
             catch (ReleaseUnavailableException)
             {
-                _logger.Trace("Release {0} no longer available on indexer.", remoteEpisode);
+                _logger.LogTrace("Release {RemoteEpisode} no longer available on indexer.", remoteEpisode);
                 throw;
             }
             catch (DownloadClientRejectedReleaseException)
             {
-                _logger.Trace("Release {0} rejected by download client, possible duplicate.", remoteEpisode);
+                _logger.LogTrace("Release {RemoteEpisode} rejected by download client, possible duplicate.", remoteEpisode);
                 throw;
             }
             catch (ReleaseDownloadException ex)

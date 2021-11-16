@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using System.Text.RegularExpressions;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Configuration;
 
 namespace NzbDrone.Host.AccessControl
@@ -17,9 +17,9 @@ namespace NzbDrone.Host.AccessControl
 
         private readonly INetshProvider _netshProvider;
         private readonly IConfigFileProvider _configFileProvider;
-        private readonly Logger _logger;
+        private readonly ILogger<SslAdapter> _logger;
 
-        public SslAdapter(INetshProvider netshProvider, IConfigFileProvider configFileProvider, Logger logger)
+        public SslAdapter(INetshProvider netshProvider, IConfigFileProvider configFileProvider, ILogger<SslAdapter> logger)
         {
             _netshProvider = netshProvider;
             _configFileProvider = configFileProvider;
@@ -33,7 +33,7 @@ namespace NzbDrone.Host.AccessControl
 
             if (string.IsNullOrWhiteSpace(_configFileProvider.SslCertHash))
             {
-                _logger.Warn("Unable to enable SSL, SSL Cert Hash is required");
+                _logger.LogWarning("Unable to enable SSL, SSL Cert Hash is required");
                 return;
             }
 

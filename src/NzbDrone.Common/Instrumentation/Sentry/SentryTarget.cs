@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Threading;
 using NLog;
 using NLog.Common;
@@ -56,7 +55,7 @@ namespace NzbDrone.Common.Instrumentation.Sentry
         private static readonly HashSet<string> IncludeExceptionMessageTypes = new HashSet<string> {
             "SQLiteException"
         };
-        
+
         private static readonly IDictionary<LogLevel, SentryLevel> LoggingLevelMap = new Dictionary<LogLevel, SentryLevel>
         {
             {LogLevel.Debug, SentryLevel.Debug},
@@ -87,7 +86,7 @@ namespace NzbDrone.Common.Instrumentation.Sentry
         public bool FilterEvents { get; set; }
         public Version DatabaseVersion { get; set; }
         public int DatabaseMigration { get; set; }
-        
+
         public bool SentryEnabled { get; set; }
 
         public SentryTarget(string dsn)
@@ -144,19 +143,7 @@ namespace NzbDrone.Common.Instrumentation.Sentry
             });
         }
 
-        public void UpdateScope(IOsInfo osInfo)
-        {
-            SentrySdk.ConfigureScope(scope =>
-            {
-                if (osInfo.Name != null && PlatformInfo.IsMono)
-                {
-                    // Sentry auto-detection of non-Windows platforms isn't that accurate on certain devices.
-                    scope.Contexts.OperatingSystem.Name = osInfo.Name.FirstCharToUpper();
-                    scope.Contexts.OperatingSystem.RawDescription = osInfo.FullName;
-                    scope.Contexts.OperatingSystem.Version = osInfo.Version.ToString();
-                }
-            });
-        }
+        public void UpdateScope(IOsInfo osInfo) { }
 
         private void OnError(Exception ex)
         {
@@ -232,7 +219,7 @@ namespace NzbDrone.Common.Instrumentation.Sentry
                     {
                         return false;
                     }
-                    
+
                     if (FilteredExceptionMessages.Any(x => logEvent.Exception.Message.Contains(x)))
                     {
                         return false;

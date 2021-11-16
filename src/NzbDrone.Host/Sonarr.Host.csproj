@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Platforms>x86;AnyCPU</Platforms>
+    <Platforms>AnyCPU</Platforms>
     <LangVersion>default</LangVersion>
     <Nullable>disable</Nullable>
     <Configurations>Debug;Release</Configurations>

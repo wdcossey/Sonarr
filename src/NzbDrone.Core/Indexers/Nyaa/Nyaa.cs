@@ -1,4 +1,4 @@
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Parser;
@@ -7,15 +7,16 @@ namespace NzbDrone.Core.Indexers.Nyaa
 {
     public class Nyaa : HttpIndexerBase<NyaaSettings>
     {
+        private readonly ILoggerFactory _loggerFactory;
         public override string Name => "Nyaa";
 
         public override DownloadProtocol Protocol => DownloadProtocol.Torrent;
         public override int PageSize => 100;
 
-        public Nyaa(IHttpClient httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, Logger logger)
-            : base(httpClient, indexerStatusService, configService, parsingService, logger)
+        public Nyaa(IHttpClient httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, ILoggerFactory loggerFactory)
+            : base(httpClient, indexerStatusService, configService, parsingService, loggerFactory)
         {
-
+            _loggerFactory = loggerFactory;
         }
 
         public override IIndexerRequestGenerator GetRequestGenerator()
@@ -25,7 +26,7 @@ namespace NzbDrone.Core.Indexers.Nyaa
 
         public override IParseIndexerResponse GetParser()
         {
-            return new TorrentRssParser() { UseGuidInfoUrl = true, ParseSizeInDescription = true, ParseSeedersInDescription = true };
+            return new TorrentRssParser(_loggerFactory) { UseGuidInfoUrl = true, ParseSizeInDescription = true, ParseSeedersInDescription = true };
         }
     }
 }

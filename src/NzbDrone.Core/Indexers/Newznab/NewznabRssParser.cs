@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
-using MonoTorrent;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
-using NzbDrone.Common.Http;
 using NzbDrone.Core.Indexers.Exceptions;
 using NzbDrone.Core.Parser.Model;
 
@@ -14,7 +13,7 @@ namespace NzbDrone.Core.Indexers.Newznab
     {
         public const string ns = "{http://www.newznab.com/DTD/2010/feeds/attributes/}";
 
-        public NewznabRssParser()
+        public NewznabRssParser(ILoggerFactory loggerFactory) : base(loggerFactory)
         {
             PreferredEnclosureMimeTypes = UsenetEnclosureMimeTypes;
             UseEnclosureUrl = true;
@@ -64,11 +63,11 @@ namespace NzbDrone.Core.Indexers.Newznab
             {
                 if (enclosureTypes.Intersect(TorrentEnclosureMimeTypes).Any())
                 {
-                    _logger.Warn("{0} does not contain {1}, found {2}, did you intend to add a Torznab indexer?", indexerResponse.Request.Url, NzbEnclosureMimeType, enclosureTypes[0]);
+                    _logger.LogWarning("{Url} does not contain {NzbEnclosureMimeType}, found {FoundType}, did you intend to add a Torznab indexer?", indexerResponse.Request.Url, NzbEnclosureMimeType, enclosureTypes[0]);
                 }
                 else
                 {
-                    _logger.Warn("{1} does not contain {1}, found {2}.", indexerResponse.Request.Url, NzbEnclosureMimeType, enclosureTypes[0]);
+                    _logger.LogWarning("{Url} does not contain {NzbEnclosureMimeType}, found {FoundType}.", indexerResponse.Request.Url, NzbEnclosureMimeType, enclosureTypes[0]);
                 }
             }
 

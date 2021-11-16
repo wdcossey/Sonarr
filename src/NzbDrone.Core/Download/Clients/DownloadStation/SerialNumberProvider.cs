@@ -1,5 +1,5 @@
 ﻿using System;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Crypto;
 using NzbDrone.Common.Extensions;
@@ -16,11 +16,11 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation
     {
         private readonly IDSMInfoProxy _proxy;
         private ICached<string> _cache;
-        private readonly ILogger _logger;
+        private readonly ILogger<SerialNumberProvider> _logger;
 
         public SerialNumberProvider(ICacheManager cacheManager,
                                     IDSMInfoProxy proxy,
-                                    Logger logger)
+                                    ILogger<SerialNumberProvider> logger)
         {
             _proxy = proxy;
             _cache = cacheManager.GetCache<string>(GetType());
@@ -35,7 +35,7 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation
             }
             catch (Exception ex)
             {
-                _logger.Warn(ex, "Could not get the serial number from Download Station {0}:{1}", settings.Host, settings.Port);
+                _logger.LogWarning(ex, "Could not get the serial number from Download Station {Host}:{Port}", settings.Host, settings.Port);
                 throw;
             }
         }

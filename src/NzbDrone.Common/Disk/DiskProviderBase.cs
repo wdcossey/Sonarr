@@ -2,19 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.AccessControl;
-using System.Security.Principal;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.EnsureThat;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
-using NzbDrone.Common.Instrumentation;
 
 namespace NzbDrone.Common.Disk
 {
     public abstract class DiskProviderBase : IDiskProvider
     {
-        private static readonly Logger Logger = NzbDroneLogger.GetLogger(typeof(DiskProviderBase));
+        protected ILogger Logger { get; }
+
+        protected DiskProviderBase(ILogger logger)
+            => Logger = logger;
 
         public static StringComparison PathStringComparison
         {
@@ -138,7 +138,7 @@ namespace NzbDrone.Common.Disk
             }
             catch (Exception e)
             {
-                Logger.Trace("Directory '{0}' isn't writable. {1}", path, e.Message);
+                Logger.LogTrace("Directory '{Path}' isn't writable. {Message}", path, e.Message);
                 return false;
             }
         }
@@ -193,7 +193,7 @@ namespace NzbDrone.Common.Disk
         public void DeleteFile(string path)
         {
             Ensure.That(path, () => path).IsValidPath();
-            Logger.Trace("Deleting file: {0}", path);
+            Logger.LogTrace("Deleting file: {Path}", path);
 
             RemoveReadOnly(path);
 
@@ -451,7 +451,7 @@ namespace NzbDrone.Common.Disk
             }
             catch (Exception ex)
             {
-                Logger.Debug(ex, string.Format("Failed to get mount for path {0}", path));
+                Logger.LogDebug(ex, "Failed to get mount for path {Path}", path);
                 return null;
             }
         }
@@ -496,7 +496,7 @@ namespace NzbDrone.Common.Disk
                     }
                     catch (Exception ex)
                     {
-                        Logger.Warn(ex, "Failed to remove empty directory {0}", subdir);
+                        Logger.LogWarning(ex, "Failed to remove empty directory {SubDir}", subdir);
                     }
                 }
             }

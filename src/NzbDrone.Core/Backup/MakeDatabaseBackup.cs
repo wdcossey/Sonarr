@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.SQLite;
+﻿using System.Data.SQLite;
 using System.IO;
-using System.Linq;
-using System.Text;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Datastore;
-using System.Data;
 
 namespace NzbDrone.Core.Backup
 {
@@ -17,12 +12,10 @@ namespace NzbDrone.Core.Backup
 
     public class MakeDatabaseBackup : IMakeDatabaseBackup
     {
-        private readonly Logger _logger;
+        private readonly ILogger<MakeDatabaseBackup> _logger;
 
-        public MakeDatabaseBackup(Logger logger)
-        {
-            _logger = logger;
-        }
+        public MakeDatabaseBackup(ILogger<MakeDatabaseBackup> logger)
+            => _logger = logger;
 
         public void BackupDatabase(IDatabase database, string targetDirectory)
         {

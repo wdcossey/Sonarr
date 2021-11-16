@@ -1,10 +1,8 @@
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Messaging.Events;
-using NzbDrone.Core.Organizer;
 using NzbDrone.Core.Parser;
 using NzbDrone.Core.Tv.Events;
 
@@ -38,13 +36,13 @@ namespace NzbDrone.Core.Tv
         private readonly IEventAggregator _eventAggregator;
         private readonly IEpisodeService _episodeService;
         private readonly IBuildSeriesPaths _seriesPathBuilder;
-        private readonly Logger _logger;
+        private readonly ILogger<SeriesService> _logger;
 
         public SeriesService(ISeriesRepository seriesRepository,
                              IEventAggregator eventAggregator,
                              IEpisodeService episodeService,
                              IBuildSeriesPaths seriesPathBuilder,
-                             Logger logger)
+                             ILogger<SeriesService> logger)
         {
             _seriesRepository = seriesRepository;
             _eventAggregator = eventAggregator;
@@ -127,10 +125,10 @@ namespace NzbDrone.Core.Tv
             // series are usually the first thing in release title, so we select the leftmost and longest match
             var match = query.First().series;
 
-            _logger.Debug("Multiple series matched {0} from title {1}", match.Title, title);
+            _logger.LogDebug("Multiple series matched {MatchTitle} from title {FromTitle}", match.Title, title);
             foreach (var entry in list)
             {
-                _logger.Debug("Multiple series match candidate: {0} cleantitle: {1}", entry.Title, entry.CleanTitle);
+                _logger.LogDebug("Multiple series match candidate: {EntryTitle} cleantitle: {CleanTitle}", entry.Title, entry.CleanTitle);
             }
 
             return match;
@@ -205,26 +203,26 @@ namespace NzbDrone.Core.Tv
 
         public List<Series> UpdateSeries(List<Series> series, bool useExistingRelativeFolder)
         {
-            _logger.Debug("Updating {0} series", series.Count);
+            _logger.LogDebug("Updating {Count} series", series.Count);
 
             foreach (var s in series)
             {
-                _logger.Trace("Updating: {0}", s.Title);
+                _logger.LogTrace("Updating: {Title}", s.Title);
 
                 if (!s.RootFolderPath.IsNullOrWhiteSpace())
                 {
                     s.Path = _seriesPathBuilder.BuildPath(s, useExistingRelativeFolder);
 
-                    _logger.Trace("Changing path for {0} to {1}", s.Title, s.Path);
+                    _logger.LogTrace("Changing path for {Title} to {Path}", s.Title, s.Path);
                 }
                 else
                 {
-                    _logger.Trace("Not changing path for: {0}", s.Title);
+                    _logger.LogTrace("Not changing path for: {Title}", s.Title);
                 }
             }
 
             _seriesRepository.UpdateMany(series);
-            _logger.Debug("{0} series updated", series.Count);
+            _logger.LogDebug("{Count} series updated", series.Count);
 
             return series;
         }

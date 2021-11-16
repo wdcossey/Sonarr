@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using LogentriesNLog;
 using NLog;
 using NLog.Config;
@@ -20,7 +19,6 @@ namespace NzbDrone.Common.Instrumentation
         {
             LogManager.Configuration = new LoggingConfiguration();
         }
-
 
         public static void Register(IStartupContext startupContext, bool updateApp, bool inConsole)
         {

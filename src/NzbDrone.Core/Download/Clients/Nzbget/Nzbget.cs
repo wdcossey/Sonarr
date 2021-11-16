@@ -4,7 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using FluentValidation.Results;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
@@ -28,7 +28,7 @@ namespace NzbDrone.Core.Download.Clients.Nzbget
                       IDiskProvider diskProvider,
                       IRemotePathMappingService remotePathMappingService,
                       IValidateNzbs nzbValidationService,
-                      Logger logger)
+                      ILogger<Nzbget> logger)
             : base(httpClient, configService, diskProvider, remotePathMappingService, nzbValidationService, logger)
         {
             _proxy = proxy;
@@ -276,7 +276,7 @@ namespace NzbDrone.Core.Download.Clients.Nzbget
                 {
                     return new ValidationFailure("Username", "Authentication failed");
                 }
-                _logger.Error(ex, "Unable to connect to NZBGet");
+                _logger.LogError(ex, "Unable to connect to NZBGet");
                 return new ValidationFailure("Host", "Unable to connect to NZBGet");
             }
 

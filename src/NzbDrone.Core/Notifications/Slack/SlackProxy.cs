@@ -1,4 +1,4 @@
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Http;
 using NzbDrone.Common.Serializer;
 using NzbDrone.Core.Notifications.Slack.Payloads;
@@ -13,9 +13,9 @@ namespace NzbDrone.Core.Notifications.Slack
     public class SlackProxy : ISlackProxy
     {
         private readonly IHttpClient _httpClient;
-        private readonly Logger _logger;
+        private readonly ILogger<SlackProxy> _logger;
 
-        public SlackProxy(IHttpClient httpClient, Logger logger)
+        public SlackProxy(IHttpClient httpClient, ILogger<SlackProxy> logger)
         {
             _httpClient = httpClient;
             _logger = logger;
@@ -37,7 +37,7 @@ namespace NzbDrone.Core.Notifications.Slack
             }
             catch (HttpException ex)
             {
-                _logger.Error(ex, "Unable to post payload {0}", payload);
+                _logger.LogError(ex, "Unable to post payload {Payload}", payload.ToJson());
                 throw new SlackExeption("Unable to post payload", ex);
             }
         }

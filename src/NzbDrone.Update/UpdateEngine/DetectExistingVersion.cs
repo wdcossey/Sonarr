@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using NLog;
+using Microsoft.Extensions.Logging;
 
 namespace NzbDrone.Update.UpdateEngine
 {
@@ -11,12 +11,10 @@ namespace NzbDrone.Update.UpdateEngine
 
     public class DetectExistingVersion : IDetectExistingVersion
     {
-        private readonly Logger _logger;
+        private readonly ILogger<DetectExistingVersion> _logger;
 
-        public DetectExistingVersion(Logger logger)
-        {
-            _logger = logger;
-        }
+        public DetectExistingVersion(ILogger<DetectExistingVersion> logger)
+            => _logger = logger;
 
         public string GetExistingVersion(string targetFolder)
         {
@@ -33,7 +31,7 @@ namespace NzbDrone.Update.UpdateEngine
             }
             catch (Exception ex)
             {
-                _logger.Warn(ex, "Failed to get existing version from {0}", targetFolder);
+                _logger.LogWarning(ex, "Failed to get existing version from {TargetFolder}", targetFolder);
             }
 
             return "(unknown)";

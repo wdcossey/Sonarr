@@ -1,18 +1,18 @@
 ﻿using System.Net;
 using System.Text.RegularExpressions;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Http;
 
 namespace NzbDrone.Core.Http.CloudFlare
 {
     public class CloudFlareHttpInterceptor : IHttpRequestInterceptor
     {
-        private readonly Logger _logger;
+        private readonly ILogger<CloudFlareHttpInterceptor> _logger;
 
         private const string _cloudFlareChallengeScript = "cdn-cgi/scripts/cf.challenge.js";
         private static readonly Regex _cloudFlareRegex = new Regex(@"data-ray=""(?<Ray>[\w-_]+)"".*?data-sitekey=""(?<SiteKey>[\w-_]+)"".*?data-stoken=""(?<SecretToken>[\w-_]+)""", RegexOptions.Compiled);
 
-        public CloudFlareHttpInterceptor(Logger logger)
+        public CloudFlareHttpInterceptor(ILogger<CloudFlareHttpInterceptor> logger)
         {
             _logger = logger;
         }
@@ -26,7 +26,7 @@ namespace NzbDrone.Core.Http.CloudFlare
         {
             if (response.StatusCode == HttpStatusCode.Forbidden && response.Content.Contains(_cloudFlareChallengeScript))
             {
-                _logger.Debug("CloudFlare CAPTCHA block on {0}", response.Request.Url);
+                _logger.LogDebug("CloudFlare CAPTCHA block on {Url}", response.Request.Url);
                 throw new CloudFlareCaptchaException(response, CreateCaptchaRequest(response));
             }
 

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Configuration;
@@ -28,7 +28,7 @@ namespace NzbDrone.Core.ImportLists.Trakt
                            IImportListStatusService importListStatusService,
                            IConfigService configService,
                            IParsingService parsingService,
-                           Logger logger)
+                           ILogger logger)
             : base(httpClient, importListStatusService, configService, parsingService, logger)
         {
             _importListRepository = netImportRepository;
@@ -37,7 +37,7 @@ namespace NzbDrone.Core.ImportLists.Trakt
         public override IList<ImportListItemInfo> Fetch()
         {
             Settings.Validate().Filter("AccessToken", "RefreshToken").ThrowOnError();
-            _logger.Trace($"Access token expires at {Settings.Expires}");
+            _logger.LogTrace("Access token expires at {Expires}", Settings.Expires);
 
             if (Settings.Expires < DateTime.UtcNow.AddMinutes(5))
             {
@@ -107,7 +107,7 @@ namespace NzbDrone.Core.ImportLists.Trakt
             }
             catch (HttpException)
             {
-                _logger.Warn($"Error refreshing trakt access token");
+                _logger.LogWarning("Error refreshing trakt access token");
             }
 
             return null;
@@ -115,7 +115,7 @@ namespace NzbDrone.Core.ImportLists.Trakt
 
         private void RefreshToken()
         {
-            _logger.Trace("Refreshing Token");
+            _logger.LogTrace("Refreshing Token");
 
             Settings.Validate().Filter("RefreshToken").ThrowOnError();
 
@@ -142,7 +142,7 @@ namespace NzbDrone.Core.ImportLists.Trakt
             }
             catch (HttpException)
             {
-                _logger.Warn($"Error refreshing trakt access token");
+                _logger.LogWarning("Error refreshing trakt access token");
             }
         }
     }

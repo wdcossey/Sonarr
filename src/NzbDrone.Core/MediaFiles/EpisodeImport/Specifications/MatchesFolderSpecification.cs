@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.DecisionEngine;
 using NzbDrone.Core.Download;
@@ -12,10 +12,10 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
 {
     public class MatchesFolderSpecification : IImportDecisionEngineSpecification
     {
-        private readonly Logger _logger;
+        private readonly ILogger<MatchesFolderSpecification> _logger;
         private readonly IParsingService _parsingService;
 
-        public MatchesFolderSpecification(IParsingService parsingService, Logger logger)
+        public MatchesFolderSpecification(IParsingService parsingService, ILogger<MatchesFolderSpecification> logger)
         {
             _logger = logger;
             _parsingService = parsingService;
@@ -43,13 +43,13 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
 
             if (folderInfo == null)
             {
-                _logger.Debug("No folder ParsedEpisodeInfo, skipping check");
+                _logger.LogDebug("No folder ParsedEpisodeInfo, skipping check");
                 return Decision.Accept();
             }
 
             if (fileInfo == null)
             {
-                _logger.Debug("No file ParsedEpisodeInfo, skipping check");
+                _logger.LogDebug("No file ParsedEpisodeInfo, skipping check");
                 return Decision.Accept();
             }
 
@@ -58,7 +58,7 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
 
             if (folderEpisodes.Empty())
             {
-                _logger.Debug("No episode numbers in folder ParsedEpisodeInfo, skipping check");
+                _logger.LogDebug("No episode numbers in folder ParsedEpisodeInfo, skipping check");
                 return Decision.Accept();
             }
 
@@ -71,7 +71,7 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
 
             if (unexpected.Any())
             {
-                _logger.Debug("Unexpected episode(s) in file: {0}", FormatEpisode(unexpected));
+                _logger.LogDebug("Unexpected episode(s) in file: {FormatEpisodeString}", FormatEpisode(unexpected));
 
                 if (unexpected.Count == 1)
                 {
@@ -84,7 +84,7 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
             return Decision.Accept();
         }
 
-        private string FormatEpisode(List<Episode> episodes)
+        private string FormatEpisode(IEnumerable<Episode> episodes)
         {
             return string.Join(", ", episodes.Select(e => $"{e.SeasonNumber}x{e.EpisodeNumber:00}"));
         }

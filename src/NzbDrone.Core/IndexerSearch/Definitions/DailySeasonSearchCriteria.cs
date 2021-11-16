@@ -8,7 +8,7 @@ namespace NzbDrone.Core.IndexerSearch.Definitions
 
         public override string ToString()
         {
-            return string.Format("[{0} : {1}]", Series.Title, Year);
+            return $"[{Series.Title} : {Year}]";
         }
     }
 }

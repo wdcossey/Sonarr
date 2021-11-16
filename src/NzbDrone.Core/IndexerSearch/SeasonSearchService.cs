@@ -1,4 +1,4 @@
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Instrumentation.Extensions;
 using NzbDrone.Core.Download;
 using NzbDrone.Core.Messaging.Commands;
@@ -9,11 +9,11 @@ namespace NzbDrone.Core.IndexerSearch
     {
         private readonly ISearchForReleases _releaseSearchService;
         private readonly IProcessDownloadDecisions _processDownloadDecisions;
-        private readonly Logger _logger;
+        private readonly ILogger<SeasonSearchService> _logger;
 
         public SeasonSearchService(ISearchForReleases releaseSearchService,
                                    IProcessDownloadDecisions processDownloadDecisions,
-                                   Logger logger)
+                                   ILogger<SeasonSearchService> logger)
         {
             _releaseSearchService = releaseSearchService;
             _processDownloadDecisions = processDownloadDecisions;

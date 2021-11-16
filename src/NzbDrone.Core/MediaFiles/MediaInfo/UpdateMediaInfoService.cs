@@ -1,11 +1,10 @@
 ﻿using System.IO;
-using NLog;
+using System.Linq;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Core.MediaFiles.Events;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Tv;
-using System.Collections.Generic;
-using System.Linq;
 using NzbDrone.Core.Configuration;
 
 namespace NzbDrone.Core.MediaFiles.MediaInfo
@@ -21,13 +20,13 @@ namespace NzbDrone.Core.MediaFiles.MediaInfo
         private readonly IMediaFileService _mediaFileService;
         private readonly IVideoFileInfoReader _videoFileInfoReader;
         private readonly IConfigService _configService;
-        private readonly Logger _logger;
+        private readonly ILogger<UpdateMediaInfoService> _logger;
 
         public UpdateMediaInfoService(IDiskProvider diskProvider,
-                                IMediaFileService mediaFileService,
-                                IVideoFileInfoReader videoFileInfoReader,
-                                IConfigService configService,
-                                Logger logger)
+                                      IMediaFileService mediaFileService,
+                                      IVideoFileInfoReader videoFileInfoReader,
+                                      IConfigService configService,
+                                      ILogger<UpdateMediaInfoService> logger)
         {
             _diskProvider = diskProvider;
             _mediaFileService = mediaFileService;
@@ -40,7 +39,7 @@ namespace NzbDrone.Core.MediaFiles.MediaInfo
         {
             if (!_configService.EnableMediaInfo)
             {
-                _logger.Debug("MediaInfo is disabled");
+                _logger.LogDebug("MediaInfo is disabled");
                 return;
             }
 
@@ -59,7 +58,7 @@ namespace NzbDrone.Core.MediaFiles.MediaInfo
         {
             if (!_configService.EnableMediaInfo)
             {
-                _logger.Debug("MediaInfo is disabled");
+                _logger.LogDebug("MediaInfo is disabled");
                 return;
             }
             UpdateMediaInfo(episodeFile, series);
@@ -71,7 +70,7 @@ namespace NzbDrone.Core.MediaFiles.MediaInfo
 
             if (!_diskProvider.FileExists(path))
             {
-                _logger.Debug("Can't update MediaInfo because '{0}' does not exist", path);
+                _logger.LogDebug("Can't update MediaInfo because '{Path}' does not exist", path);
                 return;
             }
 
@@ -81,7 +80,7 @@ namespace NzbDrone.Core.MediaFiles.MediaInfo
             {
                 episodeFile.MediaInfo = updatedMediaInfo;
                 _mediaFileService.Update(episodeFile);
-                _logger.Debug("Updated MediaInfo for '{0}'", path);
+                _logger.LogDebug("Updated MediaInfo for '{Path}'", path);
             }
         }
     }

@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Text;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Configuration;
@@ -18,14 +18,14 @@ namespace NzbDrone.Core.Extras.Subtitles
     {
         private readonly ISubtitleFileService _subtitleFileService;
         private readonly IMediaFileAttributeService _mediaFileAttributeService;
-        private readonly Logger _logger;
+        private readonly ILogger<SubtitleService> _logger;
 
         public SubtitleService(IConfigService configService,
                                IDiskProvider diskProvider,
                                IDiskTransferService diskTransferService,
                                ISubtitleFileService subtitleFileService,
                                IMediaFileAttributeService mediaFileAttributeService,
-                               Logger logger)
+                               ILogger<SubtitleService> logger)
             : base(configService, diskProvider, diskTransferService, logger)
         {
             _subtitleFileService = subtitleFileService;
@@ -73,7 +73,7 @@ namespace NzbDrone.Core.Extras.Subtitles
 
                     if (groupCount > 1)
                     {
-                        _logger.Warn("Multiple subtitle files found with the same language and extension for {0}", Path.Combine(series.Path, episodeFile.RelativePath));
+                        _logger.LogWarning("Multiple subtitle files found with the same language and extension for {Path}", Path.Combine(series.Path, episodeFile.RelativePath));
                     }
 
                     foreach (var subtitleFile in group)

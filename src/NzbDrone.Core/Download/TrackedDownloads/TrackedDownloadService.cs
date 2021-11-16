@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Download.History;
@@ -30,7 +30,7 @@ namespace NzbDrone.Core.Download.TrackedDownloads
         private readonly IHistoryService _historyService;
         private readonly IEventAggregator _eventAggregator;
         private readonly IDownloadHistoryService _downloadHistoryService;
-        private readonly Logger _logger;
+        private readonly ILogger<TrackedDownloadService> _logger;
         private readonly ICached<TrackedDownload> _cache;
 
         public TrackedDownloadService(IParsingService parsingService,
@@ -38,7 +38,7 @@ namespace NzbDrone.Core.Download.TrackedDownloads
                                       IHistoryService historyService,
                                       IEventAggregator eventAggregator,
                                       IDownloadHistoryService downloadHistoryService,
-                                      Logger logger)
+                                      ILogger<TrackedDownloadService> logger)
         {
             _parsingService = parsingService;
             _historyService = historyService;
@@ -143,12 +143,12 @@ namespace NzbDrone.Core.Download.TrackedDownloads
                 // Track it so it can be displayed in the queue even though we can't determine which series it is for
                 if (trackedDownload.RemoteEpisode == null)
                 {
-                    _logger.Trace("No Episode found for download '{0}'", trackedDownload.DownloadItem.Title);
+                    _logger.LogTrace("No Episode found for download '{Title}'", trackedDownload.DownloadItem.Title);
                 }
             }
             catch (Exception e)
             {
-                _logger.Debug(e, "Failed to find episode for " + downloadItem.Title);
+                _logger.LogDebug(e, "Failed to find episode for {Title}", downloadItem.Title);
                 return null;
             }
 
@@ -180,10 +180,13 @@ namespace NzbDrone.Core.Download.TrackedDownloads
                 existingItem.CanBeRemoved != downloadItem.CanBeRemoved ||
                 existingItem.CanMoveFiles != downloadItem.CanMoveFiles)
             {
-                _logger.Debug("Tracking '{0}:{1}': ClientState={2}{3} SonarrStage={4} Episode='{5}' OutputPath={6}.",
-                    downloadItem.DownloadClientInfo.Name, downloadItem.Title,
-                    downloadItem.Status, downloadItem.CanBeRemoved ? "" :
-                                         downloadItem.CanMoveFiles ? " (busy)" : " (readonly)",
+                _logger.LogDebug("Tracking '{Name}:{Title}': ClientState={Status}{CanBeRemoved} SonarrStage={State} Episode='{EpisodeInfo}' OutputPath={OutputPath}.",
+                    downloadItem.DownloadClientInfo.Name,
+                    downloadItem.Title,
+                    downloadItem.Status,
+                    downloadItem.CanBeRemoved
+                        ? ""
+                        : downloadItem.CanMoveFiles ? " (busy)" : " (readonly)",
                     trackedDownload.State,
                     trackedDownload.RemoteEpisode?.ParsedEpisodeInfo,
                     downloadItem.OutputPath);

@@ -1,23 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using FluentValidation.Results;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
-using NLog;
 using NzbDrone.Common.Extensions;
 
 namespace NzbDrone.Core.Notifications.Email
 {
     public class Email : NotificationBase<EmailSettings>
     {
-        private readonly Logger _logger;
+        private readonly ILogger<Email> _logger;
 
         public override string Name => "Email";
 
 
-        public Email(Logger logger)
+        public Email(ILogger<Email> logger)
         {
             _logger = logger;
         }
@@ -81,22 +81,22 @@ namespace NzbDrone.Core.Notifications.Email
                 Text = body
             };
 
-            _logger.Debug("Sending email Subject: {0}", subject);
+            _logger.LogDebug("Sending email Subject: {Subject}", subject);
 
             try
             {
                 Send(email, settings);
-                _logger.Debug("Email sent. Subject: {0}", subject);
+                _logger.LogDebug("Email sent. Subject: {Subject}", subject);
 
             }
             catch (Exception ex)
             {
-                _logger.Error("Error sending email. Subject: {0}", email.Subject);
-                _logger.Debug(ex, ex.Message);
+                _logger.LogError("Error sending email. Subject: {Subject}", email.Subject);
+                _logger.LogDebug(ex, "{Message}", ex.Message);
                 throw;
             }
 
-            _logger.Debug("Finished sending email. Subject: {0}", subject);
+            _logger.LogDebug("Finished sending email. Subject: {Subject}", subject);
         }
 
         private void Send(MimeMessage email, EmailSettings settings)
@@ -109,37 +109,32 @@ namespace NzbDrone.Core.Notifications.Email
 
                 if (settings.RequireEncryption)
                 {
-                    if (settings.Port == 465)
-                    {
-                        serverOption = SecureSocketOptions.SslOnConnect;
-                    }
-                    else
-                    {
-                        serverOption = SecureSocketOptions.StartTls;
-                    }
+                    serverOption = settings.Port == 465
+                        ? SecureSocketOptions.SslOnConnect
+                        : SecureSocketOptions.StartTls;
                 }
 
-                _logger.Debug("Connecting to mail server");
+                _logger.LogDebug("Connecting to mail server");
 
                 client.Connect(settings.Server, settings.Port, serverOption);
 
                 if (!string.IsNullOrWhiteSpace(settings.Username))
                 {
-                    _logger.Debug("Authenticating to mail server");
+                    _logger.LogDebug("Authenticating to mail server");
 
                     client.Authenticate(settings.Username, settings.Password);
                 }
 
-                _logger.Debug("Sending to mail server");
+                _logger.LogDebug("Sending to mail server");
 
 
                 client.Send(email);
 
-                _logger.Debug("Sent to mail server, disconnecting");
+                _logger.LogDebug("Sent to mail server, disconnecting");
 
                 client.Disconnect(true);
 
-                _logger.Debug("Disconnecting from mail server");
+                _logger.LogDebug("Disconnecting from mail server");
             }
         }
 
@@ -153,7 +148,7 @@ namespace NzbDrone.Core.Notifications.Email
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Unable to send test email");
+                _logger.LogError(ex, "Unable to send test email");
                 return new ValidationFailure("Server", "Unable to send test email");
             }
 
@@ -168,7 +163,7 @@ namespace NzbDrone.Core.Notifications.Email
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "{0} email address '{1}' invalid", type, address);
+                _logger.LogError(ex, "{Type} email address '{Address}' invalid", type, address);
                 throw;
             }
         }

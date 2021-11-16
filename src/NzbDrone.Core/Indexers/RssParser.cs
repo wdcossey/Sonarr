@@ -7,10 +7,9 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
-using NzbDrone.Common.Instrumentation;
 using NzbDrone.Core.Indexers.Exceptions;
 using NzbDrone.Core.Parser.Model;
 
@@ -25,7 +24,7 @@ namespace NzbDrone.Core.Indexers
         public static readonly string[] UsenetEnclosureMimeTypes = new[] { NzbEnclosureMimeType };
         public static readonly string[] TorrentEnclosureMimeTypes = new[] { TorrentEnclosureMimeType, MagnetEnclosureMimeType };
 
-        protected readonly Logger _logger;
+        protected readonly ILogger _logger;
 
         // Use the 'guid' element content as InfoUrl.
         public bool UseGuidInfoUrl { get; set; }
@@ -41,9 +40,9 @@ namespace NzbDrone.Core.Indexers
 
         private IndexerResponse _indexerResponse;
 
-        public RssParser()
+        public RssParser(ILoggerFactory loggerFactory)
         {
-            _logger = NzbDroneLogger.GetLogger(this);
+            _logger = loggerFactory.CreateLogger(GetType());
         }
 
         public virtual IList<ReleaseInfo> ParseResponse(IndexerResponse indexerResponse)
@@ -78,7 +77,7 @@ namespace NzbDrone.Core.Indexers
                 {
                     itemEx.WithData("FeedUrl", indexerResponse.Request.Url);
                     itemEx.WithData("ItemTitle", item.Title());
-                    _logger.Error(itemEx, "An error occurred while processing feed item from {0}", indexerResponse.Request.Url);
+                    _logger.LogError(itemEx, "An error occurred while processing feed item from {Url}", indexerResponse.Request.Url);
                 }
             }
 
@@ -105,7 +104,7 @@ namespace NzbDrone.Core.Indexers
             catch (XmlException ex)
             {
                 var contentSample = indexerResponse.Content.Substring(0, Math.Min(indexerResponse.Content.Length, 512));
-                _logger.Debug("Truncated response content (originally {0} characters): {1}", indexerResponse.Content.Length, contentSample);
+                _logger.LogDebug("Truncated response content (originally {Length} characters): {ContentSample}", indexerResponse.Content.Length, contentSample);
 
                 ex.WithData(indexerResponse.HttpResponse);
 
@@ -145,7 +144,7 @@ namespace NzbDrone.Core.Indexers
 
             releaseInfo = ProcessItem(item, releaseInfo);
 
-            _logger.Trace("Parsed: {0}", releaseInfo.Title);
+            _logger.LogTrace("Parsed: {Title}", releaseInfo.Title);
 
             return PostProcessItem(item, releaseInfo);
         }
@@ -266,7 +265,7 @@ namespace NzbDrone.Core.Indexers
                                      }
                                      catch (Exception e)
                                      {
-                                         _logger.Warn(e, "Failed to get enclosure for: {0}", item.Title());
+                                         _logger.LogWarning(e, "Failed to get enclosure for: {Title}", item.Title());
                                      }
 
                                      return null;
@@ -346,7 +345,7 @@ namespace NzbDrone.Core.Indexers
             }
             catch (Exception ex)
             {
-                _logger.Debug(ex, string.Format("Failed to parse Url {0}, ignoring.", value));
+                _logger.LogDebug(ex, "Failed to parse Url {Value}, ignoring.", value);
                 return null;
             }
         }

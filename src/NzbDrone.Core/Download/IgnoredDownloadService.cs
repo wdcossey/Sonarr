@@ -1,6 +1,5 @@
 ﻿using System.Linq;
-using NLog;
-using NzbDrone.Common.Extensions;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Download.TrackedDownloads;
 using NzbDrone.Core.Messaging.Events;
 
@@ -14,10 +13,10 @@ namespace NzbDrone.Core.Download
     public class IgnoredDownloadService : IIgnoredDownloadService
     {
         private readonly IEventAggregator _eventAggregator;
-        private readonly Logger _logger;
+        private readonly ILogger<IgnoredDownloadService> _logger;
 
         public IgnoredDownloadService(IEventAggregator eventAggregator,
-                                      Logger logger)
+                                      ILogger<IgnoredDownloadService> logger)
         {
             _eventAggregator = eventAggregator;
             _logger = logger;
@@ -29,7 +28,7 @@ namespace NzbDrone.Core.Download
 
             if (series == null)
             {
-                _logger.Warn("Unable to ignore download for unknown series");
+                _logger.LogDebug("Unable to ignore download for unknown series");
                 return false;
             }
 

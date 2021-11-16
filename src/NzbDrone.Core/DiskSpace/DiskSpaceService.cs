@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Core.Tv;
 
@@ -18,11 +18,11 @@ namespace NzbDrone.Core.DiskSpace
     {
         private readonly ISeriesService _seriesService;
         private readonly IDiskProvider _diskProvider;
-        private readonly Logger _logger;
+        private readonly ILogger<DiskSpaceService> _logger;
 
         private static readonly Regex _regexSpecialDrive = new Regex("^/var/lib/(docker|rancher|kubelet)(/|$)|^/(boot|etc)(/|$)|/docker(/var)?/aufs(/|$)", RegexOptions.Compiled);
 
-        public DiskSpaceService(ISeriesService seriesService, IDiskProvider diskProvider, Logger logger)
+        public DiskSpaceService(ISeriesService seriesService, IDiskProvider diskProvider, ILogger<DiskSpaceService> logger)
         {
             _seriesService = seriesService;
             _diskProvider = diskProvider;
@@ -85,7 +85,7 @@ namespace NzbDrone.Core.DiskSpace
                 {
                     if (!suppressWarnings)
                     {
-                        _logger.Warn(ex, "Unable to get free space for: " + path);
+                        _logger.LogWarning(ex, "Unable to get free space for: {Path}", path);
                     }
                 }
 

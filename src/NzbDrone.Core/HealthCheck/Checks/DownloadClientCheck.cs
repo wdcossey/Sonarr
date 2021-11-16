@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Download;
 using NzbDrone.Core.ThingiProvider.Events;
 
@@ -12,9 +12,9 @@ namespace NzbDrone.Core.HealthCheck.Checks
     public class DownloadClientCheck : HealthCheckBase
     {
         private readonly IProvideDownloadClient _downloadClientProvider;
-        private readonly Logger _logger;
+        private readonly ILogger<DownloadClientCheck> _logger;
 
-        public DownloadClientCheck(IProvideDownloadClient downloadClientProvider, Logger logger)
+        public DownloadClientCheck(IProvideDownloadClient downloadClientProvider, ILogger<DownloadClientCheck> logger)
         {
             _downloadClientProvider = downloadClientProvider;
             _logger = logger;
@@ -37,7 +37,7 @@ namespace NzbDrone.Core.HealthCheck.Checks
                 }
                 catch (Exception ex)
                 {
-                    _logger.Debug(ex, "Unable to communicate with {0}", downloadClient.Definition.Name);
+                    _logger.LogDebug(ex, "Unable to communicate with {DefinitionName}", downloadClient.Definition.Name);
 
                     var message = $"Unable to communicate with {downloadClient.Definition.Name}.";
                     return new HealthCheck(GetType(), HealthCheckResult.Error, $"{message} {ex.Message}", "#unable-to-communicate-with-download-client");

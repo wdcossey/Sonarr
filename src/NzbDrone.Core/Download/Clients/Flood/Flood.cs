@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using FluentValidation.Results;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Configuration;
@@ -21,13 +21,13 @@ namespace NzbDrone.Core.Download.Clients.Flood
         private readonly IDownloadSeedConfigProvider _downloadSeedConfigProvider;
 
         public Flood(IFloodProxy proxy,
-                        IDownloadSeedConfigProvider downloadSeedConfigProvider,
-                        ITorrentFileInfoReader torrentFileInfoReader,
-                        IHttpClient httpClient,
-                        IConfigService configService,
-                        IDiskProvider diskProvider,
-                        IRemotePathMappingService remotePathMappingService,
-                        Logger logger)
+            IDownloadSeedConfigProvider downloadSeedConfigProvider,
+            ITorrentFileInfoReader torrentFileInfoReader,
+            IHttpClient httpClient,
+            IConfigService configService,
+            IDiskProvider diskProvider,
+            IRemotePathMappingService remotePathMappingService,
+            ILogger<Flood> logger)
             : base(torrentFileInfoReader, httpClient, configService, diskProvider, remotePathMappingService, logger)
         {
             _proxy = proxy;
