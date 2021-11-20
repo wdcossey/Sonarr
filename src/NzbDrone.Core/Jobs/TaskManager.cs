@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Backup;
 using NzbDrone.Core.Configuration;
@@ -163,7 +164,7 @@ namespace NzbDrone.Core.Jobs
             }
         }
 
-        public void HandleAsync(ConfigSavedEvent message)
+        public Task HandleAsync(ConfigSavedEvent message)
         {
             var rss = _scheduledTaskRepository.GetDefinition(typeof(RssSyncCommand));
             rss.Interval = GetRssSyncInterval();
@@ -172,6 +173,8 @@ namespace NzbDrone.Core.Jobs
             backup.Interval = GetBackupInterval();
 
             _scheduledTaskRepository.UpdateMany(new List<ScheduledTask>{ rss, backup });
+            
+            return Task.CompletedTask;
         }
     }
 }

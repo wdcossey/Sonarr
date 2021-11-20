@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
@@ -26,7 +27,7 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Manual
         ManualImportItem ReprocessItem(string path, string downloadId, int seriesId, int? seasonNumber, List<int> episodeIds, string releaseGroup, QualityModel quality, Language language);
     }
 
-    public class ManualImportService : IExecute<ManualImportCommand>, IManualImportService
+    public class ManualImportService : IExecuteAsync<ManualImportCommand>, IManualImportService
     {
         private readonly IDiskProvider _diskProvider;
         private readonly IParsingService _parsingService;
@@ -363,7 +364,7 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Manual
             return item;
         }
 
-        public void Execute(ManualImportCommand message)
+        public Task ExecuteAsync(ManualImportCommand message)
         {
             _logger.ProgressTrace("Manually importing {Count} files using mode {ImportMode}", message.Files.Count, message.ImportMode);
 
@@ -466,6 +467,8 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Manual
                     _eventAggregator.PublishEvent(new DownloadCompletedEvent(trackedDownload, importedSeries.Id));
                 }
             }
+
+            return Task.CompletedTask;
         }
     }
 }

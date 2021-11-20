@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
@@ -14,10 +14,10 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
     public class QBittorrentProxyV2 : IQBittorrentProxy
     {
         private readonly IHttpClient<QBittorrentProxyV2> _httpClient;
-        private readonly Logger _logger;
+        private readonly ILogger<QBittorrentProxyV2> _logger;
         private readonly ICached<Dictionary<string, string>> _authCookieCache;
 
-        public QBittorrentProxyV2(IHttpClient<QBittorrentProxyV2> httpClient, ICacheManager cacheManager, Logger logger)
+        public QBittorrentProxyV2(IHttpClient<QBittorrentProxyV2> httpClient, ICacheManager cacheManager, ILogger<QBittorrentProxyV2> logger)
         {
             _httpClient = httpClient;
             _logger = logger;
@@ -365,7 +365,7 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
 
                 if (response.StatusCode == HttpStatusCode.Forbidden)
                 {
-                    _logger.Debug("Authentication required, logging in.");
+                    _logger.LogDebug("Authentication required, logging in.");
 
                     AuthenticateClient(requestBuilder, settings, true);
 
@@ -397,7 +397,7 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
                 return;
             }
 
-            var authKey = string.Format("{0}:{1}", requestBuilder.BaseUrl, settings.Password);
+            var authKey = $"{requestBuilder.BaseUrl}:{settings.Password}";
 
             var cookies = _authCookieCache.Find(authKey);
 
@@ -418,7 +418,7 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
                 }
                 catch (HttpException ex)
                 {
-                    _logger.Debug("qbitTorrent authentication failed.");
+                    _logger.LogDebug("qbitTorrent authentication failed.");
                     if (ex.Response.StatusCode == HttpStatusCode.Forbidden)
                     {
                         throw new DownloadClientAuthenticationException("Failed to authenticate with qBittorrent.", ex);
@@ -433,11 +433,11 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
 
                 if (response.Content != "Ok.") // returns "Fails." on bad login
                 {
-                    _logger.Debug("qbitTorrent authentication failed.");
+                    _logger.LogDebug("qbitTorrent authentication failed.");
                     throw new DownloadClientAuthenticationException("Failed to authenticate with qBittorrent.");
                 }
 
-                _logger.Debug("qBittorrent authentication succeeded.");
+                _logger.LogDebug("qBittorrent authentication succeeded.");
 
                 cookies = response.GetCookies();
 

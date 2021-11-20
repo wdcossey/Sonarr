@@ -2,12 +2,9 @@ using System;
 using System.Data.SQLite;
 using Marr.Data;
 using Marr.Data.Reflection;
-using Microsoft.Extensions.DependencyInjection;
-using NLog;
-using NzbDrone.Common.Composition;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
-using NzbDrone.Common.Instrumentation;
 using NzbDrone.Core.Datastore.Migration.Framework;
 
 
@@ -21,7 +18,8 @@ namespace NzbDrone.Core.Datastore
 
     public class DbFactory : IDbFactory
     {
-        private static readonly Logger Logger = NzbDroneLogger.GetLogger(typeof(DbFactory));
+        private readonly ILoggerFactory _loggerFactory;
+        private readonly ILogger<DbFactory> _logger;
         private readonly IMigrationController _migrationController;
         private readonly IConnectionStringFactory _connectionStringFactory;
         private readonly IDiskProvider _diskProvider;
@@ -44,27 +42,18 @@ namespace NzbDrone.Core.Datastore
             Environment.SetEnvironmentVariable("No_SQLiteFunctions", "true");
         }
 
-        //TODO: Kill this method, no longer required.
-        public static void RegisterDatabase(IServiceProvider serviceProvider)
-        {
-            var mainDb = new MainDatabase(serviceProvider.GetRequiredService<IDbFactory>().Create());
-
-            //container.Register<IMainDatabase>(mainDb);
-
-            var logDb = new LogDatabase(serviceProvider.GetRequiredService<IDbFactory>().Create(MigrationType.Log));
-
-            //container.Register<ILogDatabase>(logDb);
-        }
-
         public DbFactory(IMigrationController migrationController,
                          IConnectionStringFactory connectionStringFactory,
                          IDiskProvider diskProvider,
-                         IRestoreDatabase restoreDatabaseService)
+                         IRestoreDatabase restoreDatabaseService,
+                         ILoggerFactory loggerFactory)
         {
             _migrationController = migrationController;
             _connectionStringFactory = connectionStringFactory;
             _diskProvider = diskProvider;
             _restoreDatabaseService = restoreDatabaseService;
+            _loggerFactory = loggerFactory;
+            _logger = _loggerFactory.CreateLogger<DbFactory>();
         }
 
         public IDatabase Create(MigrationType migrationType = MigrationType.Main)
@@ -98,9 +87,14 @@ namespace NzbDrone.Core.Datastore
                     }
             }
 
-            var db = new Database(migrationContext.MigrationType.ToString(), () =>
+            var db = new Database(
+                logger: _loggerFactory.CreateLogger($"{migrationContext.MigrationType}{nameof(Database)}"), 
+                databaseName: migrationContext.MigrationType.ToString(), 
+                datamapperFactory: () =>
                 {
-                    var dataMapper = new DataMapper(SQLiteFactory.Instance, connectionString)
+                    var dataMapper = new DataMapper(
+                        
+                        SQLiteFactory.Instance, connectionString)
                     {
                         SqlMode = SqlModes.Text,
                     };
@@ -141,7 +135,7 @@ namespace NzbDrone.Core.Datastore
             {
                 var fileName = _connectionStringFactory.GetDatabasePath(connectionString);
 
-                Logger.Error(e, "Logging database is corrupt, attempting to recreate it automatically");
+                _logger.LogError(e, "Logging database is corrupt, attempting to recreate it automatically");
 
                 try
                 {
@@ -152,7 +146,7 @@ namespace NzbDrone.Core.Datastore
                 }
                 catch (Exception)
                 {
-                    Logger.Error("Unable to recreate logging database automatically. It will need to be removed manually.");
+                    _logger.LogError("Unable to recreate logging database automatically. It will need to be removed manually.");
                 }
 
                 _migrationController.Migrate(connectionString, migrationContext);

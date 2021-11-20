@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.TPL;
@@ -11,8 +12,8 @@ using NzbDrone.Core.Messaging.Events;
 
 namespace NzbDrone.Core.Download.TrackedDownloads
 {
-    public class DownloadMonitoringService : IExecute<RefreshMonitoredDownloadsCommand>,
-                                             IExecute<CheckForFinishedDownloadCommand>,
+    public class DownloadMonitoringService : IExecuteAsync<RefreshMonitoredDownloadsCommand>,
+                                             IExecuteAsync<CheckForFinishedDownloadCommand>,
                                              IHandle<EpisodeGrabbedEvent>,
                                              IHandle<EpisodeImportedEvent>,
                                              IHandle<DownloadsProcessedEvent>,
@@ -152,15 +153,17 @@ namespace NzbDrone.Core.Download.TrackedDownloads
             return true;
         }
 
-        public void Execute(RefreshMonitoredDownloadsCommand message)
+        public Task ExecuteAsync(RefreshMonitoredDownloadsCommand message)
         {
             Refresh();
+            return Task.CompletedTask;
         }
 
-        public void Execute(CheckForFinishedDownloadCommand message)
+        public Task ExecuteAsync(CheckForFinishedDownloadCommand message)
         {
             _logger.LogWarning("A third party app used the deprecated CheckForFinishedDownload command, it should be updated RefreshMonitoredDownloads instead");
             Refresh();
+            return Task.CompletedTask;
         }
 
         public void Handle(EpisodeGrabbedEvent message)

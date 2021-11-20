@@ -213,14 +213,10 @@ namespace NzbDrone.Common.Instrumentation
         }
 
         public static Logger GetLogger(Type obj)
-        {
-            return LogManager.GetLogger(obj.Name.Replace("NzbDrone.", ""));
-        }
+            => LogManager.GetLogger(obj.Name.Replace("NzbDrone.", ""));
 
         public static Logger GetLogger(object obj)
-        {
-            return GetLogger(obj.GetType());
-        }
+            => GetLogger(obj.GetType());
 
     }
 }

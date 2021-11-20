@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
@@ -11,7 +12,7 @@ namespace NzbDrone.Core.Instrumentation
     {
     }
 
-    public class DeleteLogFilesService : IDeleteLogFilesService, IExecute<DeleteLogFilesCommand>, IExecute<DeleteUpdateLogFilesCommand>
+    public class DeleteLogFilesService : IDeleteLogFilesService, IExecuteAsync<DeleteLogFilesCommand>, IExecuteAsync<DeleteUpdateLogFilesCommand>
     {
         private readonly IDiskProvider _diskProvider;
         private readonly IAppFolderInfo _appFolderInfo;
@@ -24,16 +25,18 @@ namespace NzbDrone.Core.Instrumentation
             _logger = logger;
         }
 
-        public void Execute(DeleteLogFilesCommand message)
+        public Task ExecuteAsync(DeleteLogFilesCommand message)
         {
             _logger.LogDebug("Deleting all files in: {LogFolder}", _appFolderInfo.GetLogFolder());
             _diskProvider.EmptyFolder(_appFolderInfo.GetLogFolder());
+            return Task.CompletedTask;
         }
 
-        public void Execute(DeleteUpdateLogFilesCommand message)
+        public Task ExecuteAsync(DeleteUpdateLogFilesCommand message)
         {
             _logger.LogDebug("Deleting all files in: {UpdateLogFolder}", _appFolderInfo.GetUpdateLogFolder());
             _diskProvider.EmptyFolder(_appFolderInfo.GetUpdateLogFolder());
+            return Task.CompletedTask;
         }
     }
 }

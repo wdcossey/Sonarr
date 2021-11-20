@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Extras.Metadata.Files;
@@ -15,13 +15,13 @@ namespace NzbDrone.Core.Housekeeping.Housekeepers
         private readonly ISeriesService _seriesService;
         private readonly IDiskProvider _diskProvider;
         private readonly IConfigService _configService;
-        private readonly Logger _logger;
+        private readonly ILogger<DeleteBadMediaCovers> _logger;
 
         public DeleteBadMediaCovers(IMetadataFileService metaFileService,
                                     ISeriesService seriesService,
                                     IDiskProvider diskProvider,
                                     IConfigService configService,
-                                    Logger logger)
+                                    ILogger<DeleteBadMediaCovers> logger)
         {
             _metaFileService = metaFileService;
             _seriesService = seriesService;
@@ -48,13 +48,13 @@ namespace NzbDrone.Core.Housekeeping.Housekeepers
                         var path = Path.Combine(show.Path, image.RelativePath);
                         if (!IsValid(path))
                         {
-                            _logger.Debug("Deleting invalid image file " + path);
+                            _logger.LogDebug("Deleting invalid image file {Path}", path);
                             DeleteMetadata(image.Id, path);
                         }
                     }
                     catch (Exception e)
                     {
-                        _logger.Error(e, "Couldn't validate image {0}", image.RelativePath);
+                        _logger.LogError(e, "Couldn't validate image {RelativePath}", image.RelativePath);
                     }
                 }
             }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Datastore;
@@ -209,10 +210,11 @@ namespace NzbDrone.Core.Tv
             _episodeRepository.DeleteMany(episodes);
         }
 
-        public void HandleAsync(SeriesDeletedEvent message)
+        public Task HandleAsync(SeriesDeletedEvent message)
         {
             var episodes = GetEpisodeBySeries(message.Series.Id);
             _episodeRepository.DeleteMany(episodes);
+            return Task.CompletedTask;
         }
 
         public void Handle(EpisodeFileDeletedEvent message)

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Instrumentation.Extensions;
@@ -11,7 +12,7 @@ using NzbDrone.Core.Parser.Model;
 
 namespace NzbDrone.Core.ImportLists
 {
-    public class ImportListSyncService : IExecute<ImportListSyncCommand>
+    public class ImportListSyncService : IExecuteAsync<ImportListSyncCommand>
     {
         private readonly IImportListFactory _importListFactory;
         private readonly IImportListExclusionService _importListExclusionService;
@@ -146,7 +147,7 @@ namespace NzbDrone.Core.ImportLists
             _logger.ProgressInfo(message);
         }
 
-        public void Execute(ImportListSyncCommand message)
+        public Task ExecuteAsync(ImportListSyncCommand message)
         {
             if (message.DefinitionId.HasValue)
             {
@@ -156,6 +157,8 @@ namespace NzbDrone.Core.ImportLists
             {
                 SyncAll();
             }
+            
+            return Task.CompletedTask;
         }
     }
 }

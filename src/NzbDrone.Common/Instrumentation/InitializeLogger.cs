@@ -10,17 +10,12 @@ namespace NzbDrone.Common.Instrumentation
         private readonly IOsInfo _osInfo;
 
         public InitializeLogger(IOsInfo osInfo)
-        {
-            _osInfo = osInfo;
-        }
+            => _osInfo = osInfo;
 
         public void Initialize()
         {
-            SentryTarget sentryTarget = LogManager.Configuration.AllTargets.OfType<SentryTarget>().FirstOrDefault();
-            if (sentryTarget != null)
-            {
-                sentryTarget.UpdateScope(_osInfo);
-            }
+            var sentryTarget = LogManager.Configuration.AllTargets.OfType<SentryTarget>().FirstOrDefault();
+            sentryTarget?.UpdateScope(_osInfo);
         }
     }
 }

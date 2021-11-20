@@ -30,7 +30,7 @@ namespace NzbDrone.Common.Http
     {
         private const int MaxRedirects = 5;
 
-        private readonly ILogger<HttpClient> _logger;
+        private readonly ILogger<HttpClient<TService>> _logger;
         private readonly IRateLimitService _rateLimitService;
         private readonly ICached<CookieContainer> _cookieContainerCache;
         private readonly List<IHttpRequestInterceptor> _requestInterceptors;
@@ -42,7 +42,7 @@ namespace NzbDrone.Common.Http
             IRateLimitService rateLimitService,
             IHttpDispatcher httpDispatcher,
             IUserAgentBuilder userAgentBuilder,
-            ILogger<HttpClient> logger)
+            ILogger<HttpClient<TService>> logger)
         {
             _requestInterceptors = requestInterceptors.ToList();
             _rateLimitService = rateLimitService;

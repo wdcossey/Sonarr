@@ -1,6 +1,8 @@
-﻿namespace NzbDrone.Core.Messaging.Commands
+﻿using System.Threading.Tasks;
+
+namespace NzbDrone.Core.Messaging.Commands
 {
-    public class CleanupCommandMessagingService : IExecute<MessagingCleanupCommand>
+    public class CleanupCommandMessagingService : IExecuteAsync<MessagingCleanupCommand>
     {
         private readonly IManageCommandQueue _commandQueueManager;
 
@@ -9,9 +11,10 @@
             _commandQueueManager = commandQueueManager;
         }
 
-        public void Execute(MessagingCleanupCommand message)
+        public Task ExecuteAsync(MessagingCleanupCommand message)
         {
             _commandQueueManager.CleanCommands();
+            return Task.CompletedTask;
         }
     }
 }

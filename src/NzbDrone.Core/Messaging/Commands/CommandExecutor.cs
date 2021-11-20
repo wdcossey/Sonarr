@@ -1,18 +1,19 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using NLog;
+using Microsoft.Extensions.Logging;
+using NzbDrone.Core.Extensions;
 using NzbDrone.Core.Lifecycle;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.ProgressMessaging;
-using IServiceProvider = System.IServiceProvider;
 
 namespace NzbDrone.Core.Messaging.Commands
 {
-    public class CommandExecutor : IHandle<ApplicationStartedEvent>,
+    public class CommandExecutor : IHandleAsync<ApplicationStartedEvent>,
                                    IHandle<ApplicationShutdownRequested>
     {
-        private readonly Logger _logger;
+        private readonly ILogger<CommandExecutor> _logger;
         private readonly IServiceProvider _serviceProvider;
         private readonly IManageCommandQueue _commandQueueManager;
         private readonly IEventAggregator _eventAggregator;
@@ -23,7 +24,7 @@ namespace NzbDrone.Core.Messaging.Commands
         public CommandExecutor(IServiceProvider serviceProvider,
                                IManageCommandQueue commandQueueManager,
                                IEventAggregator eventAggregator,
-                               Logger logger)
+                               ILogger<CommandExecutor> logger)
         {
             _logger = logger;
             _serviceProvider = serviceProvider;
@@ -31,7 +32,7 @@ namespace NzbDrone.Core.Messaging.Commands
             _eventAggregator = eventAggregator;
         }
 
-        private void ExecuteCommands()
+        private async Task ExecuteCommandsAsync()
         {
             try
             {
@@ -39,48 +40,45 @@ namespace NzbDrone.Core.Messaging.Commands
                 {
                     try
                     {
-                        ExecuteCommand((dynamic)command.Body, command);
+                        await ExecuteCommandAsync((dynamic) command.Body, command);
                     }
                     catch (Exception ex)
                     {
-                        _logger.Error(ex, "Error occurred while executing task {0}", command.Name);
+                        _logger.LogError(ex, "Error occurred while executing task {CommandName}", command.Name);
                     }
                 }
             }
             catch (ThreadAbortException ex)
             {
-                _logger.Error(ex, "Thread aborted");
+                _logger.LogError(ex, "Thread aborted");
                 Thread.ResetAbort();
             }
             catch (OperationCanceledException)
             {
-                _logger.Trace("Stopped one command execution pipeline");
+                _logger.LogTrace("Stopped one command execution pipeline");
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Unknown error in thread");
+                _logger.LogError(ex, "Unknown error in thread");
             }
         }
 
-        private void ExecuteCommand<TCommand>(TCommand command, CommandModel commandModel) where TCommand : Command
+        private async Task ExecuteCommandAsync<TCommand>(TCommand command, CommandModel commandModel) where TCommand : Command
         {
-            IExecute<TCommand> handler = null;
+            IExecuteAsync<TCommand> handler = null;
 
             try
             {
-                handler = (IExecute<TCommand>)_serviceProvider.GetRequiredService(typeof(IExecute<TCommand>));
-
-                _logger.Trace("{0} -> {1}", command.GetType().Name, handler.GetType().Name);
+                handler = _serviceProvider.GetRequiredService<IExecuteAsync<TCommand>>();
+                
+                _logger.LogTrace("{CommandTypeName} -> {HandlerTypeName}", command.GetType().Name, handler.GetType().Name);
 
                 _commandQueueManager.Start(commandModel);
                 BroadcastCommandUpdate(commandModel);
 
-                if (ProgressMessageContext.CommandModel == null)
-                {
-                    ProgressMessageContext.CommandModel = commandModel;
-                }
+                ProgressMessageContext.CommandModel ??= commandModel;
 
-                handler.Execute(command);
+                await handler.ExecuteAsync(command);
 
                 _commandQueueManager.Complete(commandModel, command.CompletionMessage ?? commandModel.Message);
             }
@@ -109,7 +107,7 @@ namespace NzbDrone.Core.Messaging.Commands
 
                 if (handler != null)
                 {
-                    _logger.Trace("{0} <- {1} [{2}]", command.GetType().Name, handler.GetType().Name, commandModel.Duration.ToString());
+                    _logger.LogTrace("{CommandTypeName} <- {HandlerTypeName} [{Duration}]", command.GetType().Name, handler.GetType().Name, commandModel.Duration.ToString());
                 }
             }
         }
@@ -122,20 +120,28 @@ namespace NzbDrone.Core.Messaging.Commands
             }
         }
 
-        public void Handle(ApplicationStartedEvent message)
+        public Task HandleAsync(ApplicationStartedEvent message)
         {
             _cancellationTokenSource = new CancellationTokenSource();
-
-            for (int i = 0; i < THREAD_LIMIT; i++)
+            
+            for (int i = 0; i < Math.Max(THREAD_LIMIT, Environment.ProcessorCount) ; i++)
+            {
+                Task.Run(ExecuteCommandsAsync).Forget();
+                //var thread = new Thread(() => ExecuteCommandsAsync());
+                //thread.Start();
+            }
+            
+            return Task.CompletedTask;
+            /*for (int i = 0; i < THREAD_LIMIT; i++)
             {
                 var thread = new Thread(ExecuteCommands);
                 thread.Start();
-            }
+            }*/
         }
 
         public void Handle(ApplicationShutdownRequested message)
         {
-            _logger.Info("Shutting down task execution");
+            _logger.LogInformation("Shutting down task execution");
             _cancellationTokenSource.Cancel(true);
         }
     }

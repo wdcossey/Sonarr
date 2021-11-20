@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using NLog;
+﻿using System.IO;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.MediaFiles;
@@ -18,22 +14,16 @@ namespace NzbDrone.Core.Extras.Others
 
     public class OtherExtraFileRenamer : IOtherExtraFileRenamer
     {
-        private readonly Logger _logger;
         private readonly IDiskProvider _diskProvider;
         private readonly IRecycleBinProvider _recycleBinProvider;
-        private readonly ISeriesService _seriesService;
         private readonly IOtherExtraFileService _otherExtraFileService;
 
         public OtherExtraFileRenamer(IOtherExtraFileService otherExtraFileService,
-                                     ISeriesService seriesService,
-                                     IRecycleBinProvider recycleBinProvider,
-                                     IDiskProvider diskProvider,
-                                     Logger logger)
+            IRecycleBinProvider recycleBinProvider,
+                                     IDiskProvider diskProvider)
         {
-            _logger = logger;
             _diskProvider = diskProvider;
             _recycleBinProvider = recycleBinProvider;
-            _seriesService = seriesService;
             _otherExtraFileService = otherExtraFileService;
         }
 

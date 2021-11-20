@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using NLog;
-using NzbDrone.Common.EnvironmentInfo;
+
 
 namespace NzbDrone.Common.Instrumentation
 {

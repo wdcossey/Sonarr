@@ -48,12 +48,12 @@ namespace Sonarr.Api.V3.Config
             SharedValidator.RuleFor(c => c.BackupRetention).InclusiveBetween(1, 90);*/
         }
 
-        [ProducesResponseType( typeof(HostConfigResource), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(HostConfigResource), StatusCodes.Status200OK)]
         [HttpGet]
         public IActionResult GetHostConfig([FromQuery] int? id = null)
             => Ok(GetHostConfigResource());
 
-        [ProducesResponseType( typeof(HostConfigResource), StatusCodes.Status202Accepted)]
+        [ProducesResponseType(typeof(HostConfigResource), StatusCodes.Status202Accepted)]
         [HttpPut]
         public IActionResult SaveHostConfig([FromBody] HostConfigResource resource)
         {

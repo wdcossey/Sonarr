@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Instrumentation.Extensions;
@@ -13,9 +14,9 @@ using NzbDrone.Core.Tv;
 
 namespace NzbDrone.Core.IndexerSearch
 {
-    public class EpisodeSearchService : IExecute<EpisodeSearchCommand>,
-                                        IExecute<MissingEpisodeSearchCommand>,
-                                        IExecute<CutoffUnmetEpisodeSearchCommand>
+    public class EpisodeSearchService : IExecuteAsync<EpisodeSearchCommand>,
+                                        IExecuteAsync<MissingEpisodeSearchCommand>,
+                                        IExecuteAsync<CutoffUnmetEpisodeSearchCommand>
     {
         private readonly ISearchForReleases _releaseSearchService;
         private readonly IProcessDownloadDecisions _processDownloadDecisions;
@@ -90,7 +91,7 @@ namespace NzbDrone.Core.IndexerSearch
             return episodeMonitored && seriesMonitored;
         }
 
-        public void Execute(EpisodeSearchCommand message)
+        public Task ExecuteAsync(EpisodeSearchCommand message)
         {
             foreach (var episodeId in message.EpisodeIds)
             {
@@ -99,9 +100,11 @@ namespace NzbDrone.Core.IndexerSearch
 
                 _logger.ProgressInfo("Episode search completed. {0} reports downloaded.", processed.Grabbed.Count);
             }
+            
+            return Task.CompletedTask;
         }
 
-        public void Execute(MissingEpisodeSearchCommand message)
+        public Task ExecuteAsync(MissingEpisodeSearchCommand message)
         {
             var monitored = message.Monitored;
             List<Episode> episodes;
@@ -142,9 +145,11 @@ namespace NzbDrone.Core.IndexerSearch
             var missing = episodes.Where(e => !queue.Contains(e.Id)).ToList();
 
             SearchForEpisodes(missing, monitored, message.Trigger == CommandTrigger.Manual);
+            
+            return Task.CompletedTask;
         }
 
-        public void Execute(CutoffUnmetEpisodeSearchCommand message)
+        public Task ExecuteAsync(CutoffUnmetEpisodeSearchCommand message)
         {
             var monitored = message.Monitored;
 
@@ -176,6 +181,8 @@ namespace NzbDrone.Core.IndexerSearch
             var cutoffUnmet = episodes.Where(e => !queue.Contains(e.Id)).ToList();
 
             SearchForEpisodes(cutoffUnmet, monitored, message.Trigger == CommandTrigger.Manual);
+            
+            return Task.CompletedTask;
         }
     }
 }

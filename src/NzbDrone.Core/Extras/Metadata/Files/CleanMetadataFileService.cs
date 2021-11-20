@@ -1,5 +1,5 @@
 ﻿using System.IO;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Core.Tv;
 
@@ -14,11 +14,11 @@ namespace NzbDrone.Core.Extras.Metadata.Files
     {
         private readonly IMetadataFileService _metadataFileService;
         private readonly IDiskProvider _diskProvider;
-        private readonly Logger _logger;
+        private readonly ILogger<CleanExtraFileService> _logger;
 
         public CleanExtraFileService(IMetadataFileService metadataFileService,
                                     IDiskProvider diskProvider,
-                                    Logger logger)
+                                    ILogger<CleanExtraFileService> logger)
         {
             _metadataFileService = metadataFileService;
             _diskProvider = diskProvider;
@@ -27,7 +27,7 @@ namespace NzbDrone.Core.Extras.Metadata.Files
 
         public void Clean(Series series)
         {
-            _logger.Debug("Cleaning missing metadata files for series: {0}", series.Title);
+            _logger.LogDebug("Cleaning missing metadata files for series: {Title}", series.Title);
 
             var metadataFiles = _metadataFileService.GetFilesBySeries(series.Id);
 
@@ -35,7 +35,7 @@ namespace NzbDrone.Core.Extras.Metadata.Files
             {
                 if (!_diskProvider.FileExists(Path.Combine(series.Path, metadataFile.RelativePath)))
                 {
-                    _logger.Debug("Deleting metadata file from database: {0}", metadataFile.RelativePath);
+                    _logger.LogDebug("Deleting metadata file from database: {Title}", metadataFile.RelativePath);
                     _metadataFileService.Delete(metadataFile.Id);
                 }
             }

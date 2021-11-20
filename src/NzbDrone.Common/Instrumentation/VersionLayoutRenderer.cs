@@ -13,8 +13,7 @@ namespace NzbDrone.Common.Instrumentation
         private static readonly string Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
         protected override void Append(StringBuilder builder, LogEventInfo logEvent)
-        {
-            builder.Append(Version);
-        }
+            => builder.Append(Version);
+        
     }
 }

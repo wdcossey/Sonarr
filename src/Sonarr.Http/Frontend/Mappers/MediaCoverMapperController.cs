@@ -10,7 +10,7 @@ using NzbDrone.Common.Extensions;
 namespace Sonarr.Http.Frontend.Mappers
 {
     //[ResponseCache]
-    [ResponseCache(NoStore = true, Duration = 7200, Location = ResponseCacheLocation.Any)]
+    [ResponseCache(NoStore = false, Duration = 7200, Location = ResponseCacheLocation.Any)]
     [AllowAnonymous]
     [Route("MediaCover")]
     public class MediaCoverMapperController : PhysicalFileControllerBase
@@ -32,7 +32,7 @@ namespace Sonarr.Http.Frontend.Mappers
         }
 
         [HttpGet("{seriesId:int:required:regex(\\d+)}/{filename:required:regex(((.+))\\.((jpg|png|gif)))}")]
-        public IActionResult GetMediaCoverFile(int seriesId, string fileName)
+        public IActionResult GetMediaCoverFile(int seriesId, string fileName, [FromQuery] long? lastWrite = null)
         {
             var filePath = GetFilePath(seriesId, fileName);
             return GetPhysicalFile(filePath);

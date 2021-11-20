@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Core.MediaFiles.Events;
 using NzbDrone.Core.Messaging.Events;
@@ -108,10 +109,11 @@ namespace NzbDrone.Core.MediaFiles
             return _mediaFileRepository.GetFilesWithRelativePath(seriesId, relativePath);
         }
 
-        public void HandleAsync(SeriesDeletedEvent message)
+        public Task HandleAsync(SeriesDeletedEvent message)
         {
             var files = GetFilesBySeries(message.Series.Id);
             _mediaFileRepository.DeleteMany(files);
+            return Task.CompletedTask;
         }
     }
 }

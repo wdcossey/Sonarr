@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using NLog;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Core.Lifecycle;
 using NzbDrone.Core.Messaging.Events;
@@ -32,7 +31,7 @@ namespace Sonarr.Server.EventHandlers
                     _runtimeInfo.RestartPending = true;
                 }
 
-                LogManager.Configuration = null;
+                NLog.LogManager.Configuration = null;
                 Shutdown();
             }
         }

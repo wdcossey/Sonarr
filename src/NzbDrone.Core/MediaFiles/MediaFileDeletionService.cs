@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
@@ -88,7 +89,7 @@ namespace NzbDrone.Core.MediaFiles
             _eventAggregator.PublishEvent(new DeleteCompletedEvent());
         }
 
-        public void HandleAsync(SeriesDeletedEvent message)
+        public Task HandleAsync(SeriesDeletedEvent message)
         {
             if (message.DeleteFiles)
             {
@@ -102,13 +103,13 @@ namespace NzbDrone.Core.MediaFiles
                     if (series.Path.IsParentPath(s.Path))
                     {
                         _logger.LogError("Series path: '{Path}' is a parent of another series, not deleting files.", series.Path);
-                        return;
+                        return Task.CompletedTask;
                     }
 
                     if (series.Path.PathEquals(s.Path))
                     {
                         _logger.LogError("Series path: '{Path}' is the same as another series, not deleting files.", series.Path);
-                        return;
+                        return Task.CompletedTask;
                     }
                 }
 
@@ -118,6 +119,8 @@ namespace NzbDrone.Core.MediaFiles
                 }
                 _eventAggregator.PublishEvent(new DeleteCompletedEvent());
             }
+            
+            return Task.CompletedTask;
         }
 
         [EventHandleOrder(EventHandleOrder.Last)]

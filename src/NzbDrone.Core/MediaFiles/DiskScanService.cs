@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
@@ -27,9 +28,7 @@ namespace NzbDrone.Core.MediaFiles
         List<string> FilterPaths(string basePath, IEnumerable<string> files);
     }
 
-    public class DiskScanService :
-        IDiskScanService,
-        IExecute<RescanSeriesCommand>
+    public class DiskScanService : IDiskScanService, IExecuteAsync<RescanSeriesCommand>
     {
         private readonly IDiskProvider _diskProvider;
         private readonly IMakeImportDecision _importDecisionMaker;
@@ -216,7 +215,7 @@ namespace NzbDrone.Core.MediaFiles
             }
         }
 
-        public void Execute(RescanSeriesCommand message)
+        public Task ExecuteAsync(RescanSeriesCommand message)
         {
             if (message.SeriesId.HasValue)
             {
@@ -233,6 +232,8 @@ namespace NzbDrone.Core.MediaFiles
                     Scan(series);
                 }
             }
+            
+            return Task.CompletedTask;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Download;
@@ -21,7 +22,7 @@ namespace NzbDrone.Core.Blocklisting
         void Delete(List<int> ids);
     }
     public class BlocklistService : IBlocklistService,
-                                    IExecute<ClearBlocklistCommand>,
+                                    IExecuteAsync<ClearBlocklistCommand>,
                                     IHandle<DownloadFailedEvent>,
                                     IHandleAsync<SeriesDeletedEvent>
     {
@@ -152,10 +153,12 @@ namespace NzbDrone.Core.Blocklisting
             return difference <= 2.Megabytes();
         }
 
-        public void Execute(ClearBlocklistCommand message)
+        public Task ExecuteAsync(ClearBlocklistCommand message)
         {
             _blocklistRepository.Purge();
+            return Task.CompletedTask;
         }
+
 
         public void Handle(DownloadFailedEvent message)
         {
@@ -178,11 +181,11 @@ namespace NzbDrone.Core.Blocklisting
             _blocklistRepository.Insert(blocklist);
         }
 
-        public void HandleAsync(SeriesDeletedEvent message)
+        public Task HandleAsync(SeriesDeletedEvent message)
         {
             var blocklisted = _blocklistRepository.BlocklistedBySeries(message.Series.Id);
-
             _blocklistRepository.DeleteMany(blocklisted);
+            return Task.CompletedTask;
         }
     }
 }

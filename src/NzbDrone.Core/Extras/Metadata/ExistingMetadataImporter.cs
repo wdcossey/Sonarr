@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Extras.Files;
 using NzbDrone.Core.Extras.Metadata.Files;
 using NzbDrone.Core.Extras.Subtitles;
 using NzbDrone.Core.MediaFiles.EpisodeImport.Aggregation;
-using NzbDrone.Core.Parser;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Tv;
 
@@ -17,13 +16,13 @@ namespace NzbDrone.Core.Extras.Metadata
     {
         private readonly IExtraFileService<MetadataFile> _metadataFileService;
         private readonly IAggregationService _aggregationService;
-        private readonly Logger _logger;
+        private readonly ILogger<ExistingMetadataImporter> _logger;
         private readonly List<IMetadata> _consumers;
 
         public ExistingMetadataImporter(IExtraFileService<MetadataFile> metadataFileService,
                                         IEnumerable<IMetadata> consumers,
                                         IAggregationService aggregationService,
-                                        Logger logger)
+                                        ILogger<ExistingMetadataImporter> logger)
         : base(metadataFileService)
         {
             _metadataFileService = metadataFileService;
@@ -36,7 +35,7 @@ namespace NzbDrone.Core.Extras.Metadata
 
         public override IEnumerable<ExtraFile> ProcessFiles(Series series, List<string> filesOnDisk, List<string> importedFiles)
         {
-            _logger.Debug("Looking for existing metadata in {0}", series.Path);
+            _logger.LogDebug("Looking for existing metadata in {Path}", series.Path);
 
             var metadataFiles = new List<MetadataFile>();
             var filterResult = FilterAndClean(series, filesOnDisk, importedFiles);
@@ -75,19 +74,19 @@ namespace NzbDrone.Core.Extras.Metadata
                         }
                         catch (AugmentingFailedException)
                         {
-                            _logger.Debug("Unable to parse extra file: {0}", possibleMetadataFile);
+                            _logger.LogDebug("Unable to parse extra file: {PossibleMetadataFile}", possibleMetadataFile);
                             continue;
                         }
 
                         if (localEpisode.Episodes.Empty())
                         {
-                            _logger.Debug("Cannot find related episodes for: {0}", possibleMetadataFile);
+                            _logger.LogDebug("Cannot find related episodes for: {PossibleMetadataFile}", possibleMetadataFile);
                             continue;
                         }
 
                         if (localEpisode.Episodes.DistinctBy(e => e.EpisodeFileId).Count() > 1)
                         {
-                            _logger.Debug("Extra file: {0} does not match existing files.", possibleMetadataFile);
+                            _logger.LogDebug("Extra file: {PossibleMetadataFile} does not match existing files.", possibleMetadataFile);
                             continue;
                         }
 
@@ -101,7 +100,7 @@ namespace NzbDrone.Core.Extras.Metadata
                 }
             }
 
-            _logger.Info("Found {0} existing metadata files", metadataFiles.Count);
+            _logger.LogInformation("Found {Count} existing metadata files", metadataFiles.Count);
             _metadataFileService.Upsert(metadataFiles);
 
             // Return files that were just imported along with files that were

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.EnsureThat;
 using NzbDrone.Core.Configuration.Events;
 using NzbDrone.Core.MediaFiles;
@@ -23,10 +23,10 @@ namespace NzbDrone.Core.Configuration
     {
         private readonly IConfigRepository _repository;
         private readonly IEventAggregator _eventAggregator;
-        private readonly Logger _logger;
+        private readonly ILogger<ConfigService> _logger;
         private static Dictionary<string, string> _cache;
 
-        public ConfigService(IConfigRepository repository, IEventAggregator eventAggregator, Logger logger)
+        public ConfigService(IConfigRepository repository, IEventAggregator eventAggregator, ILogger<ConfigService> logger)
         {
             _repository = repository;
             _eventAggregator = eventAggregator;
@@ -377,7 +377,7 @@ namespace NzbDrone.Core.Configuration
                 return dbValue;
             }
 
-            _logger.Trace("Using default config value for '{0}' defaultValue:'{1}'", key, defaultValue);
+            _logger.LogTrace("Using default config value for '{Key}' defaultValue:'{DefaultValue}'", key, defaultValue);
 
             if (persist)
             {
@@ -406,7 +406,7 @@ namespace NzbDrone.Core.Configuration
         {
             key = key.ToLowerInvariant();
 
-            _logger.Trace("Writing Setting to database. Key:'{0}' Value:'{1}'", key, value);
+            _logger.LogTrace("Writing Setting to database. Key:'{Key}' Value:'{Value}'", key, value);
             _repository.Upsert(key, value);
 
             ClearCache();

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common;
 using NzbDrone.Common.Disk;
@@ -20,7 +21,7 @@ using NzbDrone.Core.Update.Commands;
 
 namespace NzbDrone.Core.Update
 {
-    public class InstallUpdateService : IExecute<ApplicationUpdateCommand>, IExecute<ApplicationUpdateCheckCommand>, IHandle<ApplicationStartingEvent>
+    public class InstallUpdateService : IExecuteAsync<ApplicationUpdateCommand>, IExecuteAsync<ApplicationUpdateCheckCommand>, IHandle<ApplicationStartingEvent>
     {
         private readonly ICheckUpdateService _checkUpdateService;
         private readonly ILogger<InstallUpdateService> _logger;
@@ -250,15 +251,17 @@ namespace NzbDrone.Core.Update
             return latestAvailable;
         }
 
-        public void Execute(ApplicationUpdateCheckCommand message)
+        public Task ExecuteAsync(ApplicationUpdateCheckCommand message)
         {
             if (GetUpdatePackage(message.Trigger) != null)
             {
                 _commandQueueManager.Push(new ApplicationUpdateCommand(), trigger: message.Trigger);
             }
+            
+            return Task.CompletedTask;
         }
 
-        public void Execute(ApplicationUpdateCommand message)
+        public Task ExecuteAsync(ApplicationUpdateCommand message)
         {
             var latestAvailable = GetUpdatePackage(message.Trigger);
 
@@ -285,6 +288,8 @@ namespace NzbDrone.Core.Update
                     throw new CommandFailedException(ex);
                 }
             }
+            
+            return Task.CompletedTask;
         }
 
         public void Handle(ApplicationStartingEvent message)
@@ -317,8 +322,7 @@ namespace NzbDrone.Core.Update
                     _diskProvider.DeleteFile(updateMarker);
                     return;
                 }
-
-
+                
                 _logger.LogInformation("Installing post-install update from {BuildInfoVersion} to {LatestVersion}", BuildInfo.Version, latestAvailable.Version);
                 _diskProvider.DeleteFile(updateMarker);
 

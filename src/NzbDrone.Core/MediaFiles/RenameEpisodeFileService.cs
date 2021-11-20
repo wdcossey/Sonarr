@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
@@ -22,8 +23,8 @@ namespace NzbDrone.Core.MediaFiles
     }
 
     public class RenameEpisodeFileService : IRenameEpisodeFileService,
-                                            IExecute<RenameFilesCommand>,
-                                            IExecute<RenameSeriesCommand>
+                                            IExecuteAsync<RenameFilesCommand>,
+                                            IExecuteAsync<RenameSeriesCommand>
     {
         private readonly ISeriesService _seriesService;
         private readonly IMediaFileService _mediaFileService;
@@ -154,7 +155,7 @@ namespace NzbDrone.Core.MediaFiles
             return renamed;
         }
 
-        public void Execute(RenameFilesCommand message)
+        public Task ExecuteAsync(RenameFilesCommand message)
         {
             var series = _seriesService.GetSeries(message.SeriesId);
             var episodeFiles = _mediaFileService.Get(message.Files);
@@ -164,9 +165,11 @@ namespace NzbDrone.Core.MediaFiles
             _logger.ProgressInfo("Selected episode files renamed for {0}", series.Title);
 
             _eventAggregator.PublishEvent(new RenameCompletedEvent());
+            
+            return Task.CompletedTask;
         }
 
-        public void Execute(RenameSeriesCommand message)
+        public Task ExecuteAsync(RenameSeriesCommand message)
         {
             _logger.LogDebug("Renaming all files for selected series");
             var seriesToRename = _seriesService.GetSeries(message.SeriesIds);
@@ -180,6 +183,8 @@ namespace NzbDrone.Core.MediaFiles
             }
 
             _eventAggregator.PublishEvent(new RenameCompletedEvent());
+            
+            return Task.CompletedTask;
         }
     }
 }

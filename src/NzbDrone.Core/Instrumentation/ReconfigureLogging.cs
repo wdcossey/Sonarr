@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using NLog;
 using NLog.Config;
 using NzbDrone.Common.EnvironmentInfo;
@@ -94,9 +95,10 @@ namespace NzbDrone.Core.Instrumentation
                        };
         }
 
-        public void HandleAsync(ConfigFileSavedEvent message)
+        public Task HandleAsync(ConfigFileSavedEvent message)
         {
             Reconfigure();
+            return Task.CompletedTask;
         }
     }
 }

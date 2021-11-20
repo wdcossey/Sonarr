@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Messaging;
 using NzbDrone.Common.Reflection;
@@ -16,7 +17,7 @@ namespace NzbDrone.Core.HealthCheck
     }
 
     public class HealthCheckService : IHealthCheckService,
-                                      IExecute<CheckHealthCommand>,
+                                      IExecuteAsync<CheckHealthCommand>,
                                       IHandleAsync<ApplicationStartedEvent>,
                                       IHandleAsync<IEvent>
     {
@@ -89,30 +90,28 @@ namespace NzbDrone.Core.HealthCheck
             _eventAggregator.PublishEvent(new HealthCheckCompleteEvent());
         }
 
-        public void Execute(CheckHealthCommand message)
+        public Task ExecuteAsync(CheckHealthCommand message)
         {
-            if (message.Trigger == CommandTrigger.Manual)
-            {
-                PerformHealthCheck(_healthChecks);
-            }
-            else
-            {
-                PerformHealthCheck(_scheduledHealthChecks);
-            }
+            PerformHealthCheck(message.Trigger == CommandTrigger.Manual 
+                ? _healthChecks 
+                : _scheduledHealthChecks);
+            
+            return Task.CompletedTask;
         }
 
-        public void HandleAsync(ApplicationStartedEvent message)
+        public Task HandleAsync(ApplicationStartedEvent message)
         {
             PerformHealthCheck(_startupHealthChecks);
+            return Task.CompletedTask;
         }
 
-        public void HandleAsync(IEvent message)
+        public Task HandleAsync(IEvent message)
         {
             if (message is HealthCheckCompleteEvent)
-                return;
+                return Task.CompletedTask;;
 
             if (!_eventDrivenHealthChecks.TryGetValue(message.GetType(), out var checks))
-                return;
+                return Task.CompletedTask;;
 
             var filteredChecks = new List<IProvideHealthCheck>();
             var healthCheckResults = _healthCheckResults.Values.ToList();
@@ -131,6 +130,8 @@ namespace NzbDrone.Core.HealthCheck
             // TODO: Add debounce
 
             PerformHealthCheck(filteredChecks.ToArray());
+            
+            return Task.CompletedTask;
         }
     }
 }

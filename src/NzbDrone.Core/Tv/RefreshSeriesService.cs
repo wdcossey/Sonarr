@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Instrumentation.Extensions;
@@ -16,7 +17,7 @@ using NzbDrone.Core.Tv.Events;
 
 namespace NzbDrone.Core.Tv
 {
-    public class RefreshSeriesService : IExecute<RefreshSeriesCommand>
+    public class RefreshSeriesService : IExecuteAsync<RefreshSeriesCommand>
     {
         private readonly IProvideSeriesInfo _seriesInfo;
         private readonly ISeriesService _seriesService;
@@ -190,7 +191,7 @@ namespace NzbDrone.Core.Tv
             }
         }
 
-        public void Execute(RefreshSeriesCommand message)
+        public Task ExecuteAsync(RefreshSeriesCommand message)
         {
             var trigger = message.Trigger;
             var isNew = message.IsNewSeries;
@@ -251,6 +252,8 @@ namespace NzbDrone.Core.Tv
             }
 
             _eventAggregator.PublishEvent(new SeriesRefreshCompleteEvent());
+            
+            return Task.CompletedTask;
         }
     }
 }

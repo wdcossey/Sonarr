@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
@@ -208,20 +209,24 @@ namespace NzbDrone.Core.MediaCover
             }
         }
 
-        public void HandleAsync(SeriesUpdatedEvent message)
+        public Task HandleAsync(SeriesUpdatedEvent message)
         {
             var updated = EnsureCovers(message.Series);
 
             _eventAggregator.PublishEvent(new MediaCoversUpdatedEvent(message.Series, updated));
+            
+            return Task.CompletedTask;
         }
 
-        public void HandleAsync(SeriesDeletedEvent message)
+        public Task HandleAsync(SeriesDeletedEvent message)
         {
             var path = GetSeriesCoverPath(message.Series.Id);
             if (_diskProvider.FolderExists(path))
             {
                 _diskProvider.DeleteFolder(path, true);
             }
+            
+            return Task.CompletedTask;
         }
     }
 }

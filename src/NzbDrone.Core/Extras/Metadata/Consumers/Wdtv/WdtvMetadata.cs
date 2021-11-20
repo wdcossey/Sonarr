@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Extras.Metadata.Files;
@@ -20,11 +20,11 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Wdtv
     {
         private readonly IMapCoversToLocal _mediaCoverService;
         private readonly IDiskProvider _diskProvider;
-        private readonly Logger _logger;
+        private readonly ILogger<WdtvMetadata> _logger;
 
         public WdtvMetadata(IMapCoversToLocal mediaCoverService,
                             IDiskProvider diskProvider,
-                            Logger logger)
+                            ILogger<WdtvMetadata> logger)
         {
             _mediaCoverService = mediaCoverService;
             _diskProvider = diskProvider;
@@ -49,7 +49,7 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Wdtv
                 return GetEpisodeMetadataFilename(episodeFilePath);
             }
 
-            _logger.Debug("Unknown episode file metadata: {0}", metadataFile.RelativePath);
+            _logger.LogDebug("Unknown episode file metadata: {RelativePath}", metadataFile.RelativePath);
             return Path.Combine(series.Path, metadataFile.RelativePath);
 
         }
@@ -126,7 +126,7 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Wdtv
                 return null;
             }
 
-            _logger.Debug("Generating Episode Metadata for: {0}", Path.Combine(series.Path, episodeFile.RelativePath));
+            _logger.LogDebug("Generating Episode Metadata for: {Path}", Path.Combine(series.Path, episodeFile.RelativePath));
 
             var xmlResult = string.Empty;
             foreach (var episode in episodeFile.Episodes.Value)
@@ -181,7 +181,7 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Wdtv
             var image = series.Images.SingleOrDefault(c => c.CoverType == MediaCoverTypes.Poster) ?? series.Images.FirstOrDefault();
             if (image == null)
             {
-                _logger.Trace("Failed to find suitable Series image for series {0}.", series.Title);
+                _logger.LogTrace("Failed to find suitable Series image for series {Title}.", series.Title);
                 return new List<ImageFileResult>();
             }
 
@@ -207,7 +207,7 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Wdtv
             string seasonFolder;
             if (!seasonFolders.TryGetValue(season.SeasonNumber, out seasonFolder))
             {
-                _logger.Trace("Failed to find season folder for series {0}, season {1}.", series.Title, season.SeasonNumber);
+                _logger.LogTrace("Failed to find season folder for series {Title}, season {SeasonNumber}.", series.Title, season.SeasonNumber);
                 return new List<ImageFileResult>();
             }
 
@@ -215,7 +215,7 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Wdtv
             var image = season.Images.SingleOrDefault(c => c.CoverType == MediaCoverTypes.Poster) ?? season.Images.FirstOrDefault();
             if (image == null)
             {
-                _logger.Trace("Failed to find suitable season image for series {0}, season {1}.", series.Title, season.SeasonNumber);
+                _logger.LogTrace("Failed to find suitable season image for series {Title}, season {SeasonNumber}.", series.Title, season.SeasonNumber);
                 return new List<ImageFileResult>();
             }
 
@@ -235,7 +235,7 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Wdtv
 
             if (screenshot == null)
             {
-                _logger.Trace("Episode screenshot not available");
+                _logger.LogTrace("Episode screenshot not available");
                 return new List<ImageFileResult>();
             }
 
@@ -278,14 +278,14 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Wdtv
                         }
                         else
                         {
-                            _logger.Debug("Failed to parse season number from {0} for series {1}.", folder, series.Title);
+                            _logger.LogDebug("Failed to parse season number from {Folder} for series {Title}.", folder, series.Title);
                         }
                     }
                 }
 
                 else
                 {
-                    _logger.Debug("Rejecting folder {0} for series {1}.", Path.GetDirectoryName(folder), series.Title);
+                    _logger.LogDebug("Rejecting folder {DirectoryName} for series {Title}.", Path.GetDirectoryName(folder), series.Title);
                 }
             }
 

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
@@ -95,10 +96,11 @@ namespace NzbDrone.Core.Extras.Files
             _repository.DeleteMany(ids);
         }
 
-        public void HandleAsync(SeriesDeletedEvent message)
+        public Task HandleAsync(SeriesDeletedEvent message)
         {
             _logger.LogDebug("Deleting Extra from database for series: {Series}", message.Series);
             _repository.DeleteForSeries(message.Series.Id);
+            return Task.CompletedTask;
         }
 
         public void Handle(EpisodeFileDeletedEvent message)

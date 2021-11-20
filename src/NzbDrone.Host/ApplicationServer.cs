@@ -58,7 +58,7 @@ namespace NzbDrone.Host
             }
 
             _runtimeInfo.IsExiting = false;
-            DbFactory.RegisterDatabase(_serviceProvider);
+            //DbFactory.RegisterDatabase(_serviceProvider);
 
             _serviceProvider.GetRequiredService<IEventAggregator>().PublishEvent(new ApplicationStartingEvent());
 

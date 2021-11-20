@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Extras.Files;
 using NzbDrone.Core.MediaFiles.EpisodeImport.Aggregation;
-using NzbDrone.Core.Parser;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Tv;
 
@@ -16,11 +14,11 @@ namespace NzbDrone.Core.Extras.Others
     {
         private readonly IExtraFileService<OtherExtraFile> _otherExtraFileService;
         private readonly IAggregationService _aggregationService;
-        private readonly Logger _logger;
+        private readonly ILogger<ExistingOtherExtraImporter> _logger;
 
         public ExistingOtherExtraImporter(IExtraFileService<OtherExtraFile> otherExtraFileService,
                                           IAggregationService aggregationService,
-                                          Logger logger)
+                                          ILogger<ExistingOtherExtraImporter> logger)
             : base(otherExtraFileService)
         {
             _otherExtraFileService = otherExtraFileService;
@@ -32,7 +30,7 @@ namespace NzbDrone.Core.Extras.Others
 
         public override IEnumerable<ExtraFile> ProcessFiles(Series series, List<string> filesOnDisk, List<string> importedFiles)
         {
-            _logger.Debug("Looking for existing extra files in {0}", series.Path);
+            _logger.LogDebug("Looking for existing extra files in {Path}", series.Path);
 
             var extraFiles = new List<OtherExtraFile>();
             var filterResult = FilterAndClean(series, filesOnDisk, importedFiles);
@@ -43,7 +41,7 @@ namespace NzbDrone.Core.Extras.Others
 
                 if (extension.IsNullOrWhiteSpace())
                 {
-                    _logger.Debug("No extension for file: {0}", possibleExtraFile);
+                    _logger.LogDebug("No extension for file: {PossibleExtraFile}", possibleExtraFile);
                     continue;
                 }
 
@@ -60,19 +58,19 @@ namespace NzbDrone.Core.Extras.Others
                 }
                 catch (AugmentingFailedException)
                 {
-                    _logger.Debug("Unable to parse extra file: {0}", possibleExtraFile);
+                    _logger.LogDebug("Unable to parse extra file: {PossibleExtraFile}", possibleExtraFile);
                     continue;
                 }
 
                 if (localEpisode.Episodes.Empty())
                 {
-                    _logger.Debug("Cannot find related episodes for: {0}", possibleExtraFile);
+                    _logger.LogDebug("Cannot find related episodes for: {PossibleExtraFile}", possibleExtraFile);
                     continue;
                 }
 
                 if (localEpisode.Episodes.DistinctBy(e => e.EpisodeFileId).Count() > 1)
                 {
-                    _logger.Debug("Extra file: {0} does not match existing files.", possibleExtraFile);
+                    _logger.LogDebug("Extra file: {PossibleExtraFile} does not match existing files.", possibleExtraFile);
                     continue;
                 }
 
@@ -88,7 +86,7 @@ namespace NzbDrone.Core.Extras.Others
                 extraFiles.Add(extraFile);
             }
 
-            _logger.Info("Found {0} existing other extra files", extraFiles.Count);
+            _logger.LogInformation("Found {Count} existing other extra files", extraFiles.Count);
             _otherExtraFileService.Upsert(extraFiles);
 
             // Return files that were just imported along with files that were

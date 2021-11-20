@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
@@ -18,7 +19,7 @@ namespace NzbDrone.Core.MediaFiles
         void Cleanup();
     }
 
-    public class RecycleBinProvider : IExecute<CleanUpRecycleBinCommand>, IRecycleBinProvider
+    public class RecycleBinProvider : IExecuteAsync<CleanUpRecycleBinCommand>, IRecycleBinProvider
     {
         private readonly IDiskTransferService _diskTransferService;
         private readonly IDiskProvider _diskProvider;
@@ -205,9 +206,10 @@ namespace NzbDrone.Core.MediaFiles
             }
         }
 
-        public void Execute(CleanUpRecycleBinCommand message)
+        public Task ExecuteAsync(CleanUpRecycleBinCommand message)
         {
             Cleanup();
+            return Task.CompletedTask;
         }
     }
 }

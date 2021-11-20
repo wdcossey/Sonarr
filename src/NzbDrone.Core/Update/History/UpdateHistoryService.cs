@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Core.Lifecycle;
@@ -89,12 +90,14 @@ namespace NzbDrone.Core.Update.History
             }
         }
 
-        public void HandleAsync(ApplicationStartedEvent message)
+        public Task HandleAsync(ApplicationStartedEvent message)
         {
             if (_prevVersion != null)
             {
                 _eventAggregator.PublishEvent(new UpdateInstalledEvent(_prevVersion, BuildInfo.Version));
             }
+            
+            return Task.CompletedTask;
         }
     }
 }

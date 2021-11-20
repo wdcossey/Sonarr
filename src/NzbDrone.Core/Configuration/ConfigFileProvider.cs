@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
-using NzbDrone.Common.Instrumentation;
 using NzbDrone.Core.Authentication;
 using NzbDrone.Core.Configuration.Events;
 using NzbDrone.Core.Lifecycle;
@@ -20,7 +20,7 @@ using NzbDrone.Core.Update;
 namespace NzbDrone.Core.Configuration
 {
     public interface IConfigFileProvider : IHandleAsync<ApplicationStartedEvent>,
-                                           IExecute<ResetApiKeyCommand>
+                                           IExecuteAsync<ResetApiKeyCommand>
     {
         Dictionary<string, object> GetConfigDictionary();
         void SaveConfigDictionary(Dictionary<string, object> configValues);
@@ -359,15 +359,17 @@ namespace NzbDrone.Core.Configuration
             return Guid.NewGuid().ToString().Replace("-", "");
         }
 
-        public void HandleAsync(ApplicationStartedEvent message)
+        public Task HandleAsync(ApplicationStartedEvent message)
         {
             EnsureDefaultConfigFile();
             DeleteOldValues();
+            return Task.CompletedTask;
         }
 
-        public void Execute(ResetApiKeyCommand message)
+        public Task ExecuteAsync(ResetApiKeyCommand message)
         {
             SetValue("ApiKey", GenerateApiKey());
+            return Task.CompletedTask;
         }
     }
 }

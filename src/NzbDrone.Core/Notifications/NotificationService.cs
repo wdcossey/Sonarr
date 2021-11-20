@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Download;
@@ -266,24 +267,28 @@ namespace NzbDrone.Core.Notifications
             }
         }
 
-        public void HandleAsync(DeleteCompletedEvent message)
+        public Task HandleAsync(DeleteCompletedEvent message)
         {
             ProcessQueue();
+            return Task.CompletedTask;
         }
 
-        public void HandleAsync(DownloadsProcessedEvent message)
+        public Task HandleAsync(DownloadsProcessedEvent message)
         {
             ProcessQueue();
+            return Task.CompletedTask;
         }
 
-        public void HandleAsync(RenameCompletedEvent message)
+        public Task HandleAsync(RenameCompletedEvent message)
         {
             ProcessQueue();
+            return Task.CompletedTask;
         }
 
-        public void HandleAsync(HealthCheckCompleteEvent message)
+        public Task HandleAsync(HealthCheckCompleteEvent message)
         {
             ProcessQueue();
+            return Task.CompletedTask;
         }
 
         private void ProcessQueue()

@@ -2,6 +2,7 @@ using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Tv.Events;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace NzbDrone.Core.ImportLists.Exclusions
 {
@@ -54,19 +55,15 @@ namespace NzbDrone.Core.ImportLists.Exclusions
             return _repo.All().ToList();
         }
 
-        public void HandleAsync(SeriesDeletedEvent message)
+        public Task HandleAsync(SeriesDeletedEvent message)
         {
             if (!message.AddImportListExclusion)
-            {
-                return;
-            }
+                return Task.CompletedTask;
 
             var existingExclusion = _repo.FindByTvdbId(message.Series.TvdbId);
 
             if (existingExclusion != null)
-            {
-                return;
-            }
+                return Task.CompletedTask;
 
             var importExclusion = new ImportListExclusion
             {
@@ -75,6 +72,8 @@ namespace NzbDrone.Core.ImportLists.Exclusions
             };
 
             _repo.Insert(importExclusion);
+            
+            return Task.CompletedTask;
         }
     }
 }

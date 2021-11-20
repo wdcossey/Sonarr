@@ -1,7 +1,11 @@
+using System;
+using System.Threading.Tasks;
 using NzbDrone.Common.Messaging;
 
 namespace NzbDrone.Core.Messaging.Events
 {
+    //TODO: Remove
+    [Obsolete("Use IProcessMessageAsync<>()", true)]
     public interface IHandle<TEvent> : IProcessMessage<TEvent> where TEvent : IEvent
     {
         void Handle(TEvent message);
@@ -9,6 +13,6 @@ namespace NzbDrone.Core.Messaging.Events
 
     public interface IHandleAsync<TEvent> : IProcessMessageAsync<TEvent> where TEvent : IEvent
     {
-        void HandleAsync(TEvent message);
+        Task HandleAsync(TEvent message);
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Extensions;
@@ -25,7 +26,7 @@ namespace NzbDrone.Core.DataAugmentation.Scene
                                        IHandle<SeriesRefreshStartingEvent>,
                                        IHandle<SeriesAddedEvent>,
                                        IHandle<SeriesImportedEvent>,
-                                       IExecute<UpdateSceneMappingCommand>
+                                       IExecuteAsync<UpdateSceneMappingCommand>
     {
         private readonly ISceneMappingRepository _repository;
         private readonly IEnumerable<ISceneMappingProvider> _sceneMappingProviders;
@@ -297,9 +298,10 @@ namespace NzbDrone.Core.DataAugmentation.Scene
             }
         }
 
-        public void Execute(UpdateSceneMappingCommand message)
+        public Task ExecuteAsync(UpdateSceneMappingCommand message)
         {
             UpdateMappings();
+            return Task.CompletedTask;
         }
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Core.Messaging.Events;
@@ -139,7 +140,7 @@ namespace NzbDrone.Core.ThingiProvider.Status
             RecordFailure(providerId, default(TimeSpan), false);
         }
 
-        public virtual void HandleAsync(ProviderDeletedEvent<TProvider> message)
+        public virtual Task HandleAsync(ProviderDeletedEvent<TProvider> message)
         {
             var providerStatus = _providerStatusRepository.FindByProviderId(message.ProviderId);
 
@@ -147,6 +148,8 @@ namespace NzbDrone.Core.ThingiProvider.Status
             {
                 _providerStatusRepository.Delete(providerStatus);
             }
+            
+            return Task.CompletedTask;
         }
     }
 }

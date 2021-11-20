@@ -1,4 +1,5 @@
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Instrumentation.Extensions;
@@ -10,7 +11,7 @@ using NzbDrone.Core.Tv.Events;
 
 namespace NzbDrone.Core.Tv
 {
-    public class MoveSeriesService : IExecute<MoveSeriesCommand>, IExecute<BulkMoveSeriesCommand>
+    public class MoveSeriesService : IExecuteAsync<MoveSeriesCommand>, IExecuteAsync<BulkMoveSeriesCommand>
     {
         private readonly ISeriesService _seriesService;
         private readonly IBuildFileNames _filenameBuilder;
@@ -78,13 +79,14 @@ namespace NzbDrone.Core.Tv
             _seriesService.UpdateSeries(series);
         }
 
-        public void Execute(MoveSeriesCommand message)
+        public Task ExecuteAsync(MoveSeriesCommand message)
         {
             var series = _seriesService.GetSeries(message.SeriesId);
             MoveSingleSeries(series, message.SourcePath, message.DestinationPath);
+            return Task.CompletedTask;
         }
 
-        public void Execute(BulkMoveSeriesCommand message)
+        public Task ExecuteAsync(BulkMoveSeriesCommand message)
         {
             var seriesToMove = message.Series;
             var destinationRootFolder = message.DestinationRootFolder;
@@ -101,6 +103,8 @@ namespace NzbDrone.Core.Tv
             }
 
             _logger.ProgressInfo("Finished moving {0} series to '{1}'", seriesToMove.Count, destinationRootFolder);
+            
+            return Task.CompletedTask;
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common;
 using NzbDrone.Common.Disk;
@@ -26,7 +27,7 @@ namespace NzbDrone.Core.Backup
         string GetBackupFolder(BackupType backupType);
     }
 
-    public class BackupService : IBackupService, IExecute<BackupCommand>
+    public class BackupService : IBackupService, IExecuteAsync<BackupCommand>
     {
         private readonly IMainDatabase _maindDb;
         private readonly IMakeDatabaseBackup _makeDatabaseBackup;
@@ -237,9 +238,10 @@ namespace NzbDrone.Core.Backup
             return files.Where(f => BackupFileRegex.IsMatch(f));
         }
 
-        public void Execute(BackupCommand message)
+        public Task ExecuteAsync(BackupCommand message)
         {
             Backup(message.Type);
+            return Task.CompletedTask;
         }
     }
 }

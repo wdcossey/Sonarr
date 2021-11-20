@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Marr.Data;
-using NLog;
-using NzbDrone.Common.Instrumentation;
+using Microsoft.Extensions.Logging;
 
 namespace NzbDrone.Core.Datastore
 {
@@ -16,13 +16,13 @@ namespace NzbDrone.Core.Datastore
     {
         private readonly string _databaseName;
         private readonly Func<IDataMapper> _datamapperFactory;
-
-        private readonly Logger _logger = NzbDroneLogger.GetLogger(typeof(Database));
-
-        public Database(string databaseName, Func<IDataMapper> datamapperFactory)
+        private readonly ILogger _logger;
+        
+        public Database(ILogger logger, string databaseName, Func<IDataMapper> datamapperFactory)
         {
             _databaseName = databaseName;
             _datamapperFactory = datamapperFactory;
+            _logger = logger;
         }
 
         public IDataMapper GetDataMapper()
@@ -43,13 +43,13 @@ namespace NzbDrone.Core.Datastore
         {
             try
             {
-                _logger.Info("Vacuuming {0} database", _databaseName);
+                _logger.LogInformation("Vacuuming {DatabaseName} database", _databaseName);
                 _datamapperFactory().ExecuteNonQuery("Vacuum;");
-                _logger.Info("{0} database compressed", _databaseName);
+                _logger.LogInformation("{DatabaseName} database compressed", _databaseName);
             }
             catch (Exception e)
             {
-                _logger.Error(e, "An Error occurred while vacuuming database.");
+                _logger.LogError(e, "An Error occurred while vacuuming database.");
             }
         }
     }
