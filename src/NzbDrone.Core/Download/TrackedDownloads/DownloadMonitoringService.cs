@@ -14,10 +14,10 @@ namespace NzbDrone.Core.Download.TrackedDownloads
 {
     public class DownloadMonitoringService : IExecuteAsync<RefreshMonitoredDownloadsCommand>,
                                              IExecuteAsync<CheckForFinishedDownloadCommand>,
-                                             IHandle<EpisodeGrabbedEvent>,
-                                             IHandle<EpisodeImportedEvent>,
-                                             IHandle<DownloadsProcessedEvent>,
-                                             IHandle<TrackedDownloadsRemovedEvent>
+                                             IHandleAsync<EpisodeGrabbedEvent>,
+                                             IHandleAsync<EpisodeImportedEvent>,
+                                             IHandleAsync<DownloadsProcessedEvent>,
+                                             IHandleAsync<TrackedDownloadsRemovedEvent>
     {
         private readonly IDownloadClientStatusService _downloadClientStatusService;
         private readonly IDownloadClientFactory _downloadClientFactory;
@@ -166,28 +166,34 @@ namespace NzbDrone.Core.Download.TrackedDownloads
             return Task.CompletedTask;
         }
 
-        public void Handle(EpisodeGrabbedEvent message)
+        public Task HandleAsync(EpisodeGrabbedEvent message)
         {
             _refreshDebounce.Execute();
+            return Task.CompletedTask;
         }
 
-        public void Handle(EpisodeImportedEvent message)
+        public Task HandleAsync(EpisodeImportedEvent message)
         {
             _refreshDebounce.Execute();
+            return Task.CompletedTask;
         }
 
-        public void Handle(DownloadsProcessedEvent message)
+        public Task HandleAsync(DownloadsProcessedEvent message)
         {
             var trackedDownloads = _trackedDownloadService.GetTrackedDownloads().Where(t => t.IsTrackable && DownloadIsTrackable(t)).ToList();
 
             _eventAggregator.PublishEvent(new TrackedDownloadRefreshedEvent(trackedDownloads));
+            
+            return Task.CompletedTask;
         }
 
-        public void Handle(TrackedDownloadsRemovedEvent message)
+        public Task HandleAsync(TrackedDownloadsRemovedEvent message)
         {
             var trackedDownloads = _trackedDownloadService.GetTrackedDownloads().Where(t => t.IsTrackable && DownloadIsTrackable(t)).ToList();
 
             _eventAggregator.PublishEvent(new TrackedDownloadRefreshedEvent(trackedDownloads));
+            
+            return Task.CompletedTask;
         }
     }
 }

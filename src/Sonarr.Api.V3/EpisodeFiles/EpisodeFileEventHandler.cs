@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using NzbDrone.Core.Datastore.Events;
 using NzbDrone.Core.DecisionEngine.Specifications;
@@ -11,8 +12,8 @@ using Sonarr.Http;
 namespace Sonarr.Api.V3.EpisodeFiles
 {
     public class EpisodeFileEventHandler : EventHandlerBase<EpisodeFileResource, EpisodeFile>,
-        IHandle<EpisodeFileAddedEvent>,
-        IHandle<EpisodeFileDeletedEvent>
+        IHandleAsync<EpisodeFileAddedEvent>,
+        IHandleAsync<EpisodeFileDeletedEvent>
     {
         private readonly IMediaFileService _mediaFileService;
         private readonly ISeriesService _seriesService;
@@ -35,11 +36,17 @@ namespace Sonarr.Api.V3.EpisodeFiles
             return episodeFile.ToResource(series, _upgradableSpecification);
         }
         
-        void IHandle<EpisodeFileAddedEvent>.Handle(EpisodeFileAddedEvent message)
-            => BroadcastResourceChange(ModelAction.Updated, GetResourceById(message.EpisodeFile.Id));
+        public Task HandleAsync(EpisodeFileAddedEvent message)
+        {
+            BroadcastResourceChange(ModelAction.Updated, GetResourceById(message.EpisodeFile.Id));
+            return Task.CompletedTask;
+        }
 
-        void IHandle<EpisodeFileDeletedEvent>.Handle(EpisodeFileDeletedEvent message)
-            => BroadcastResourceChange(ModelAction.Deleted, GetResourceById(message.EpisodeFile.Id));
+        public Task HandleAsync(EpisodeFileDeletedEvent message)
+        {
+            BroadcastResourceChange(ModelAction.Deleted, GetResourceById(message.EpisodeFile.Id));
+            return Task.CompletedTask;
+        }
 
         protected override EpisodeFileResource GetResourceById(int id)
         {

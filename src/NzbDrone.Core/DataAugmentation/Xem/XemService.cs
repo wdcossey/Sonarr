@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cache;
 using NzbDrone.Core.DataAugmentation.Scene;
@@ -10,7 +11,7 @@ using NzbDrone.Core.Tv.Events;
 
 namespace NzbDrone.Core.DataAugmentation.Xem
 {
-    public class XemService : ISceneMappingProvider, IHandle<SeriesUpdatedEvent>, IHandle<SeriesRefreshStartingEvent>
+    public class XemService : ISceneMappingProvider, IHandleAsync<SeriesUpdatedEvent>, IHandleAsync<SeriesRefreshStartingEvent>
     {
         private readonly IEpisodeService _episodeService;
         private readonly IXemProxy _xemProxy;
@@ -209,7 +210,7 @@ namespace NzbDrone.Core.DataAugmentation.Xem
             return mappings;
         }
 
-        public void Handle(SeriesUpdatedEvent message)
+        public Task HandleAsync(SeriesUpdatedEvent message)
         {
             if (_cache.IsExpired(TimeSpan.FromHours(3)))
             {
@@ -219,24 +220,26 @@ namespace NzbDrone.Core.DataAugmentation.Xem
             if (_cache.Count == 0)
             {
                 _logger.LogDebug("Scene numbering is not available");
-                return;
+                return Task.CompletedTask;
             }
 
             if (!_cache.Find(message.Series.TvdbId.ToString()) && !message.Series.UseSceneNumbering)
             {
                 _logger.LogDebug("Scene numbering is not available for {Title} [{TvdbId}]", message.Series.Title, message.Series.TvdbId);
-                return;
+                return Task.CompletedTask;
             }
 
             PerformUpdate(message.Series);
+            
+            return Task.CompletedTask;
         }
 
-        public void Handle(SeriesRefreshStartingEvent message)
+        public Task HandleAsync(SeriesRefreshStartingEvent message)
         {
             if (message.ManualTrigger && _cache.IsExpired(TimeSpan.FromMinutes(1)))
-            {
                 UpdateXemSeriesIds();
-            }
+
+            return Task.CompletedTask;
         }
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using NzbDrone.Common.TPL;
 using NzbDrone.Core.Datastore.Events;
@@ -12,7 +13,7 @@ using Sonarr.Http;
 
 namespace Sonarr.Api.V3.Commands
 {
-    public class CommandEventHandler : EventHandlerBase<CommandResource, CommandModel>, IHandle<CommandUpdatedEvent>
+    public class CommandEventHandler : EventHandlerBase<CommandResource, CommandModel>, IHandleAsync<CommandUpdatedEvent>
     {
         private readonly IManageCommandQueue _commandQueueManager;
         private readonly Debouncer _debouncer;
@@ -26,10 +27,10 @@ namespace Sonarr.Api.V3.Commands
             _pendingUpdates = new Dictionary<int, CommandResource>();
         }
         
-        public void Handle(CommandUpdatedEvent message)
+        public Task HandleAsync(CommandUpdatedEvent message)
         {
             if (!message.Command.Body.SendUpdatesToClient)
-                return;
+                return Task.CompletedTask;
 
             lock (_pendingUpdates)
             {
@@ -37,6 +38,8 @@ namespace Sonarr.Api.V3.Commands
             }
 
             _debouncer.Execute();
+            
+            return Task.CompletedTask;
         }
 
         private void SendUpdates()

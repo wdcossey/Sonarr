@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Data.SQLite;
+using System.Threading.Tasks;
 using NLog.Common;
 using NLog.Config;
 using NLog;
@@ -11,7 +12,7 @@ using NzbDrone.Core.Messaging.Events;
 
 namespace NzbDrone.Core.Instrumentation
 {
-    public class DatabaseTarget : TargetWithLayout, IHandle<ApplicationShutdownRequested>
+    public class DatabaseTarget : TargetWithLayout, IHandleAsync<ApplicationShutdownRequested>
     {
         private readonly SQLiteConnection _connection;
 
@@ -102,12 +103,13 @@ namespace NzbDrone.Core.Instrumentation
             }
         }
 
-        public void Handle(ApplicationShutdownRequested message)
+        public Task HandleAsync(ApplicationShutdownRequested message)
         {
             if (LogManager.Configuration != null && LogManager.Configuration.LoggingRules.Contains(Rule))
             {
                 UnRegister();
             }
+            return Task.CompletedTask;
         }
     }
 }

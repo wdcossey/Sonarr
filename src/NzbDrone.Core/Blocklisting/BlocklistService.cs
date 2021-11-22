@@ -23,7 +23,7 @@ namespace NzbDrone.Core.Blocklisting
     }
     public class BlocklistService : IBlocklistService,
                                     IExecuteAsync<ClearBlocklistCommand>,
-                                    IHandle<DownloadFailedEvent>,
+                                    IHandleAsync<DownloadFailedEvent>,
                                     IHandleAsync<SeriesDeletedEvent>
     {
         private readonly IBlocklistRepository _blocklistRepository;
@@ -160,7 +160,7 @@ namespace NzbDrone.Core.Blocklisting
         }
 
 
-        public void Handle(DownloadFailedEvent message)
+        public Task HandleAsync(DownloadFailedEvent message)
         {
             var blocklist = new Blocklist
                             {
@@ -179,6 +179,8 @@ namespace NzbDrone.Core.Blocklisting
                             };
 
             _blocklistRepository.Insert(blocklist);
+            
+            return Task.CompletedTask;
         }
 
         public Task HandleAsync(SeriesDeletedEvent message)

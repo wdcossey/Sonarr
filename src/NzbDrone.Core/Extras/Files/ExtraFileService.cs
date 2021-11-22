@@ -28,7 +28,7 @@ namespace NzbDrone.Core.Extras.Files
 
     public abstract class ExtraFileService<TExtraFile> : IExtraFileService<TExtraFile>,
                                                          IHandleAsync<SeriesDeletedEvent>,
-                                                         IHandle<EpisodeFileDeletedEvent>
+                                                         IHandleAsync<EpisodeFileDeletedEvent>
         where TExtraFile : ExtraFile, new()
     {
         private readonly IExtraFileRepository<TExtraFile> _repository;
@@ -103,7 +103,7 @@ namespace NzbDrone.Core.Extras.Files
             return Task.CompletedTask;
         }
 
-        public void Handle(EpisodeFileDeletedEvent message)
+        public Task HandleAsync(EpisodeFileDeletedEvent message)
         {
             var episodeFile = message.EpisodeFile;
 
@@ -131,6 +131,8 @@ namespace NzbDrone.Core.Extras.Files
 
             _logger.LogDebug("Deleting Extra from database for episode file: {EpisodeFile}", episodeFile);
             _repository.DeleteForEpisodeFile(episodeFile.Id);
+            
+            return Task.CompletedTask;
         }
     }
 }

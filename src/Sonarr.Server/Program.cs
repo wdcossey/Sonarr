@@ -5,10 +5,13 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using NLog;
+using NLog.Config;
 using NLog.Web;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Instrumentation;
 using NzbDrone.Core.Configuration;
+using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Sonarr.Server
 {
@@ -63,6 +66,7 @@ namespace Sonarr.Server
                 {
                     logging.ClearProviders();
                     logging.SetMinimumLevel(LogLevel.Trace);
+                    logging.AddNLog(LogManager.Configuration);
                 })
                 .UseNLog();
         }

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using NzbDrone.Core.Exceptions;
 
 namespace NzbDrone.Core.Messaging.Commands
@@ -30,7 +31,7 @@ namespace NzbDrone.Core.Messaging.Commands
         void CleanCommands();
     }
 
-    public class CommandQueueManager : IManageCommandQueue, IHandle<ApplicationStartedEvent>
+    public class CommandQueueManager : IManageCommandQueue, IHandleAsync<ApplicationStartedEvent>
     {
         private readonly ICommandRepository _repo;
         private readonly ICommandFactory _commandFactory;
@@ -249,11 +250,12 @@ namespace NzbDrone.Core.Messaging.Commands
                                 .ToList();
         }
 
-        public void Handle(ApplicationStartedEvent message)
+        public Task HandleAsync(ApplicationStartedEvent message)
         {
             _logger.LogTrace("Orphaning incomplete commands");
             _repo.OrphanStarted();
             Requeue();
+            return Task.CompletedTask;
         }
     }
 }

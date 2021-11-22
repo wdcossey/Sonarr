@@ -21,7 +21,7 @@ using NzbDrone.Core.Update.Commands;
 
 namespace NzbDrone.Core.Update
 {
-    public class InstallUpdateService : IExecuteAsync<ApplicationUpdateCommand>, IExecuteAsync<ApplicationUpdateCheckCommand>, IHandle<ApplicationStartingEvent>
+    public class InstallUpdateService : IExecuteAsync<ApplicationUpdateCommand>, IExecuteAsync<ApplicationUpdateCheckCommand>, IHandleAsync<ApplicationStartingEvent>
     {
         private readonly ICheckUpdateService _checkUpdateService;
         private readonly ILogger<InstallUpdateService> _logger;
@@ -292,7 +292,7 @@ namespace NzbDrone.Core.Update
             return Task.CompletedTask;
         }
 
-        public void Handle(ApplicationStartingEvent message)
+        public Task HandleAsync(ApplicationStartingEvent message)
         {
             // Check if we have to do an application update on startup
 
@@ -301,7 +301,7 @@ namespace NzbDrone.Core.Update
                 var updateMarker = Path.Combine(_appFolderInfo.AppDataFolder, "update_required");
                 if (!_diskProvider.FileExists(updateMarker))
                 {
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 _logger.LogDebug("Post-install update check requested");
@@ -312,7 +312,7 @@ namespace NzbDrone.Core.Update
                     _deploymentInfoProvider.IsExternalUpdateMechanism)
                 {
                     _logger.LogDebug("Built-in updater disabled, skipping post-install update check");
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 var latestAvailable = _checkUpdateService.AvailableUpdate();
@@ -320,7 +320,7 @@ namespace NzbDrone.Core.Update
                 {
                     _logger.LogDebug("No post-install update available");
                     _diskProvider.DeleteFile(updateMarker);
-                    return;
+                    return Task.CompletedTask;
                 }
                 
                 _logger.LogInformation("Installing post-install update from {BuildInfoVersion} to {LatestVersion}", BuildInfo.Version, latestAvailable.Version);
@@ -350,6 +350,8 @@ namespace NzbDrone.Core.Update
             {
                 _logger.LogError(ex, "Failed to perform the post-install update check. Attempting to continue normal operation.");
             }
+            
+            return Task.CompletedTask;
         }
     }
 }

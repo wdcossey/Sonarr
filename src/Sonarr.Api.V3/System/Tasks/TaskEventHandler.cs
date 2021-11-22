@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Datastore.Events;
@@ -9,14 +10,14 @@ using Sonarr.Http;
 
 namespace Sonarr.Api.V3.System.Tasks
 {
-    public class TaskEventHandler : EventHandlerBase<TaskResource, ScheduledTask>, IHandle<CommandExecutedEvent>
+    public class TaskEventHandler : EventHandlerBase<TaskResource, ScheduledTask>, IHandleAsync<CommandExecutedEvent>
     {
         private readonly ITaskManager _taskManager;
 
         public TaskEventHandler(IHubContext<SonarrHub, ISonarrHub> hubContext, ITaskManager taskManager) 
             : base(hubContext) => (_taskManager) = (taskManager);
         
-        public void Handle(CommandExecutedEvent message)
+        public Task HandleAsync(CommandExecutedEvent message)
             => BroadcastResourceChange(ModelAction.Sync);
 
         protected override TaskResource GetResourceById(int id)

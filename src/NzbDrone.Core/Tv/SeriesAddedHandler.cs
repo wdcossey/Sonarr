@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Threading.Tasks;
 using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Tv.Commands;
@@ -6,8 +7,8 @@ using NzbDrone.Core.Tv.Events;
 
 namespace NzbDrone.Core.Tv
 {
-    public class SeriesAddedHandler : IHandle<SeriesAddedEvent>,
-                                      IHandle<SeriesImportedEvent>
+    public class SeriesAddedHandler : IHandleAsync<SeriesAddedEvent>,
+                                      IHandleAsync<SeriesImportedEvent>
     {
         private readonly IManageCommandQueue _commandQueueManager;
 
@@ -16,14 +17,16 @@ namespace NzbDrone.Core.Tv
             _commandQueueManager = commandQueueManager;
         }
 
-        public void Handle(SeriesAddedEvent message)
+        public Task HandleAsync(SeriesAddedEvent message)
         {
             _commandQueueManager.Push(new RefreshSeriesCommand(message.Series.Id, true));
+            return Task.CompletedTask;
         }
 
-        public void Handle(SeriesImportedEvent message)
+        public Task HandleAsync(SeriesImportedEvent message)
         {
             _commandQueueManager.PushMany(message.SeriesIds.Select(s => new RefreshSeriesCommand(s, true)).ToList());
+            return Task.CompletedTask;
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using NzbDrone.Core.Datastore.Events;
 using NzbDrone.SignalR;
@@ -10,7 +11,7 @@ namespace NzbDrone.Http.Extensions
 {
     public static class HubExtensions
     {
-        public static void BroadcastResourceChange<TResource>(this IHubContext<SonarrHub, ISonarrHub> context, ModelAction action, TResource resource, string name)
+        public static Task BroadcastResourceChange<TResource>(this IHubContext<SonarrHub, ISonarrHub> context, ModelAction action, TResource resource, string name)
             where TResource : RestResource
         {
             var signalRMessage = new SignalRMessage
@@ -20,16 +21,14 @@ namespace NzbDrone.Http.Extensions
                 Action = action
             };
 
-            context?.BroadcastMessage(signalRMessage);
+            return context?.BroadcastMessage(signalRMessage);
         }
         
-        public static void BroadcastResourceChange<TResource>(this IHubContext<SonarrHub, ISonarrHub> context, ModelAction action, TResource resource)
+        public static Task BroadcastResourceChange<TResource>(this IHubContext<SonarrHub, ISonarrHub> context, ModelAction action, TResource resource)
             where TResource : RestResource
-        {
-            context?.BroadcastResourceChange(action, resource, resource.GetBroadcastName());
-        }
+            => context?.BroadcastResourceChange(action, resource, resource.GetBroadcastName());
 
-        public static void BroadcastResourceChange<TResource>(this IHubContext<SonarrHub, ISonarrHub> context, ModelAction action, string name)
+        public static Task BroadcastResourceChange<TResource>(this IHubContext<SonarrHub, ISonarrHub> context, ModelAction action, string name)
             where TResource : RestResource
         {
             var signalRMessage = new SignalRMessage
@@ -39,34 +38,30 @@ namespace NzbDrone.Http.Extensions
                 Action = action
             };
 
-            context?.BroadcastMessage(signalRMessage);
+            return context?.BroadcastMessage(signalRMessage);
         }
 
-        public static void BroadcastResourceChange<TResource>(this IHubContext<SonarrHub, ISonarrHub> context, ModelAction action)
+        public static Task BroadcastResourceChange<TResource>(this IHubContext<SonarrHub, ISonarrHub> context, ModelAction action)
             where TResource : RestResource
-        {
-            context?.BroadcastResourceChange<TResource>(action, typeof(TResource).GetBroadcastName());
-        }
+            => context?.BroadcastResourceChange<TResource>(action, typeof(TResource).GetBroadcastName());
 
-        public static void BroadcastResourceChange<TResource>(this IHubContext<SonarrHub, ISonarrHub> context, ModelAction action, int id, Func<int, TResource> getResourceByIdFunc = null, Func<TResource, string> getNameFunc = null)
+        public static Task BroadcastResourceChange<TResource>(this IHubContext<SonarrHub, ISonarrHub> context, ModelAction action, int id, Func<int, TResource> getResourceByIdFunc = null, Func<TResource, string> getNameFunc = null)
             where TResource : RestResource, new() 
         {
             if (action == ModelAction.Deleted)
             {
                 var resource = new TResource {Id = id};
-                context?.BroadcastResourceChange(action, resource, getNameFunc?.Invoke(resource) ?? resource.GetBroadcastName());
+                return context?.BroadcastResourceChange(action, resource, getNameFunc?.Invoke(resource) ?? resource.GetBroadcastName());
             }
             else
             {
                 var resource = getResourceByIdFunc?.Invoke(id) ?? throw new ArgumentNullException(nameof(getResourceByIdFunc));
-                context?.BroadcastResourceChange(action, resource, getNameFunc?.Invoke(resource) ?? resource.GetBroadcastName());
+                return context?.BroadcastResourceChange(action, resource, getNameFunc?.Invoke(resource) ?? resource.GetBroadcastName());
             }
         }
         
-        public static void BroadcastResourceChange<TResource>(this IHubContext<SonarrHub, ISonarrHub> context, ModelAction action, int id, Func<int, TResource> getResourceByIdFunc = null)
+        public static Task BroadcastResourceChange<TResource>(this IHubContext<SonarrHub, ISonarrHub> context, ModelAction action, int id, Func<int, TResource> getResourceByIdFunc = null)
             where TResource : RestResource, new()
-        {
-            context?.BroadcastResourceChange(action, id, getResourceByIdFunc, resource => resource.GetBroadcastName());
-        }
+            => context?.BroadcastResourceChange(action, id, getResourceByIdFunc, resource => resource.GetBroadcastName());
     }
 }

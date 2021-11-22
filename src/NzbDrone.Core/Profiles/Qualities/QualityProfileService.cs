@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Core.ImportLists;
 using NzbDrone.Core.Lifecycle;
@@ -20,7 +21,7 @@ namespace NzbDrone.Core.Profiles.Qualities
         QualityProfile GetDefaultProfile(string name, Quality cutoff = null, params Quality[] allowed);
     }
 
-    public class QualityProfileService : IQualityProfileService, IHandle<ApplicationStartedEvent>
+    public class QualityProfileService : IQualityProfileService, IHandleAsync<ApplicationStartedEvent>
     {
         private readonly IProfileRepository _profileRepository;
         private readonly IImportListFactory _importListFactory;
@@ -74,9 +75,10 @@ namespace NzbDrone.Core.Profiles.Qualities
             return _profileRepository.Exists(id);
         }
 
-        public void Handle(ApplicationStartedEvent message)
+        public Task HandleAsync(ApplicationStartedEvent message)
         {
-            if (All().Any()) return;
+            if (All().Any()) 
+                return Task.CompletedTask;
 
             _logger.LogInformation("Setting up default quality profiles");
 
@@ -127,6 +129,8 @@ namespace NzbDrone.Core.Profiles.Qualities
                 Quality.WEBDL1080p,
                 Quality.Bluray720p,
                 Quality.Bluray1080p);
+            
+            return Task.CompletedTask;
         }
 
         public QualityProfile GetDefaultProfile(string name, Quality cutoff = null, params Quality[] allowed)

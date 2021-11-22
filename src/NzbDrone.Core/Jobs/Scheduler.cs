@@ -10,9 +10,8 @@ using NzbDrone.Common.TPL;
 
 namespace NzbDrone.Core.Jobs
 {
-    public class Scheduler :
-        IHandle<ApplicationStartedEvent>,
-        IHandle<ApplicationShutdownRequested>
+    public class Scheduler : IHandleAsync<ApplicationStartedEvent>,
+                             IHandleAsync<ApplicationShutdownRequested>
     {
         private readonly ITaskManager _taskManager;
         private readonly IManageCommandQueue _commandQueueManager;
@@ -52,7 +51,7 @@ namespace NzbDrone.Core.Jobs
             }
         }
 
-        public void Handle(ApplicationStartedEvent message)
+        public Task HandleAsync(ApplicationStartedEvent message)
         {
             _cancellationTokenSource = new CancellationTokenSource();
             Timer.Interval = 1000 * 30;
@@ -60,13 +59,17 @@ namespace NzbDrone.Core.Jobs
                 .LogExceptions();
 
             Timer.Start();
+            
+            return Task.CompletedTask;
         }
 
-        public void Handle(ApplicationShutdownRequested message)
+        public Task HandleAsync(ApplicationShutdownRequested message)
         {
             _logger.LogInformation("Shutting down scheduler");
             _cancellationTokenSource.Cancel(true);
             Timer.Stop();
+            
+            return Task.CompletedTask;
         }
     }
 }

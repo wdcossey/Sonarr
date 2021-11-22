@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
@@ -20,7 +21,7 @@ namespace NzbDrone.Core.MediaFiles
     }
 
     public class UpdateEpisodeFileService : IUpdateEpisodeFileService,
-                                            IHandle<SeriesScannedEvent>
+                                            IHandleAsync<SeriesScannedEvent>
     {
         private readonly IDiskProvider _diskProvider;
         private readonly IConfigService _configService;
@@ -148,11 +149,11 @@ namespace NzbDrone.Core.MediaFiles
             return false;
         }
 
-        public void Handle(SeriesScannedEvent message)
+        public Task HandleAsync(SeriesScannedEvent message)
         {
             if (_configService.FileDate == FileDateType.None)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             var episodes = _episodeService.EpisodesWithFiles(message.Series.Id);
@@ -177,11 +178,12 @@ namespace NzbDrone.Core.MediaFiles
             {
                 _logger.ProgressDebug("Changed file date for {0} files of {1} in {2}", updated.Count, episodeFiles.Count, message.Series.Title);
             }
-
             else
             {
                 _logger.ProgressDebug("No file dates changed for {0}", message.Series.Title);
             }
+            
+            return Task.CompletedTask;
         }
     }
 }

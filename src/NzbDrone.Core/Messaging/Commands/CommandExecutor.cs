@@ -11,7 +11,7 @@ using NzbDrone.Core.ProgressMessaging;
 namespace NzbDrone.Core.Messaging.Commands
 {
     public class CommandExecutor : IHandleAsync<ApplicationStartedEvent>,
-                                   IHandle<ApplicationShutdownRequested>
+                                   IHandleAsync<ApplicationShutdownRequested>
     {
         private readonly ILogger<CommandExecutor> _logger;
         private readonly IServiceProvider _serviceProvider;
@@ -139,10 +139,11 @@ namespace NzbDrone.Core.Messaging.Commands
             }*/
         }
 
-        public void Handle(ApplicationShutdownRequested message)
+        public Task HandleAsync(ApplicationShutdownRequested message)
         {
             _logger.LogInformation("Shutting down task execution");
             _cancellationTokenSource.Cancel(true);
+            return Task.CompletedTask;
         }
     }
 }

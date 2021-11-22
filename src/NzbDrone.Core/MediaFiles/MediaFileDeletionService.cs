@@ -22,7 +22,7 @@ namespace NzbDrone.Core.MediaFiles
 
     public class MediaFileDeletionService : IDeleteMediaFiles,
                                             IHandleAsync<SeriesDeletedEvent>,
-                                            IHandle<EpisodeFileDeletedEvent>
+                                            IHandleAsync<EpisodeFileDeletedEvent>
     {
         private readonly IDiskProvider _diskProvider;
         private readonly IRecycleBinProvider _recycleBinProvider;
@@ -124,7 +124,7 @@ namespace NzbDrone.Core.MediaFiles
         }
 
         [EventHandleOrder(EventHandleOrder.Last)]
-        public void Handle(EpisodeFileDeletedEvent message)
+        public Task HandleAsync(EpisodeFileDeletedEvent message)
         {
             if (_configService.DeleteEmptyFolders)
             {
@@ -149,6 +149,8 @@ namespace NzbDrone.Core.MediaFiles
                     _diskProvider.DeleteFolder(seriesPath, true);
                 }
             }
+            
+            return Task.CompletedTask;
         }
     }
 }

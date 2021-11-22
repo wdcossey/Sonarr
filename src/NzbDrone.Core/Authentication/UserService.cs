@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
@@ -19,7 +20,7 @@ namespace NzbDrone.Core.Authentication
         User FindUser(Guid identifier);
     }
 
-    public class UserService : IUserService, IHandle<ApplicationStartedEvent>
+    public class UserService : IUserService, IHandleAsync<ApplicationStartedEvent>
     {
         private readonly IUserRepository _repo;
         private readonly IAppFolderInfo _appFolderInfo;
@@ -98,18 +99,18 @@ namespace NzbDrone.Core.Authentication
             return _repo.FindUser(identifier);
         }
 
-        public void Handle(ApplicationStartedEvent message)
+        public Task HandleAsync(ApplicationStartedEvent message)
         {
             if (_repo.All().Any())
             {
-                return;
+                return Task.CompletedTask;
             }
 
             var configFile = _appFolderInfo.GetConfigPath();
 
             if (!_diskProvider.FileExists(configFile))
             {
-                return;
+                return Task.CompletedTask;
             }
 
             var xDoc = XDocument.Load(configFile);
@@ -119,13 +120,15 @@ namespace NzbDrone.Core.Authentication
 
             if (usernameElement == null || passwordElement == null)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             var username = usernameElement.Value;
             var password = passwordElement.Value;
 
             Add(username, password);
+            
+            return Task.CompletedTask;
         }
     }
 }

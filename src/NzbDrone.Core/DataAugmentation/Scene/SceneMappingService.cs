@@ -23,9 +23,9 @@ namespace NzbDrone.Core.DataAugmentation.Scene
     }
 
     public class SceneMappingService : ISceneMappingService,
-                                       IHandle<SeriesRefreshStartingEvent>,
-                                       IHandle<SeriesAddedEvent>,
-                                       IHandle<SeriesImportedEvent>,
+                                       IHandleAsync<SeriesRefreshStartingEvent>,
+                                       IHandleAsync<SeriesAddedEvent>,
+                                       IHandleAsync<SeriesImportedEvent>,
                                        IExecuteAsync<UpdateSceneMappingCommand>
     {
         private readonly ISceneMappingRepository _repository;
@@ -274,28 +274,28 @@ namespace NzbDrone.Core.DataAugmentation.Scene
             return title.All(c => c <= 255);
         }
 
-        public void Handle(SeriesRefreshStartingEvent message)
+        public Task HandleAsync(SeriesRefreshStartingEvent message)
         {
             if (message.ManualTrigger && (_findByTvdbIdCache.IsExpired(TimeSpan.FromMinutes(1)) || !_updatedAfterStartup))
-            {
                 UpdateMappings();
-            }
+            
+            return Task.CompletedTask;
         }
 
-        public void Handle(SeriesAddedEvent message)
+        public Task HandleAsync(SeriesAddedEvent message)
         {
             if (!_updatedAfterStartup)
-            {
                 UpdateMappings();
-            }
+            
+            return Task.CompletedTask;
         }
 
-        public void Handle(SeriesImportedEvent message)
+        public Task HandleAsync(SeriesImportedEvent message)
         {
             if (!_updatedAfterStartup)
-            {
                 UpdateMappings();
-            }
+            
+            return Task.CompletedTask;
         }
 
         public Task ExecuteAsync(UpdateSceneMappingCommand message)

@@ -15,17 +15,16 @@ using NzbDrone.Core.Tv.Events;
 
 namespace NzbDrone.Core.Notifications
 {
-    public class NotificationService
-        : IHandle<EpisodeGrabbedEvent>,
-          IHandle<EpisodeImportedEvent>,
-          IHandle<SeriesRenamedEvent>,
-          IHandle<SeriesDeletedEvent>,
-          IHandle<EpisodeFileDeletedEvent>,
-          IHandle<HealthCheckFailedEvent>,
-          IHandleAsync<DeleteCompletedEvent>,
-          IHandleAsync<DownloadsProcessedEvent>,
-          IHandleAsync<RenameCompletedEvent>,
-          IHandleAsync<HealthCheckCompleteEvent>
+    public class NotificationService : IHandleAsync<EpisodeGrabbedEvent>,
+                                       IHandleAsync<EpisodeImportedEvent>,
+                                       IHandleAsync<SeriesRenamedEvent>,
+                                       IHandleAsync<SeriesDeletedEvent>,
+                                       IHandleAsync<EpisodeFileDeletedEvent>,
+                                       IHandleAsync<HealthCheckFailedEvent>,
+                                       IHandleAsync<DeleteCompletedEvent>,
+                                       IHandleAsync<DownloadsProcessedEvent>,
+                                       IHandleAsync<RenameCompletedEvent>,
+                                       IHandleAsync<HealthCheckCompleteEvent>
     {
         private readonly INotificationFactory _notificationFactory;
         private readonly ILogger<NotificationService> _logger;
@@ -110,7 +109,7 @@ namespace NzbDrone.Core.Notifications
             return false;
         }
 
-        public void Handle(EpisodeGrabbedEvent message)
+        public Task HandleAsync(EpisodeGrabbedEvent message)
         {
             var grabMessage = new GrabMessage
             {
@@ -135,13 +134,15 @@ namespace NzbDrone.Core.Notifications
                     _logger.LogError(ex, "Unable to send OnGrab notification to {DefinitionName}", notification.Definition.Name);
                 }
             }
+            
+            return Task.CompletedTask;
         }
 
-        public void Handle(EpisodeImportedEvent message)
+        public Task HandleAsync(EpisodeImportedEvent message)
         {
             if (!message.NewDownload)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             var downloadMessage = new DownloadMessage
@@ -173,9 +174,11 @@ namespace NzbDrone.Core.Notifications
                     _logger.LogWarning(ex, "Unable to send OnDownload notification to: {DefinitionName}", notification.Definition.Name);
                 }
             }
+            
+            return Task.CompletedTask;
         }
 
-        public void Handle(SeriesRenamedEvent message)
+        public Task HandleAsync(SeriesRenamedEvent message)
         {
             foreach (var notification in _notificationFactory.OnRenameEnabled())
             {
@@ -192,15 +195,16 @@ namespace NzbDrone.Core.Notifications
                     _logger.LogWarning(ex, "Unable to send OnRename notification to: {DefinitionName}", notification.Definition.Name);
                 }
             }
+            
+            return Task.CompletedTask;
         }
 
-        public void Handle(EpisodeFileDeletedEvent message)
+        public Task HandleAsync(EpisodeFileDeletedEvent message)
         {
             if (message.EpisodeFile.Episodes.Value.Empty())
             {
                 _logger.LogTrace("Skipping notification for deleted file without an episode (episode metadata was removed)");
-
-                return;
+                return Task.CompletedTask;
             }
 
             var deleteMessage = new EpisodeDeleteMessage();
@@ -226,9 +230,10 @@ namespace NzbDrone.Core.Notifications
                     _logger.LogWarning(ex, "Unable to send OnDelete notification to: {DefinitionName}", notification.Definition.Name);
                 }
             }
+            return Task.CompletedTask;
         }
 
-        public void Handle(SeriesDeletedEvent message)
+        public Task HandleAsync(SeriesDeletedEvent message)
         {
             var deleteMessage = new SeriesDeleteMessage(message.Series,message.DeleteFiles);
 
@@ -246,9 +251,10 @@ namespace NzbDrone.Core.Notifications
                     _logger.LogWarning(ex, "Unable to send OnDelete notification to: {DefinitionName}", notification.Definition.Name);
                 }
             }
+            return Task.CompletedTask;
         }
 
-        public void Handle(HealthCheckFailedEvent message)
+        public Task HandleAsync(HealthCheckFailedEvent message)
         {
             foreach (var notification in _notificationFactory.OnHealthIssueEnabled())
             {
@@ -265,6 +271,7 @@ namespace NzbDrone.Core.Notifications
                     _logger.LogWarning(ex, "Unable to send OnHealthIssue notification to: {DefinitionName}", notification.Definition.Name);
                 }
             }
+            return Task.CompletedTask;
         }
 
         public Task HandleAsync(DeleteCompletedEvent message)

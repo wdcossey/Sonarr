@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Core.Configuration;
@@ -22,10 +23,10 @@ namespace NzbDrone.Core.Extras
     }
 
     public class ExtraService : IExtraService,
-                                IHandle<MediaCoversUpdatedEvent>,
-                                IHandle<EpisodeFolderCreatedEvent>,
-                                IHandle<SeriesScannedEvent>,
-                                IHandle<SeriesRenamedEvent>
+                                IHandleAsync<MediaCoversUpdatedEvent>,
+                                IHandleAsync<EpisodeFolderCreatedEvent>,
+                                IHandleAsync<SeriesScannedEvent>,
+                                IHandleAsync<SeriesRenamedEvent>
     {
         private readonly IMediaFileService _mediaFileService;
         private readonly IEpisodeService _episodeService;
@@ -130,7 +131,7 @@ namespace NzbDrone.Core.Extras
             }
         }
 
-        public void Handle(MediaCoversUpdatedEvent message)
+        public Task HandleAsync(MediaCoversUpdatedEvent message)
         {
             if (message.Updated)
             {
@@ -141,9 +142,11 @@ namespace NzbDrone.Core.Extras
                     extraFileManager.CreateAfterMediaCoverUpdate(series);
                 }
             }
+            
+            return Task.CompletedTask;
         }
 
-        public void Handle(SeriesScannedEvent message)
+        public Task HandleAsync(SeriesScannedEvent message)
         {
             var series = message.Series;
             var episodeFiles = GetEpisodeFiles(series.Id);
@@ -152,9 +155,11 @@ namespace NzbDrone.Core.Extras
             {
                 extraFileManager.CreateAfterSeriesScan(series, episodeFiles);
             }
+            
+            return Task.CompletedTask;
         }
 
-        public void Handle(EpisodeFolderCreatedEvent message)
+        public Task HandleAsync(EpisodeFolderCreatedEvent message)
         {
             var series = message.Series;
 
@@ -162,9 +167,11 @@ namespace NzbDrone.Core.Extras
             {
                 extraFileManager.CreateAfterEpisodeFolder(series, message.SeriesFolder, message.SeasonFolder);
             }
+            
+            return Task.CompletedTask;
         }
 
-        public void Handle(SeriesRenamedEvent message)
+        public Task HandleAsync(SeriesRenamedEvent message)
         {
             var series = message.Series;
             var episodeFiles = GetEpisodeFiles(series.Id);
@@ -173,6 +180,8 @@ namespace NzbDrone.Core.Extras
             {
                 extraFileManager.MoveFilesAfterRename(series, episodeFiles);
             }
+            
+            return Task.CompletedTask;
         }
 
         private List<EpisodeFile> GetEpisodeFiles(int seriesId)

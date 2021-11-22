@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Extensions;
@@ -16,7 +17,7 @@ namespace NzbDrone.Core.Tv
         void SearchForRecentlyAdded(int seriesId);
     }
 
-    public class EpisodeAddedService : IHandle<EpisodeInfoRefreshedEvent>, IEpisodeAddedService
+    public class EpisodeAddedService : IHandleAsync<EpisodeInfoRefreshedEvent>, IEpisodeAddedService
     {
         private readonly IManageCommandQueue _commandQueueManager;
         private readonly IEpisodeService _episodeService;
@@ -51,26 +52,26 @@ namespace NzbDrone.Core.Tv
             _addedEpisodesCache.Remove(seriesId.ToString());
         }
 
-        public void Handle(EpisodeInfoRefreshedEvent message)
+        public Task HandleAsync(EpisodeInfoRefreshedEvent message)
         {
             if (message.Series.AddOptions == null)
             {
                 if (!message.Series.Monitored)
                 {
                     _logger.LogDebug("Series is not monitored");
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 if (message.Added.Empty())
                 {
                     _logger.LogDebug("No new episodes, skipping search");
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 if (message.Added.None(a => a.AirDateUtc.HasValue))
                 {
                     _logger.LogDebug("No new episodes have an air date");
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 var previouslyAired = message.Added.Where(a => a.AirDateUtc.HasValue
@@ -80,11 +81,13 @@ namespace NzbDrone.Core.Tv
                 if (previouslyAired.Empty())
                 {
                     _logger.LogDebug("Newly added episodes all air in the future");
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 _addedEpisodesCache.Set(message.Series.Id.ToString(), previouslyAired.Select(e => e.Id).ToList());
             }
+            
+            return Task.CompletedTask;
         }
     }
 }

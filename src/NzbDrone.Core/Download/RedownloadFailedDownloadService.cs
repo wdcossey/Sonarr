@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.IndexerSearch;
@@ -9,7 +10,7 @@ using NzbDrone.Core.Tv;
 
 namespace NzbDrone.Core.Download
 {
-    public class RedownloadFailedDownloadService : IHandle<DownloadFailedEvent>
+    public class RedownloadFailedDownloadService : IHandleAsync<DownloadFailedEvent>
     {
         private readonly IConfigService _configService;
         private readonly IEpisodeService _episodeService;
@@ -28,12 +29,12 @@ namespace NzbDrone.Core.Download
         }
 
         [EventHandleOrder(EventHandleOrder.Last)]
-        public void Handle(DownloadFailedEvent message)
+        public Task HandleAsync(DownloadFailedEvent message)
         {
             if (!_configService.AutoRedownloadFailed)
             {
                 _logger.LogDebug("Auto redownloading failed episodes is disabled");
-                return;
+                return Task.CompletedTask;
             }
 
             if (message.EpisodeIds.Count == 1)
@@ -42,7 +43,7 @@ namespace NzbDrone.Core.Download
 
                 _commandQueueManager.Push(new EpisodeSearchCommand(message.EpisodeIds));
 
-                return;
+                return Task.CompletedTask;
             }
 
             var seasonNumber = _episodeService.GetEpisode(message.EpisodeIds.First()).SeasonNumber;
@@ -58,12 +59,14 @@ namespace NzbDrone.Core.Download
                     SeasonNumber = seasonNumber
                 });
 
-                return;
+                return Task.CompletedTask;
             }
 
             _logger.LogDebug("Failed download contains multiple episodes, probably a double episode, searching again");
 
             _commandQueueManager.Push(new EpisodeSearchCommand(message.EpisodeIds));
+            
+            return Task.CompletedTask;
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.History;
 using NzbDrone.Core.MediaFiles.Events;
@@ -18,12 +18,12 @@ namespace NzbDrone.Core.Download.History
     }
 
     public class DownloadHistoryService : IDownloadHistoryService,
-                                          IHandle<EpisodeGrabbedEvent>,
-                                          IHandle<EpisodeImportedEvent>,
-                                          IHandle<DownloadCompletedEvent>,
-                                          IHandle<DownloadFailedEvent>,
-                                          IHandle<DownloadIgnoredEvent>,
-                                          IHandle<SeriesDeletedEvent>
+                                          IHandleAsync<EpisodeGrabbedEvent>,
+                                          IHandleAsync<EpisodeImportedEvent>,
+                                          IHandleAsync<DownloadCompletedEvent>,
+                                          IHandleAsync<DownloadFailedEvent>,
+                                          IHandleAsync<DownloadIgnoredEvent>,
+                                          IHandleAsync<SeriesDeletedEvent>
 
     {
         private readonly IDownloadHistoryRepository _repository;
@@ -94,12 +94,12 @@ namespace NzbDrone.Core.Download.History
                               .FirstOrDefault(d => d.EventType == DownloadHistoryEventType.DownloadGrabbed);
         }
 
-        public void Handle(EpisodeGrabbedEvent message)
+        public Task HandleAsync(EpisodeGrabbedEvent message)
         {
             // Don't store grabbed events for clients that don't download IDs
             if (message.DownloadId.IsNullOrWhiteSpace())
             {
-                return;
+                return Task.CompletedTask;
             }
 
             var history = new DownloadHistory
@@ -121,13 +121,15 @@ namespace NzbDrone.Core.Download.History
             history.Data.Add("PreferredWordScore", message.Episode.PreferredWordScore.ToString());
 
             _repository.Insert(history);
+            
+            return Task.CompletedTask;
         }
 
-        public void Handle(EpisodeImportedEvent message)
+        public Task HandleAsync(EpisodeImportedEvent message)
         {
             if (!message.NewDownload)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             var downloadId = message.DownloadId;
@@ -142,7 +144,7 @@ namespace NzbDrone.Core.Download.History
 
             if (downloadId.IsNullOrWhiteSpace())
             {
-                return;
+                return Task.CompletedTask;
             }
 
             var history = new DownloadHistory
@@ -162,9 +164,11 @@ namespace NzbDrone.Core.Download.History
             history.Data.Add("DestinationPath", Path.Combine(message.EpisodeInfo.Series.Path, message.ImportedEpisode.RelativePath));
 
             _repository.Insert(history);
+            
+            return Task.CompletedTask;
         }
 
-        public void Handle(DownloadCompletedEvent message)
+        public Task HandleAsync(DownloadCompletedEvent message)
         {
             var downloadItem = message.TrackedDownload.DownloadItem;
 
@@ -183,14 +187,16 @@ namespace NzbDrone.Core.Download.History
             history.Data.Add("DownloadClientName", downloadItem.DownloadClientInfo.Name);
 
             _repository.Insert(history);
+            
+            return Task.CompletedTask;
         }
 
-        public void Handle(DownloadFailedEvent message)
+        public Task HandleAsync(DownloadFailedEvent message)
         {
             // Don't track failed download for an unknown download
             if (message.TrackedDownload == null)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             var history = new DownloadHistory
@@ -208,9 +214,11 @@ namespace NzbDrone.Core.Download.History
             history.Data.Add("DownloadClientName", message.TrackedDownload.DownloadItem.DownloadClientInfo.Name);
 
             _repository.Insert(history);
+            
+            return Task.CompletedTask;
         }
 
-        public void Handle(DownloadIgnoredEvent message)
+        public Task HandleAsync(DownloadIgnoredEvent message)
         {
             var history = new DownloadHistory
             {
@@ -227,11 +235,15 @@ namespace NzbDrone.Core.Download.History
             history.Data.Add("DownloadClientName", message.DownloadClientInfo.Name);
 
             _repository.Insert(history);
+            
+            return Task.CompletedTask;
         }
 
-        public void Handle(SeriesDeletedEvent message)
+        public Task HandleAsync(SeriesDeletedEvent message)
         {
             _repository.DeleteBySeriesId(message.Series.Id);
+            
+            return Task.CompletedTask;
         }
     }
 }
