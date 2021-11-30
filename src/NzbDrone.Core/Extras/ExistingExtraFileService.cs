@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Core.Extras.Files;
@@ -11,7 +10,7 @@ using NzbDrone.Core.Messaging.Events;
 
 namespace NzbDrone.Core.Extras
 {
-    public class ExistingExtraFileService : IHandleAsync<SeriesScannedEvent>
+    public class ExistingExtraFileService : IHandle<SeriesScannedEvent>
     {
         private readonly IDiskProvider _diskProvider;
         private readonly IDiskScanService _diskScanService;
@@ -29,14 +28,14 @@ namespace NzbDrone.Core.Extras
             _logger = logger;
         }
 
-        public Task HandleAsync(SeriesScannedEvent message)
+        public void Handle(SeriesScannedEvent message)
         {
             var series = message.Series;
             var extraFiles = new List<ExtraFile>();
 
             if (!_diskProvider.FolderExists(series.Path))
             {
-                return Task.CompletedTask;
+                return;
             }
 
             _logger.LogDebug("Looking for existing extra files in {Path}", series.Path);
@@ -55,8 +54,6 @@ namespace NzbDrone.Core.Extras
             }
 
             _logger.LogInformation("Found {Count} extra files", extraFiles.Count);
-            
-            return Task.CompletedTask;
         }
     }
 }

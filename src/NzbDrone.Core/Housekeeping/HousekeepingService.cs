@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Datastore;
 
 namespace NzbDrone.Core.Housekeeping
 {
-    public class HousekeepingService : IExecuteAsync<HousekeepingCommand>
+    public class HousekeepingService : IExecute<HousekeepingCommand>
     {
         private readonly IEnumerable<IHousekeepingTask> _housekeepers;
         private readonly ILogger<HousekeepingService> _logger;
@@ -44,10 +43,7 @@ namespace NzbDrone.Core.Housekeeping
             _mainDb.Vacuum();
         }
 
-        public Task ExecuteAsync(HousekeepingCommand message)
-        {
-            Clean();
-            return Task.CompletedTask;
-        }
+        public void Execute(HousekeepingCommand message)
+            => Clean();
     }
 }

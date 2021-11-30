@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace NzbDrone.Core.Download.Clients.Sabnzbd
 {
@@ -10,7 +6,7 @@ namespace NzbDrone.Core.Download.Clients.Sabnzbd
     {
         // Added in Sabnzbd 2.0.0, my_home was previously in &mode=queue.
         // This is the already resolved completedir path.
-        [JsonProperty(PropertyName = "completedir")]
+        [JsonPropertyName("completedir")]
         public string CompleteDir { get; set; }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using NzbDrone.Core.Datastore;
+﻿using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Instrumentation.Commands;
 using NzbDrone.Core.Messaging.Commands;
 
@@ -10,7 +9,7 @@ namespace NzbDrone.Core.Instrumentation
         PagingSpec<Log> Paged(PagingSpec<Log> pagingSpec);
     }
 
-    public class LogService : ILogService, IExecuteAsync<ClearLogCommand>
+    public class LogService : ILogService, IExecute<ClearLogCommand>
     {
         private readonly ILogRepository _logRepository;
 
@@ -24,10 +23,7 @@ namespace NzbDrone.Core.Instrumentation
             return _logRepository.GetPaged(pagingSpec);
         }
 
-        public Task ExecuteAsync(ClearLogCommand message)
-        {
-            _logRepository.Purge(vacuum: true);
-            return Task.CompletedTask;
-        }
+        public void Execute(ClearLogCommand message)
+            => _logRepository.Purge(vacuum: true);
     }
 }

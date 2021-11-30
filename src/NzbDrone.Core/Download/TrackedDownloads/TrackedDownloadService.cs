@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Extensions;
@@ -24,8 +23,8 @@ namespace NzbDrone.Core.Download.TrackedDownloads
     }
 
     public class TrackedDownloadService : ITrackedDownloadService,
-                                          IHandleAsync<EpisodeInfoRefreshedEvent>,
-                                          IHandleAsync<SeriesDeletedEvent>
+                                          IHandle<EpisodeInfoRefreshedEvent>,
+                                          IHandle<SeriesDeletedEvent>
     {
         private readonly IParsingService _parsingService;
         private readonly IHistoryService _historyService;
@@ -216,7 +215,7 @@ namespace NzbDrone.Core.Download.TrackedDownloads
             }
         }
 
-        public Task HandleAsync(EpisodeInfoRefreshedEvent message)
+        public void Handle(EpisodeInfoRefreshedEvent message)
         {
             var needsToUpdate = false;
 
@@ -239,11 +238,9 @@ namespace NzbDrone.Core.Download.TrackedDownloads
             {
                 _eventAggregator.PublishEvent(new TrackedDownloadRefreshedEvent(GetTrackedDownloads()));
             }
-            
-            return Task.CompletedTask;
         }
 
-        public Task HandleAsync(SeriesDeletedEvent message)
+        public void Handle(SeriesDeletedEvent message)
         {
             var cachedItems = _cache.Values.Where(t =>
                                         t.RemoteEpisode?.Series != null &&
@@ -256,8 +253,6 @@ namespace NzbDrone.Core.Download.TrackedDownloads
 
                 _eventAggregator.PublishEvent(new TrackedDownloadRefreshedEvent(GetTrackedDownloads()));
             }
-            
-            return Task.CompletedTask;
         }
     }
 }

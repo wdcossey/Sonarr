@@ -28,7 +28,7 @@ namespace NzbDrone.Core.Jobs
         DateTime GetNextExecution(Type type);
     }
 
-    public class TaskManager : ITaskManager, IHandleAsync<ApplicationStartedEvent>, IHandleAsync<CommandExecutedEvent>, IHandleAsync<ConfigSavedEvent>
+    public class TaskManager : ITaskManager, IHandle<ApplicationStartedEvent>, IHandle<CommandExecutedEvent>, IHandleAsync<ConfigSavedEvent>
     {
         private readonly IScheduledTaskRepository _scheduledTaskRepository;
         private readonly IConfigService _configService;
@@ -59,7 +59,7 @@ namespace NzbDrone.Core.Jobs
             return scheduledTask.LastExecution.AddMinutes(scheduledTask.Interval);
         }
 
-        public Task HandleAsync(ApplicationStartedEvent message)
+        public void Handle(ApplicationStartedEvent message)
         {
             var defaultTasks = new[]
                 {
@@ -117,8 +117,6 @@ namespace NzbDrone.Core.Jobs
 
                 _scheduledTaskRepository.Upsert(currentDefinition);
             }
-            
-            return Task.CompletedTask;
         }
 
         private int GetBackupInterval()
@@ -155,7 +153,7 @@ namespace NzbDrone.Core.Jobs
             return interval;
         }
 
-        public Task HandleAsync(CommandExecutedEvent message)
+        public void Handle(CommandExecutedEvent message)
         {
             var scheduledTask = _scheduledTaskRepository.All().SingleOrDefault(c => c.TypeName == message.Command.Body.GetType().FullName);
 
@@ -164,8 +162,6 @@ namespace NzbDrone.Core.Jobs
                 _logger.LogTrace("Updating last run time for: {TypeName}", scheduledTask.TypeName);
                 _scheduledTaskRepository.SetLastExecutionTime(scheduledTask.Id, DateTime.UtcNow);
             }
-            
-            return Task.CompletedTask;
         }
 
         public Task HandleAsync(ConfigSavedEvent message)

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Marr.Data;
 
 namespace NzbDrone.Core.Datastore

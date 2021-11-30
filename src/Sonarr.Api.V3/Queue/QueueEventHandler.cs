@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using NzbDrone.Core.Datastore.Events;
 using NzbDrone.Core.Download.Pending;
@@ -9,15 +8,17 @@ using Sonarr.Http;
 
 namespace Sonarr.Api.V3.Queue
 {
-    public class QueueEventHandler: EventHandlerBase<QueueResource>, IHandleAsync<QueueUpdatedEvent>, IHandleAsync<PendingReleasesUpdatedEvent>
+    public class QueueEventHandler: EventHandlerBase<QueueResource>,
+                                    IHandle<QueueUpdatedEvent>,
+                                    IHandle<PendingReleasesUpdatedEvent>
     {
-        public QueueEventHandler(IHubContext<SonarrHub, ISonarrHub> hubContext) 
+        public QueueEventHandler(IHubContext<SonarrHub, ISonarrHub> hubContext)
             : base(hubContext) { }
-        
-        public Task HandleAsync(QueueUpdatedEvent message)
+
+        public void Handle(QueueUpdatedEvent message)
             => BroadcastResourceChange(ModelAction.Sync);
-        
-        public Task HandleAsync(PendingReleasesUpdatedEvent message)
+
+        public void Handle(PendingReleasesUpdatedEvent message)
             => BroadcastResourceChange(ModelAction.Sync);
     }
 }

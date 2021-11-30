@@ -1,5 +1,4 @@
 using System;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 //using System.ServiceProcess;
 using Microsoft.Extensions.Logging;
@@ -19,7 +18,7 @@ namespace NzbDrone.Host
         void Start();
     }
 
-    public class NzbDroneServiceFactory : /*ServiceBase, */INzbDroneServiceFactory, IHandleAsync<ApplicationShutdownRequested>
+    public class NzbDroneServiceFactory : /*ServiceBase, */INzbDroneServiceFactory, IHandle<ApplicationShutdownRequested>
     {
         private readonly IConfigFileProvider _configFileProvider;
         private readonly IRuntimeInfo _runtimeInfo;
@@ -97,7 +96,7 @@ namespace NzbDrone.Host
             _runtimeInfo.IsExiting = true;
         }
 
-        public Task HandleAsync(ApplicationShutdownRequested message)
+        public void Handle(ApplicationShutdownRequested message)
         {
             if (!_runtimeInfo.IsWindowsService)
             {
@@ -109,8 +108,6 @@ namespace NzbDrone.Host
                 //LogManager.Configuration = null;
                 Shutdown();
             }
-            
-            return Task.CompletedTask;
         }
     }
 }

@@ -1,11 +1,10 @@
-using System.Threading.Tasks;
 using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.ThingiProvider.Events;
 
 namespace NzbDrone.Core.ImportLists
 {
-    public class ImportListUpdatedHandler : IHandleAsync<ProviderUpdatedEvent<IImportList>>
+    public class ImportListUpdatedHandler : IHandle<ProviderUpdatedEvent<IImportList>>
     {
         private readonly IManageCommandQueue _commandQueueManager;
 
@@ -14,10 +13,7 @@ namespace NzbDrone.Core.ImportLists
             _commandQueueManager = commandQueueManager;
         }
 
-        public Task HandleAsync(ProviderUpdatedEvent<IImportList> message)
-        {
-            _commandQueueManager.Push(new ImportListSyncCommand(message.Definition.Id));
-            return Task.CompletedTask;
-        }
+        public void Handle(ProviderUpdatedEvent<IImportList> message)
+            => _commandQueueManager.Push(new ImportListSyncCommand(message.Definition.Id));
     }
 }

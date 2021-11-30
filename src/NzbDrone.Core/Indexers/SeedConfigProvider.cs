@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Cache;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Download.Clients;
@@ -17,7 +14,7 @@ namespace NzbDrone.Core.Indexers
         TorrentSeedConfiguration GetSeedConfiguration(int indexerId, bool fullSeason);
     }
 
-    public class SeedConfigProvider : ISeedConfigProvider, IHandleAsync<ProviderUpdatedEvent<IIndexer>>
+    public class SeedConfigProvider : ISeedConfigProvider, IHandle<ProviderUpdatedEvent<IIndexer>>
     {
         private readonly IIndexerFactory _indexerFactory;
         private readonly ICached<SeedCriteriaSettings> _cache;
@@ -43,7 +40,7 @@ namespace NzbDrone.Core.Indexers
             var seedCriteria = _cache.Get(indexerId.ToString(), () => FetchSeedCriteria(indexerId));
 
             if (seedCriteria == null) return null;
-            
+
             var seedConfig = new TorrentSeedConfiguration
             {
                 Ratio = seedCriteria.SeedRatio
@@ -73,10 +70,7 @@ namespace NzbDrone.Core.Indexers
             }
         }
 
-        public Task HandleAsync(ProviderUpdatedEvent<IIndexer> message)
-        {
-            _cache.Clear();
-            return Task.CompletedTask;
-        }
+        public void Handle(ProviderUpdatedEvent<IIndexer> message)
+            => _cache.Clear();
     }
 }

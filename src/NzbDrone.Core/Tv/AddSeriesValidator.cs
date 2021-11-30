@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using FluentValidation.Results;
 using NzbDrone.Core.Validation.Paths;
 
 namespace NzbDrone.Core.Tv

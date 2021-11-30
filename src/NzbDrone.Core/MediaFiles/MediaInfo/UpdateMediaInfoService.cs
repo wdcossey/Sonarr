@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Core.MediaFiles.Events;
@@ -15,7 +14,7 @@ namespace NzbDrone.Core.MediaFiles.MediaInfo
         void Update(EpisodeFile episodeFile, Series series);
     }
 
-    public class UpdateMediaInfoService : IHandleAsync<SeriesScannedEvent>, IUpdateMediaInfo
+    public class UpdateMediaInfoService : IHandle<SeriesScannedEvent>, IUpdateMediaInfo
     {
         private readonly IDiskProvider _diskProvider;
         private readonly IMediaFileService _mediaFileService;
@@ -36,12 +35,12 @@ namespace NzbDrone.Core.MediaFiles.MediaInfo
             _logger = logger;
         }
 
-        public Task HandleAsync(SeriesScannedEvent message)
+        public void Handle(SeriesScannedEvent message)
         {
             if (!_configService.EnableMediaInfo)
             {
                 _logger.LogDebug("MediaInfo is disabled");
-                return Task.CompletedTask;
+                return;
             }
 
             var allMediaFiles = _mediaFileService.GetFilesBySeries(message.Series.Id);
@@ -53,8 +52,6 @@ namespace NzbDrone.Core.MediaFiles.MediaInfo
             {
                 UpdateMediaInfo(mediaFile, message.Series);
             }
-            
-            return Task.CompletedTask;
         }
 
         public void Update(EpisodeFile episodeFile, Series series)

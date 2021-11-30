@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using NLog;
+﻿using NLog;
 using NLog.Config;
 using NLog.Targets;
 using NzbDrone.Core.Lifecycle;
@@ -8,7 +7,7 @@ using NzbDrone.Core.Messaging.Events;
 
 namespace NzbDrone.Core.ProgressMessaging
 {
-    public class ProgressMessageTarget : Target, IHandleAsync<ApplicationStartedEvent>
+    public class ProgressMessageTarget : Target, IHandle<ApplicationStartedEvent>
     {
         private readonly IEventAggregator _eventAggregator;
         private readonly IManageCommandQueue _commandQueueManager;
@@ -48,15 +47,13 @@ namespace NzbDrone.Core.ProgressMessaging
             return logEvent.Properties.ContainsKey("Status");
         }
 
-        public Task HandleAsync(ApplicationStartedEvent message)
+        public void Handle(ApplicationStartedEvent message)
         {
             _rule = new LoggingRule("*", LogLevel.Trace, this);
 
             LogManager.Configuration.AddTarget("ProgressMessagingLogger", this);
             LogManager.Configuration.LoggingRules.Add(_rule);
             LogManager.ReconfigExistingLoggers();
-            
-            return Task.CompletedTask;
         }
     }
 }

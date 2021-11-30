@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Lifecycle;
 using NzbDrone.Core.Messaging.Events;
@@ -21,7 +20,7 @@ namespace NzbDrone.Core.Profiles.Languages
         LanguageProfile GetDefaultProfile(string name, Language cutoff = null, params Language[] allowed);
     }
 
-    public class LanguageProfileService : ILanguageProfileService, IHandleAsync<ApplicationStartedEvent>
+    public class LanguageProfileService : ILanguageProfileService, IHandle<ApplicationStartedEvent>
     {
         private readonly ILanguageProfileRepository _profileRepository;
         private readonly IImportListFactory _importListFactory;
@@ -110,16 +109,14 @@ namespace NzbDrone.Core.Profiles.Languages
             return Add(profile);
         }
 
-        public Task HandleAsync(ApplicationStartedEvent message)
+        public void Handle(ApplicationStartedEvent message)
         {
-            if (All().Any()) 
-                return Task.CompletedTask;
+            if (All().Any())
+                return;
 
             _logger.LogInformation("Setting up default language profiles");
 
             AddDefaultProfile("English", Language.English, Language.English);
-            
-            return Task.CompletedTask;
         }
     }
 }

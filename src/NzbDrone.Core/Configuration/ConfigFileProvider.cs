@@ -20,7 +20,7 @@ using NzbDrone.Core.Update;
 namespace NzbDrone.Core.Configuration
 {
     public interface IConfigFileProvider : IHandleAsync<ApplicationStartedEvent>,
-                                           IExecuteAsync<ResetApiKeyCommand>
+                                           IExecute<ResetApiKeyCommand>
     {
         Dictionary<string, object> GetConfigDictionary();
         void SaveConfigDictionary(Dictionary<string, object> configValues);
@@ -366,10 +366,9 @@ namespace NzbDrone.Core.Configuration
             return Task.CompletedTask;
         }
 
-        public Task ExecuteAsync(ResetApiKeyCommand message)
+        public void Execute(ResetApiKeyCommand message)
         {
             SetValue("ApiKey", GenerateApiKey());
-            return Task.CompletedTask;
         }
     }
 }

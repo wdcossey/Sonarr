@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using NzbDrone.Common.Exceptions;
 
 namespace NzbDrone.Core.DataAugmentation.Scene
@@ -16,7 +14,7 @@ namespace NzbDrone.Core.DataAugmentation.Scene
 
         private static string FormatMessage(IEnumerable<SceneMapping> mappings, string releaseTitle)
         {
-            return string.Format("Scene Mappings contains a conflict for tvdbids {0}. Please notify Sonarr developers. ({1})", string.Join(",", mappings.Select(v => v.TvdbId.ToString())), releaseTitle);
+            return $"Scene Mappings contains a conflict for tvdbids {string.Join(",", mappings.Select(v => v.TvdbId.ToString()))}. Please notify Sonarr developers. ({releaseTitle})";
         }
     }
 }

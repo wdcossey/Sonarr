@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common;
 using NzbDrone.Common.Disk;
@@ -21,7 +20,7 @@ using NzbDrone.Core.Update.Commands;
 
 namespace NzbDrone.Core.Update
 {
-    public class InstallUpdateService : IExecuteAsync<ApplicationUpdateCommand>, IExecuteAsync<ApplicationUpdateCheckCommand>, IHandleAsync<ApplicationStartingEvent>
+    public class InstallUpdateService : IExecute<ApplicationUpdateCommand>, IExecute<ApplicationUpdateCheckCommand>, IHandle<ApplicationStartingEvent>
     {
         private readonly ICheckUpdateService _checkUpdateService;
         private readonly ILogger<InstallUpdateService> _logger;
@@ -251,17 +250,15 @@ namespace NzbDrone.Core.Update
             return latestAvailable;
         }
 
-        public Task ExecuteAsync(ApplicationUpdateCheckCommand message)
+        public void Execute(ApplicationUpdateCheckCommand message)
         {
             if (GetUpdatePackage(message.Trigger) != null)
             {
                 _commandQueueManager.Push(new ApplicationUpdateCommand(), trigger: message.Trigger);
             }
-            
-            return Task.CompletedTask;
         }
 
-        public Task ExecuteAsync(ApplicationUpdateCommand message)
+        public void Execute(ApplicationUpdateCommand message)
         {
             var latestAvailable = GetUpdatePackage(message.Trigger);
 
@@ -288,11 +285,9 @@ namespace NzbDrone.Core.Update
                     throw new CommandFailedException(ex);
                 }
             }
-            
-            return Task.CompletedTask;
         }
 
-        public Task HandleAsync(ApplicationStartingEvent message)
+        public void Handle(ApplicationStartingEvent message)
         {
             // Check if we have to do an application update on startup
 
@@ -301,7 +296,7 @@ namespace NzbDrone.Core.Update
                 var updateMarker = Path.Combine(_appFolderInfo.AppDataFolder, "update_required");
                 if (!_diskProvider.FileExists(updateMarker))
                 {
-                    return Task.CompletedTask;
+                    return;
                 }
 
                 _logger.LogDebug("Post-install update check requested");
@@ -312,7 +307,7 @@ namespace NzbDrone.Core.Update
                     _deploymentInfoProvider.IsExternalUpdateMechanism)
                 {
                     _logger.LogDebug("Built-in updater disabled, skipping post-install update check");
-                    return Task.CompletedTask;
+                    return;
                 }
 
                 var latestAvailable = _checkUpdateService.AvailableUpdate();
@@ -320,9 +315,10 @@ namespace NzbDrone.Core.Update
                 {
                     _logger.LogDebug("No post-install update available");
                     _diskProvider.DeleteFile(updateMarker);
-                    return Task.CompletedTask;
+                    return;
                 }
-                
+
+
                 _logger.LogInformation("Installing post-install update from {BuildInfoVersion} to {LatestVersion}", BuildInfo.Version, latestAvailable.Version);
                 _diskProvider.DeleteFile(updateMarker);
 
@@ -350,8 +346,6 @@ namespace NzbDrone.Core.Update
             {
                 _logger.LogError(ex, "Failed to perform the post-install update check. Attempting to continue normal operation.");
             }
-            
-            return Task.CompletedTask;
         }
     }
 }

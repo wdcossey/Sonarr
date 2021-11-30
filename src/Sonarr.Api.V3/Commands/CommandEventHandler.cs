@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using NzbDrone.Common.TPL;
 using NzbDrone.Core.Datastore.Events;
@@ -13,24 +12,25 @@ using Sonarr.Http;
 
 namespace Sonarr.Api.V3.Commands
 {
-    public class CommandEventHandler : EventHandlerBase<CommandResource, CommandModel>, IHandleAsync<CommandUpdatedEvent>
+    public class CommandEventHandler : EventHandlerBase<CommandResource, CommandModel>,
+                                       IHandle<CommandUpdatedEvent>
     {
         private readonly IManageCommandQueue _commandQueueManager;
         private readonly Debouncer _debouncer;
         private readonly Dictionary<int, CommandResource> _pendingUpdates;
-        
-        public CommandEventHandler(IManageCommandQueue commandQueueManager, IHubContext<SonarrHub, ISonarrHub> hubContext) 
+
+        public CommandEventHandler(IManageCommandQueue commandQueueManager, IHubContext<SonarrHub, ISonarrHub> hubContext)
             : base(hubContext)
         {
             _commandQueueManager = commandQueueManager;
             _debouncer = new Debouncer(SendUpdates, TimeSpan.FromSeconds(0.1));
             _pendingUpdates = new Dictionary<int, CommandResource>();
         }
-        
-        public Task HandleAsync(CommandUpdatedEvent message)
+
+        public void Handle(CommandUpdatedEvent message)
         {
             if (!message.Command.Body.SendUpdatesToClient)
-                return Task.CompletedTask;
+                return;
 
             lock (_pendingUpdates)
             {
@@ -38,8 +38,6 @@ namespace Sonarr.Api.V3.Commands
             }
 
             _debouncer.Execute();
-            
-            return Task.CompletedTask;
         }
 
         private void SendUpdates()
@@ -52,9 +50,9 @@ namespace Sonarr.Api.V3.Commands
                 foreach (var pendingUpdate in pendingUpdates)
                 {
                     BroadcastResourceChange(ModelAction.Updated, pendingUpdate);
-                    
-                    if (pendingUpdate.Name != nameof(MessagingCleanupCommand).Replace("Command", "") || 
-                        pendingUpdate.Status != CommandStatus.Completed) 
+
+                    if (pendingUpdate.Name != nameof(MessagingCleanupCommand).Replace("Command", "") ||
+                        pendingUpdate.Status != CommandStatus.Completed)
                         continue;
 
                     BroadcastResourceChange(ModelAction.Sync);

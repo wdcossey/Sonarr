@@ -15,8 +15,7 @@ namespace NzbDrone.Core.Update.History
         List<UpdateHistory> InstalledSince(DateTime dateTime);
     }
 
-    public class UpdateHistoryService : IUpdateHistoryService, 
-                                        IHandleAsync<ApplicationStartedEvent>
+    public class UpdateHistoryService : IUpdateHistoryService, IHandle<ApplicationStartedEvent>, IHandleAsync<ApplicationStartedEvent>
     {
         private readonly IUpdateHistoryRepository _repository;
         private readonly IEventAggregator _eventAggregator;
@@ -58,12 +57,12 @@ namespace NzbDrone.Core.Update.History
             }
         }
 
-        public Task HandleAsync(ApplicationStartedEvent message)
+        public void Handle(ApplicationStartedEvent message)
         {
             if (BuildInfo.Version.Major == 10)
             {
                 // Don't save dev versions, they change constantly
-                return Task.CompletedTask;
+                return;
             }
 
             UpdateHistory history;
@@ -89,16 +88,9 @@ namespace NzbDrone.Core.Update.History
                     EventType = UpdateHistoryEventType.Installed
                 });
             }
-            
-            if (_prevVersion != null)
-            {
-                _eventAggregator.PublishEvent(new UpdateInstalledEvent(_prevVersion, BuildInfo.Version));
-            }
-            
-            return Task.CompletedTask;
         }
 
-        /*public Task HandleAsync(ApplicationStartedEvent message)
+        public Task HandleAsync(ApplicationStartedEvent message)
         {
             if (_prevVersion != null)
             {
@@ -106,6 +98,6 @@ namespace NzbDrone.Core.Update.History
             }
             
             return Task.CompletedTask;
-        }*/
+        }
     }
 }

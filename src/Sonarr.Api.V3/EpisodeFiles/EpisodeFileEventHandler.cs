@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using NzbDrone.Core.Datastore.Events;
 using NzbDrone.Core.DecisionEngine.Specifications;
@@ -12,13 +11,13 @@ using Sonarr.Http;
 namespace Sonarr.Api.V3.EpisodeFiles
 {
     public class EpisodeFileEventHandler : EventHandlerBase<EpisodeFileResource, EpisodeFile>,
-        IHandleAsync<EpisodeFileAddedEvent>,
-        IHandleAsync<EpisodeFileDeletedEvent>
+                                           IHandle<EpisodeFileAddedEvent>,
+                                           IHandle<EpisodeFileDeletedEvent>
     {
         private readonly IMediaFileService _mediaFileService;
         private readonly ISeriesService _seriesService;
         private readonly IUpgradableSpecification _upgradableSpecification;
-        
+
         public EpisodeFileEventHandler(IHubContext<SonarrHub, ISonarrHub> hubContext,
             IMediaFileService mediaFileService,
             ISeriesService seriesService,
@@ -28,25 +27,19 @@ namespace Sonarr.Api.V3.EpisodeFiles
             _seriesService = seriesService;
             _upgradableSpecification = upgradableSpecification;
         }
-        
+
         private EpisodeFileResource GetEpisodeFileResource(int id)
         {
             var episodeFile = _mediaFileService.Get(id);
             var series = _seriesService.GetSeries(episodeFile.SeriesId);
             return episodeFile.ToResource(series, _upgradableSpecification);
         }
-        
-        public Task HandleAsync(EpisodeFileAddedEvent message)
-        {
-            BroadcastResourceChange(ModelAction.Updated, GetResourceById(message.EpisodeFile.Id));
-            return Task.CompletedTask;
-        }
 
-        public Task HandleAsync(EpisodeFileDeletedEvent message)
-        {
-            BroadcastResourceChange(ModelAction.Deleted, GetResourceById(message.EpisodeFile.Id));
-            return Task.CompletedTask;
-        }
+        void IHandle<EpisodeFileAddedEvent>.Handle(EpisodeFileAddedEvent message)
+            => BroadcastResourceChange(ModelAction.Updated, GetResourceById(message.EpisodeFile.Id));
+
+        void IHandle<EpisodeFileDeletedEvent>.Handle(EpisodeFileDeletedEvent message)
+            => BroadcastResourceChange(ModelAction.Deleted, GetResourceById(message.EpisodeFile.Id));
 
         protected override EpisodeFileResource GetResourceById(int id)
         {

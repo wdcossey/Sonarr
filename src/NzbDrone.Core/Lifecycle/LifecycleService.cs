@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common;
 using NzbDrone.Common.EnvironmentInfo;
@@ -16,7 +15,7 @@ namespace NzbDrone.Core.Lifecycle
         void Restart();
     }
 
-    public class LifecycleService : ILifecycleService, IExecuteAsync<ShutdownCommand>, IExecuteAsync<RestartCommand>
+    public class LifecycleService : ILifecycleService, IExecute<ShutdownCommand>, IExecute<RestartCommand>
     {
         private readonly IEventAggregator _eventAggregator;
         private readonly IRuntimeInfo _runtimeInfo;
@@ -62,16 +61,10 @@ namespace NzbDrone.Core.Lifecycle
             }
         }
 
-        public Task ExecuteAsync(ShutdownCommand message)
-        {
-            Shutdown();
-            return Task.CompletedTask;
-        }
+        public void Execute(ShutdownCommand message)
+            => Shutdown();
 
-        public Task ExecuteAsync(RestartCommand message)
-        {
-            Restart();
-            return Task.CompletedTask;
-        }
+        public void Execute(RestartCommand message)
+            => Restart();
     }
 }

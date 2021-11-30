@@ -1,5 +1,4 @@
 using System;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Extensions;

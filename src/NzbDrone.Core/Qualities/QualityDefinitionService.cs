@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Lifecycle;
 using NzbDrone.Core.Messaging.Events;
 using System;
-using System.Threading.Tasks;
 using NzbDrone.Common.Cache;
 
 namespace NzbDrone.Core.Qualities
@@ -18,7 +17,7 @@ namespace NzbDrone.Core.Qualities
         QualityDefinition Get(Quality quality);
     }
 
-    public class QualityDefinitionService : IQualityDefinitionService, IHandleAsync<ApplicationStartedEvent>
+    public class QualityDefinitionService : IQualityDefinitionService, IHandle<ApplicationStartedEvent>
     {
         private readonly IQualityDefinitionRepository _repo;
         private readonly ICached<Dictionary<Quality, QualityDefinition>> _cache;
@@ -103,13 +102,11 @@ namespace NzbDrone.Core.Qualities
             return definition;
         }
 
-        public Task HandleAsync(ApplicationStartedEvent message)
+        public void Handle(ApplicationStartedEvent message)
         {
             _logger.LogDebug("Setting up default quality config");
 
             InsertMissingDefinitions();
-            
-            return Task.CompletedTask;
         }
     }
 }

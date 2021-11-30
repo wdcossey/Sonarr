@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Configuration;
@@ -15,7 +14,7 @@ namespace NzbDrone.Core.Update
 
     }
 
-    public class UpdaterConfigProvider : IUpdaterConfigProvider, IHandleAsync<ApplicationStartedEvent>
+    public class UpdaterConfigProvider : IUpdaterConfigProvider, IHandle<ApplicationStartedEvent>
     {
         private ILogger<UpdaterConfigProvider> _logger;
         private IConfigFileProvider _configFileProvider;
@@ -28,7 +27,7 @@ namespace NzbDrone.Core.Update
             _logger = logger;
         }
 
-        public Task HandleAsync(ApplicationStartedEvent message)
+        public void Handle(ApplicationStartedEvent message)
         {
             var updateMechanism = _configFileProvider.UpdateMechanism;
             var packageUpdateMechanism = _deploymentInfoProvider.PackageUpdateMechanism;
@@ -59,8 +58,6 @@ namespace NzbDrone.Core.Update
                     ChangeBranch(packageBranch);
                 }
             }
-            
-            return Task.CompletedTask;
         }
 
         private void ChangeUpdateMechanism(UpdateMechanism updateMechanism)

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Extensions;
@@ -23,10 +22,10 @@ namespace NzbDrone.Core.DataAugmentation.Scene
     }
 
     public class SceneMappingService : ISceneMappingService,
-                                       IHandleAsync<SeriesRefreshStartingEvent>,
-                                       IHandleAsync<SeriesAddedEvent>,
-                                       IHandleAsync<SeriesImportedEvent>,
-                                       IExecuteAsync<UpdateSceneMappingCommand>
+                                       IHandle<SeriesRefreshStartingEvent>,
+                                       IHandle<SeriesAddedEvent>,
+                                       IHandle<SeriesImportedEvent>,
+                                       IExecute<UpdateSceneMappingCommand>
     {
         private readonly ISceneMappingRepository _repository;
         private readonly IEnumerable<ISceneMappingProvider> _sceneMappingProviders;
@@ -274,34 +273,27 @@ namespace NzbDrone.Core.DataAugmentation.Scene
             return title.All(c => c <= 255);
         }
 
-        public Task HandleAsync(SeriesRefreshStartingEvent message)
+        public void Handle(SeriesRefreshStartingEvent message)
         {
             if (message.ManualTrigger && (_findByTvdbIdCache.IsExpired(TimeSpan.FromMinutes(1)) || !_updatedAfterStartup))
                 UpdateMappings();
-            
-            return Task.CompletedTask;
         }
 
-        public Task HandleAsync(SeriesAddedEvent message)
+        public void Handle(SeriesAddedEvent message)
         {
             if (!_updatedAfterStartup)
                 UpdateMappings();
-            
-            return Task.CompletedTask;
         }
 
-        public Task HandleAsync(SeriesImportedEvent message)
+        public void Handle(SeriesImportedEvent message)
         {
             if (!_updatedAfterStartup)
                 UpdateMappings();
-            
-            return Task.CompletedTask;
         }
 
-        public Task ExecuteAsync(UpdateSceneMappingCommand message)
+        public void Execute(UpdateSceneMappingCommand message)
         {
             UpdateMappings();
-            return Task.CompletedTask;
         }
     }
 }

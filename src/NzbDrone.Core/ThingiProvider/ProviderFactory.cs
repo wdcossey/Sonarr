@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using FluentValidation.Results;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Lifecycle;
@@ -10,8 +9,7 @@ using NzbDrone.Core.ThingiProvider.Events;
 
 namespace NzbDrone.Core.ThingiProvider
 {
-    public abstract class ProviderFactory<TProvider, TProviderDefinition> : IProviderFactory<TProvider, TProviderDefinition>, 
-                                                                            IHandleAsync<ApplicationStartedEvent>
+    public abstract class ProviderFactory<TProvider, TProviderDefinition> : IProviderFactory<TProvider, TProviderDefinition>, IHandle<ApplicationStartedEvent>
         where TProviderDefinition : ProviderDefinition, new()
         where TProvider : IProvider
     {
@@ -136,15 +134,13 @@ namespace NzbDrone.Core.ThingiProvider
             return _providers.Select(c => c.GetType()).SingleOrDefault(c => c.Name.Equals(definition.Implementation, StringComparison.InvariantCultureIgnoreCase));
         }
 
-        public Task HandleAsync(ApplicationStartedEvent message)
+        public void Handle(ApplicationStartedEvent message)
         {
             _logger.LogDebug("Initializing Providers. Count {Count}", _providers.Count);
 
             RemoveMissingImplementations();
 
             InitializeProviders();
-            
-            return Task.CompletedTask;
         }
 
         protected virtual void InitializeProviders()

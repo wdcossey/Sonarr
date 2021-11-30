@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Datastore;
@@ -31,13 +30,13 @@ namespace NzbDrone.Core.History
     }
 
     public class HistoryService : IHistoryService,
-                                  IHandleAsync<EpisodeGrabbedEvent>,
-                                  IHandleAsync<EpisodeImportedEvent>,
-                                  IHandleAsync<DownloadFailedEvent>,
-                                  IHandleAsync<EpisodeFileDeletedEvent>,
-                                  IHandleAsync<EpisodeFileRenamedEvent>,
-                                  IHandleAsync<SeriesDeletedEvent>,
-                                  IHandleAsync<DownloadIgnoredEvent>
+                                  IHandle<EpisodeGrabbedEvent>,
+                                  IHandle<EpisodeImportedEvent>,
+                                  IHandle<DownloadFailedEvent>,
+                                  IHandle<EpisodeFileDeletedEvent>,
+                                  IHandle<EpisodeFileRenamedEvent>,
+                                  IHandle<SeriesDeletedEvent>,
+                                  IHandle<DownloadIgnoredEvent>
     {
         private readonly IHistoryRepository _historyRepository;
         private readonly IEpisodeFilePreferredWordCalculator _episodeFilePreferredWordCalculator;
@@ -138,7 +137,7 @@ namespace NzbDrone.Core.History
             return downloadId;
         }
 
-        public Task HandleAsync(EpisodeGrabbedEvent message)
+        public void Handle(EpisodeGrabbedEvent message)
         {
             foreach (var episode in message.Episode.Episodes)
             {
@@ -185,16 +184,12 @@ namespace NzbDrone.Core.History
 
                 _historyRepository.Insert(history);
             }
-            
-            return Task.CompletedTask;
         }
 
-        public Task HandleAsync(EpisodeImportedEvent message)
+        public void Handle(EpisodeImportedEvent message)
         {
             if (!message.NewDownload)
-            {
-                return Task.CompletedTask;
-            }
+                return;
 
             var downloadId = message.DownloadId;
 
@@ -226,11 +221,9 @@ namespace NzbDrone.Core.History
 
                 _historyRepository.Insert(history);
             }
-            
-            return Task.CompletedTask;
         }
 
-        public Task HandleAsync(DownloadFailedEvent message)
+        public void Handle(DownloadFailedEvent message)
         {
             foreach (var episodeId in message.EpisodeIds)
             {
@@ -252,21 +245,18 @@ namespace NzbDrone.Core.History
 
                 _historyRepository.Insert(history);
             }
-            
-            return Task.CompletedTask;
         }
 
-        public Task HandleAsync(EpisodeFileDeletedEvent message)
+        public void Handle(EpisodeFileDeletedEvent message)
         {
-            if (message.Reason == DeleteMediaFileReason.NoLinkedEpisodes)
+            switch (message.Reason)
             {
-                _logger.LogDebug("Removing episode file from DB as part of cleanup routine, not creating history event.");
-                return Task.CompletedTask;
-            }
-            else if (message.Reason == DeleteMediaFileReason.ManualOverride)
-            {
-                _logger.LogDebug("Removing episode file from DB as part of manual override of existing file, not creating history event.");
-                return Task.CompletedTask;
+                case DeleteMediaFileReason.NoLinkedEpisodes:
+                    _logger.LogDebug("Removing episode file from DB as part of cleanup routine, not creating history event.");
+                    return;
+                case DeleteMediaFileReason.ManualOverride:
+                    _logger.LogDebug("Removing episode file from DB as part of manual override of existing file, not creating history event.");
+                    return;
             }
 
             var episodeFilePreferredWordScore = _episodeFilePreferredWordCalculator.Calculate(message.EpisodeFile.Series, message.EpisodeFile);
@@ -289,11 +279,9 @@ namespace NzbDrone.Core.History
 
                 _historyRepository.Insert(history);
             }
-            
-            return Task.CompletedTask;
         }
 
-        public Task HandleAsync(EpisodeFileRenamedEvent message)
+        public void Handle(EpisodeFileRenamedEvent message)
         {
             var sourcePath = message.OriginalPath;
             var sourceRelativePath = message.Series.Path.GetRelativePath(message.OriginalPath);
@@ -320,11 +308,9 @@ namespace NzbDrone.Core.History
 
                 _historyRepository.Insert(history);
             }
-            
-            return Task.CompletedTask;
         }
 
-        public Task HandleAsync(DownloadIgnoredEvent message)
+        public void Handle(DownloadIgnoredEvent message)
         {
             var historyToAdd = new List<EpisodeHistory>();
 
@@ -350,19 +336,12 @@ namespace NzbDrone.Core.History
             }
 
             _historyRepository.InsertMany(historyToAdd);
-            
-            return Task.CompletedTask;
         }
 
-        public Task HandleAsync(SeriesDeletedEvent message)
-        {
-            _historyRepository.DeleteForSeries(message.Series.Id);
-            return Task.CompletedTask;
-        }
+        public void Handle(SeriesDeletedEvent message)
+            => _historyRepository.DeleteForSeries(message.Series.Id);
 
         public List<EpisodeHistory> Since(DateTime date, EpisodeHistoryEventType? eventType)
-        {
-            return _historyRepository.Since(date, eventType);
-        }
+            => _historyRepository.Since(date, eventType);
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Instrumentation.Extensions;
 using NzbDrone.Core.DecisionEngine;
@@ -10,7 +9,7 @@ using NzbDrone.Core.Messaging.Events;
 
 namespace NzbDrone.Core.Indexers
 {
-    public class RssSyncService : IExecuteAsync<RssSyncCommand>
+    public class RssSyncService : IExecute<RssSyncCommand>
     {
         private readonly IIndexerStatusService _indexerStatusService;
         private readonly IIndexerFactory _indexerFactory;
@@ -65,14 +64,12 @@ namespace NzbDrone.Core.Indexers
             return processed;
         }
 
-        public Task ExecuteAsync(RssSyncCommand message)
+        public void Execute(RssSyncCommand message)
         {
             var processed = Sync();
             var grabbedOrPending = processed.Grabbed.Concat(processed.Pending).ToList();
 
             _eventAggregator.PublishEvent(new RssSyncCompleteEvent(processed));
-            
-            return Task.CompletedTask;
         }
     }
 }

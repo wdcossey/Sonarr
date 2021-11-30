@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using NzbDrone.Core.IndexerSearch;
 using NzbDrone.Core.MediaFiles.Events;
 using NzbDrone.Core.Messaging.Commands;
@@ -7,8 +6,8 @@ using NzbDrone.Core.Messaging.Events;
 
 namespace NzbDrone.Core.Tv
 {
-    public class SeriesScannedHandler : IHandleAsync<SeriesScannedEvent>,
-                                        IHandleAsync<SeriesScanSkippedEvent>
+    public class SeriesScannedHandler : IHandle<SeriesScannedEvent>,
+                                        IHandle<SeriesScanSkippedEvent>
     {
         private readonly IEpisodeMonitoredService _episodeMonitoredService;
         private readonly ISeriesService _seriesService;
@@ -68,16 +67,10 @@ namespace NzbDrone.Core.Tv
             _seriesService.RemoveAddOptions(series);
         }
 
-        public Task HandleAsync(SeriesScannedEvent message)
-        {
-            HandleScanEvents(message.Series);
-            return Task.CompletedTask;
-        }
+        public void Handle(SeriesScannedEvent message)
+            => HandleScanEvents(message.Series);
 
-        public Task HandleAsync(SeriesScanSkippedEvent message)
-        {
-            HandleScanEvents(message.Series);
-            return Task.CompletedTask;
-        }
+        public void Handle(SeriesScanSkippedEvent message)
+            => HandleScanEvents(message.Series);
     }
 }

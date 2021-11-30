@@ -2,7 +2,6 @@
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Configuration;
@@ -11,7 +10,7 @@ using NzbDrone.Core.Messaging.Events;
 
 namespace NzbDrone.Core.Security
 {
-    public class X509CertificateValidationService : IHandleAsync<ApplicationStartedEvent>
+    public class X509CertificateValidationService : IHandle<ApplicationStartedEvent>
     {
         private readonly IConfigService _configService;
         private readonly ILogger<X509CertificateValidationService> _logger;
@@ -75,10 +74,9 @@ namespace NzbDrone.Core.Security
             return Dns.GetHostEntry(host).AddressList;
         }
 
-        public Task HandleAsync(ApplicationStartedEvent message)
+        public void Handle(ApplicationStartedEvent message)
         {
             ServicePointManager.ServerCertificateValidationCallback = ShouldByPassValidationError;
-            return Task.CompletedTask;
         }
     }
 }

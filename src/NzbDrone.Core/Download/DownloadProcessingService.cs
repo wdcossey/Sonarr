@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Download.TrackedDownloads;
@@ -9,7 +8,7 @@ using NzbDrone.Core.Messaging.Events;
 
 namespace NzbDrone.Core.Download
 {
-    public class DownloadProcessingService : IExecuteAsync<ProcessMonitoredDownloadsCommand>
+    public class DownloadProcessingService : IExecute<ProcessMonitoredDownloadsCommand>
     {
         private readonly IConfigService _configService;
         private readonly ICompletedDownloadService _completedDownloadService;
@@ -45,7 +44,7 @@ namespace NzbDrone.Core.Download
             }
         }
 
-        public Task ExecuteAsync(ProcessMonitoredDownloadsCommand message)
+        public void Execute(ProcessMonitoredDownloadsCommand message)
         {
             var enableCompletedDownloadHandling = _configService.EnableCompletedDownloadHandling;
             var trackedDownloads = _trackedDownloadService.GetTrackedDownloads()
@@ -75,8 +74,6 @@ namespace NzbDrone.Core.Download
             RemoveCompletedDownloads();
 
             _eventAggregator.PublishEvent(new DownloadsProcessedEvent());
-            
-            return Task.CompletedTask;
         }
     }
 }

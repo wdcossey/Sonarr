@@ -40,8 +40,8 @@ namespace NzbDrone.Core.Tv
     }
 
     public class EpisodeService : IEpisodeService,
-                                  IHandleAsync<EpisodeFileDeletedEvent>,
-                                  IHandleAsync<EpisodeFileAddedEvent>,
+                                  IHandle<EpisodeFileDeletedEvent>,
+                                  IHandle<EpisodeFileAddedEvent>,
                                   IHandleAsync<SeriesDeletedEvent>
     {
         private readonly IEpisodeRepository _episodeRepository;
@@ -217,7 +217,7 @@ namespace NzbDrone.Core.Tv
             return Task.CompletedTask;
         }
 
-        public Task HandleAsync(EpisodeFileDeletedEvent message)
+        public void Handle(EpisodeFileDeletedEvent message)
         {
             foreach (var episode in GetEpisodesByFileId(message.EpisodeFile.Id))
             {
@@ -229,19 +229,15 @@ namespace NzbDrone.Core.Tv
 
                 _episodeRepository.ClearFileId(episode, unmonitorForReason && _configService.AutoUnmonitorPreviouslyDownloadedEpisodes);
             }
-            
-            return Task.CompletedTask;
         }
 
-        public Task HandleAsync(EpisodeFileAddedEvent message)
+        public void Handle(EpisodeFileAddedEvent message)
         {
             foreach (var episode in message.EpisodeFile.Episodes.Value)
             {
                 _episodeRepository.SetFileId(episode, message.EpisodeFile.Id);
                 _logger.LogDebug("Linking [{RelativePath}] > [{Episode}]", message.EpisodeFile.RelativePath, episode);
             }
-            
-            return Task.CompletedTask;
         }
 
         private Episode FindOneByAirDate(int seriesId, string date, int? part)

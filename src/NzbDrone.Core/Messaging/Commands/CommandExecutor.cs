@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NzbDrone.Core.Extensions;
 using NzbDrone.Core.Lifecycle;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.ProgressMessaging;
 
 namespace NzbDrone.Core.Messaging.Commands
 {
-    public class CommandExecutor : IHandleAsync<ApplicationStartedEvent>,
-                                   IHandleAsync<ApplicationShutdownRequested>
+    public class CommandExecutor : IHandle<ApplicationStartedEvent>,
+                                   IHandle<ApplicationShutdownRequested>
     {
         private readonly ILogger<CommandExecutor> _logger;
         private readonly IServiceProvider _serviceProvider;
@@ -32,7 +30,7 @@ namespace NzbDrone.Core.Messaging.Commands
             _eventAggregator = eventAggregator;
         }
 
-        private async Task ExecuteCommandsAsync()
+        private void ExecuteCommands()
         {
             try
             {
@@ -40,7 +38,7 @@ namespace NzbDrone.Core.Messaging.Commands
                 {
                     try
                     {
-                        await ExecuteCommandAsync((dynamic) command.Body, command);
+                        ExecuteCommand((dynamic) command.Body, command);
                     }
                     catch (Exception ex)
                     {
@@ -63,14 +61,14 @@ namespace NzbDrone.Core.Messaging.Commands
             }
         }
 
-        private async Task ExecuteCommandAsync<TCommand>(TCommand command, CommandModel commandModel) where TCommand : Command
+        private void ExecuteCommand<TCommand>(TCommand command, CommandModel commandModel) where TCommand : Command
         {
-            IExecuteAsync<TCommand> handler = null;
+            IExecute<TCommand> handler = null;
 
             try
             {
-                handler = _serviceProvider.GetRequiredService<IExecuteAsync<TCommand>>();
-                
+                handler = _serviceProvider.GetRequiredService<IExecute<TCommand>>();
+
                 _logger.LogTrace("{CommandTypeName} -> {HandlerTypeName}", command.GetType().Name, handler.GetType().Name);
 
                 _commandQueueManager.Start(commandModel);
@@ -78,7 +76,7 @@ namespace NzbDrone.Core.Messaging.Commands
 
                 ProgressMessageContext.CommandModel ??= commandModel;
 
-                await handler.ExecuteAsync(command);
+                handler.Execute(command);
 
                 _commandQueueManager.Complete(commandModel, command.CompletionMessage ?? commandModel.Message);
             }
@@ -120,18 +118,16 @@ namespace NzbDrone.Core.Messaging.Commands
             }
         }
 
-        public Task HandleAsync(ApplicationStartedEvent message)
+        public void Handle(ApplicationStartedEvent message)
         {
             _cancellationTokenSource = new CancellationTokenSource();
-            
+
             for (int i = 0; i < Math.Max(THREAD_LIMIT, Environment.ProcessorCount) ; i++)
             {
-                Task.Run(ExecuteCommandsAsync).Forget();
-                //var thread = new Thread(() => ExecuteCommandsAsync());
-                //thread.Start();
+                var thread = new Thread(ExecuteCommands);
+                thread.Start();
             }
-            
-            return Task.CompletedTask;
+
             /*for (int i = 0; i < THREAD_LIMIT; i++)
             {
                 var thread = new Thread(ExecuteCommands);
@@ -139,11 +135,10 @@ namespace NzbDrone.Core.Messaging.Commands
             }*/
         }
 
-        public Task HandleAsync(ApplicationShutdownRequested message)
+        public void Handle(ApplicationShutdownRequested message)
         {
             _logger.LogInformation("Shutting down task execution");
             _cancellationTokenSource.Cancel(true);
-            return Task.CompletedTask;
         }
     }
 }

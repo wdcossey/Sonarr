@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Download.TrackedDownloads;
@@ -7,9 +6,9 @@ using NzbDrone.Core.Messaging.Events;
 
 namespace NzbDrone.Core.Download
 {
-    public class DownloadEventHub : IHandleAsync<DownloadFailedEvent>,
-                                    IHandleAsync<DownloadCompletedEvent>,
-                                    IHandleAsync<DownloadCanBeRemovedEvent>
+    public class DownloadEventHub : IHandle<DownloadFailedEvent>,
+                                    IHandle<DownloadCompletedEvent>,
+                                    IHandle<DownloadCanBeRemovedEvent>
     {
         private readonly IConfigService _configService;
         private readonly IProvideDownloadClient _downloadClientProvider;
@@ -24,7 +23,7 @@ namespace NzbDrone.Core.Download
             _logger = logger;
         }
 
-        public Task HandleAsync(DownloadFailedEvent message)
+        public void Handle(DownloadFailedEvent message)
         {
             var trackedDownload = message.TrackedDownload;
 
@@ -32,23 +31,19 @@ namespace NzbDrone.Core.Download
                 message.TrackedDownload.DownloadItem.Removed ||
                 !trackedDownload.DownloadItem.CanBeRemoved)
             {
-                return Task.CompletedTask;
+                return;
             }
 
             var downloadClient = _downloadClientProvider.Get(message.TrackedDownload.DownloadClient);
             var definition = downloadClient.Definition as DownloadClientDefinition;
 
-            if (!definition.RemoveFailedDownloads)
-            {
-                return Task.CompletedTask;
-            }
+            if (definition?.RemoveCompletedDownloads != true)
+                return;
 
             RemoveFromDownloadClient(trackedDownload, downloadClient);
-            
-            return Task.CompletedTask;
         }
 
-        public Task HandleAsync(DownloadCompletedEvent message)
+        public void Handle(DownloadCompletedEvent message)
         {
             var trackedDownload = message.TrackedDownload;
             var downloadClient = _downloadClientProvider.Get(trackedDownload.DownloadClient);
@@ -60,20 +55,18 @@ namespace NzbDrone.Core.Download
                 !trackedDownload.DownloadItem.CanBeRemoved ||
                 trackedDownload.DownloadItem.Status == DownloadItemStatus.Downloading)
             {
-                return Task.CompletedTask;
+                return;
             }
 
             if (definition?.RemoveCompletedDownloads != true)
             {
-                return Task.CompletedTask;
+                return;
             }
 
             RemoveFromDownloadClient(message.TrackedDownload, downloadClient);
-            
-            return Task.CompletedTask;
         }
 
-        public Task HandleAsync(DownloadCanBeRemovedEvent message)
+        public void Handle(DownloadCanBeRemovedEvent message)
         {
             var trackedDownload = message.TrackedDownload;
             var downloadClient = _downloadClientProvider.Get(trackedDownload.DownloadClient);
@@ -83,12 +76,10 @@ namespace NzbDrone.Core.Download
                 !trackedDownload.DownloadItem.CanBeRemoved ||
                 definition?.RemoveCompletedDownloads != true)
             {
-                return Task.CompletedTask;
+                return;
             }
 
             RemoveFromDownloadClient(message.TrackedDownload, downloadClient);
-            
-            return Task.CompletedTask;
         }
 
         private void RemoveFromDownloadClient(TrackedDownload trackedDownload, IDownloadClient downloadClient)

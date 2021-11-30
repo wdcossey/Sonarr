@@ -20,13 +20,13 @@ namespace NzbDrone.Core.Messaging.Events
 
         private class EventSubscribers<TEvent> where TEvent : class, IEvent
         {
-            public IHandleAsync<TEvent>[] _syncHandlers;
+            public IHandle<TEvent>[] _syncHandlers;
             public IHandleAsync<TEvent>[] _asyncHandlers;
             public IHandleAsync<IEvent>[] _globalHandlers;
 
             public EventSubscribers(IServiceProvider serviceProvider)
             {
-                _syncHandlers = serviceProvider.GetServices<IHandleAsync<TEvent>>()
+                _syncHandlers = serviceProvider.GetServices<IHandle<TEvent>>()
                                               .OrderBy(GetEventHandleOrder)
                                               .ToArray();
 
@@ -89,7 +89,7 @@ namespace NzbDrone.Core.Messaging.Events
                 try
                 {
                     _logger.LogTrace("{EventName} -> {TypeName}", eventName, handler.GetType().Name);
-                    handler.HandleAsync(@event);
+                    handler.Handle(@event);
                     _logger.LogTrace("{EventName} <- {TypeName}", eventName, handler.GetType().Name);
                 }
                 catch (Exception e)
@@ -133,9 +133,9 @@ namespace NzbDrone.Core.Messaging.Events
             return $"{eventType.Name.Remove(eventType.Name.IndexOf('`'))}<{eventType.GetGenericArguments()[0].Name}>";
         }
 
-        internal static int GetEventHandleOrder<TEvent>(IHandleAsync<TEvent> eventHandler) where TEvent : class, IEvent
+        internal static int GetEventHandleOrder<TEvent>(IHandle<TEvent> eventHandler) where TEvent : class, IEvent
         {
-            var method = eventHandler.GetType().GetMethod(nameof(eventHandler.HandleAsync), new Type[] {typeof(TEvent)});
+            var method = eventHandler.GetType().GetMethod(nameof(eventHandler.Handle), new Type[] {typeof(TEvent)});
 
             if (method == null)
             {

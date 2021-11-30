@@ -38,7 +38,7 @@ namespace NzbDrone.SysTray
             _trayMenu.Items.Add("-");
             _trayMenu.Items.Add("Exit", null, OnExit);
 
-            _trayIcon.Text = string.Format("Sonarr - {0}", BuildInfo.Version);
+            _trayIcon.Text = $@"Sonarr - {BuildInfo.Version}";
             _trayIcon.Icon = Properties.Resources.NzbDroneIcon;
 
             _trayIcon.ContextMenuStrip = _trayMenu;

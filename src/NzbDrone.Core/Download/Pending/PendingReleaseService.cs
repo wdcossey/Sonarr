@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Crypto;
 using NzbDrone.Common.Extensions;
@@ -32,9 +31,9 @@ namespace NzbDrone.Core.Download.Pending
     }
 
     public class PendingReleaseService : IPendingReleaseService,
-                                         IHandleAsync<SeriesDeletedEvent>,
-                                         IHandleAsync<EpisodeGrabbedEvent>,
-                                         IHandleAsync<RssSyncCompleteEvent>
+                                         IHandle<SeriesDeletedEvent>,
+                                         IHandle<EpisodeGrabbedEvent>,
+                                         IHandle<RssSyncCompleteEvent>
     {
         private readonly IIndexerStatusService _indexerStatusService;
         private readonly IPendingReleaseRepository _repository;
@@ -425,26 +424,14 @@ namespace NzbDrone.Core.Download.Pending
             return 1;
         }
 
-        public Task HandleAsync(SeriesDeletedEvent message)
-        {
-            _repository.DeleteBySeriesId(message.Series.Id);
-            
-            return Task.CompletedTask;
-        }
+        public void Handle(SeriesDeletedEvent message)
+            => _repository.DeleteBySeriesId(message.Series.Id);
 
-        public Task HandleAsync(EpisodeGrabbedEvent message)
-        {
-            RemoveGrabbed(message.Episode);
-            
-            return Task.CompletedTask;
-        }
+        public void Handle(EpisodeGrabbedEvent message)
+            => RemoveGrabbed(message.Episode);
 
-        public Task HandleAsync(RssSyncCompleteEvent message)
-        {
-            RemoveRejected(message.ProcessedDecisions.Rejected);
-            
-            return Task.CompletedTask;
-        }
+        public void Handle(RssSyncCompleteEvent message)
+            => RemoveRejected(message.ProcessedDecisions.Rejected);
 
         private static Func<PendingRelease, bool> MatchingReleasePredicate(ReleaseInfo release)
         {

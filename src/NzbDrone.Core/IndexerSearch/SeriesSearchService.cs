@@ -1,5 +1,4 @@
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Instrumentation.Extensions;
 using NzbDrone.Core.Download;
@@ -8,7 +7,7 @@ using NzbDrone.Core.Tv;
 
 namespace NzbDrone.Core.IndexerSearch
 {
-    public class SeriesSearchService : IExecuteAsync<SeriesSearchCommand>
+    public class SeriesSearchService : IExecute<SeriesSearchCommand>
     {
         private readonly ISeriesService _seriesService;
         private readonly ISearchForReleases _releaseSearchService;
@@ -26,7 +25,7 @@ namespace NzbDrone.Core.IndexerSearch
             _logger = logger;
         }
 
-        public Task ExecuteAsync(SeriesSearchCommand message)
+        public void Execute(SeriesSearchCommand message)
         {
             var series = _seriesService.GetSeries(message.SeriesId);
 
@@ -45,8 +44,6 @@ namespace NzbDrone.Core.IndexerSearch
             }
 
             _logger.ProgressInfo("Series search completed. {0} reports downloaded.", downloadedCount);
-            
-            return Task.CompletedTask;
         }
     }
 }

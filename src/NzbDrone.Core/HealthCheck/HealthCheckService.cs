@@ -17,7 +17,7 @@ namespace NzbDrone.Core.HealthCheck
     }
 
     public class HealthCheckService : IHealthCheckService,
-                                      IExecuteAsync<CheckHealthCommand>,
+                                      IExecute<CheckHealthCommand>,
                                       IHandleAsync<ApplicationStartedEvent>,
                                       IHandleAsync<IEvent>
     {
@@ -90,13 +90,11 @@ namespace NzbDrone.Core.HealthCheck
             _eventAggregator.PublishEvent(new HealthCheckCompleteEvent());
         }
 
-        public Task ExecuteAsync(CheckHealthCommand message)
+        public void Execute(CheckHealthCommand message)
         {
-            PerformHealthCheck(message.Trigger == CommandTrigger.Manual 
-                ? _healthChecks 
+            PerformHealthCheck(message.Trigger == CommandTrigger.Manual
+                ? _healthChecks
                 : _scheduledHealthChecks);
-            
-            return Task.CompletedTask;
         }
 
         public Task HandleAsync(ApplicationStartedEvent message)
@@ -108,7 +106,7 @@ namespace NzbDrone.Core.HealthCheck
         public Task HandleAsync(IEvent message)
         {
             if (message is HealthCheckCompleteEvent)
-                return Task.CompletedTask;;
+                return Task.CompletedTask;
 
             if (!_eventDrivenHealthChecks.TryGetValue(message.GetType(), out var checks))
                 return Task.CompletedTask;;
@@ -121,16 +119,15 @@ namespace NzbDrone.Core.HealthCheck
                 var healthCheckType = eventDrivenHealthCheck.HealthCheck.GetType();
                 var previouslyFailed = healthCheckResults.Any(r => r.Source == healthCheckType);
 
-                if (!eventDrivenHealthCheck.ShouldExecute(message, previouslyFailed)) 
+                if (!eventDrivenHealthCheck.ShouldExecute(message, previouslyFailed))
                     continue;
-                
+
                 filteredChecks.Add(eventDrivenHealthCheck.HealthCheck);
             }
 
             // TODO: Add debounce
 
             PerformHealthCheck(filteredChecks.ToArray());
-            
             return Task.CompletedTask;
         }
     }

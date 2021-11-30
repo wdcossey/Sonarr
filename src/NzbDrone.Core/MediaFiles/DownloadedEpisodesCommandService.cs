@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
@@ -14,7 +13,7 @@ using NzbDrone.Core.Messaging.Commands;
 
 namespace NzbDrone.Core.MediaFiles
 {
-    public class DownloadedEpisodesCommandService : IExecuteAsync<DownloadedEpisodesScanCommand>
+    public class DownloadedEpisodesCommandService : IExecute<DownloadedEpisodesScanCommand>
     {
         private readonly IDownloadedEpisodesImportService _downloadedEpisodesImportService;
         private readonly ITrackedDownloadService _trackedDownloadService;
@@ -64,7 +63,7 @@ namespace NzbDrone.Core.MediaFiles
             return _downloadedEpisodesImportService.ProcessPath(message.Path, message.ImportMode);
         }
 
-        public Task ExecuteAsync(DownloadedEpisodesScanCommand message)
+        public void Execute(DownloadedEpisodesScanCommand message)
         {
             List<ImportResult> importResults;
 
@@ -74,7 +73,7 @@ namespace NzbDrone.Core.MediaFiles
             }
             else
             {
-                throw new ArgumentException("A path must be provided", "path");
+                throw new ArgumentException("A path must be provided", nameof(DownloadedEpisodesScanCommand.Path));
             }
 
             if (importResults == null || importResults.All(v => v.Result != ImportResultType.Imported))
@@ -82,8 +81,6 @@ namespace NzbDrone.Core.MediaFiles
                 // Atm we don't report it as a command failure, coz that would cause the download to be failed.
                 _logger.ProgressDebug("Failed to import");
             }
-            
-            return Task.CompletedTask;
         }
     }
 }

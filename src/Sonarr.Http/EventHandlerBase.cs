@@ -16,7 +16,7 @@ namespace Sonarr.Http
 
         protected EventHandlerBase(IHubContext<SonarrHub, ISonarrHub> hubContext)
             => HubContext = hubContext;
-        
+
         protected Task BroadcastResourceChange(ModelAction action)
         {
             if (GetType().Namespace?.Contains("V3") != true)
@@ -37,21 +37,19 @@ namespace Sonarr.Http
         }
     }
 
-    public abstract class EventHandlerBase<TResource, TModel> : EventHandlerBase<TResource>, IHandleAsync<ModelEvent<TModel>>
+    public abstract class EventHandlerBase<TResource, TModel> : EventHandlerBase<TResource>, IHandle<ModelEvent<TModel>>
         where TResource : RestResource, new()
         where TModel : ModelBase, new()
     {
         protected EventHandlerBase(IHubContext<SonarrHub, ISonarrHub> hubContext)
             : base(hubContext) { }
 
-        public Task HandleAsync(ModelEvent<TModel> message)
+        public void Handle(ModelEvent<TModel> message)
         {
             if (message.Action is ModelAction.Deleted or ModelAction.Sync)
                 BroadcastResourceChange(message.Action);
 
             BroadcastResourceChange(message.Action, message.ModelId);
-            
-            return Task.CompletedTask;
         }
 
         protected abstract TResource GetResourceById(int id);
@@ -59,7 +57,10 @@ namespace Sonarr.Http
         private void BroadcastResourceChange(ModelAction action, int id)
         {
             if (action == ModelAction.Deleted)
-                BroadcastResourceChange(action, new TResource {Id = id});
+            {
+                BroadcastResourceChange(action, new TResource { Id = id });
+                return;
+            }
 
             BroadcastResourceChange(action, GetResourceById(id));
         }

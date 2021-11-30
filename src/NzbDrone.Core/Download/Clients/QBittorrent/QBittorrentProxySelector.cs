@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Cache;
 
-using NzbDrone.Common.Http;
-
-
 namespace NzbDrone.Core.Download.Clients.QBittorrent
 {
     public interface IQBittorrentProxy
