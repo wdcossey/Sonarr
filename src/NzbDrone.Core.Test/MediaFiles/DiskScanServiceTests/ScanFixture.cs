@@ -46,6 +46,10 @@ namespace NzbDrone.Core.Test.MediaFiles.DiskScanServiceTests
             Mocker.GetMock<IRootFolderService>()
                   .Setup(s => s.GetBestRootFolderPath(It.IsAny<string>()))
                   .Returns(_rootFolder);
+
+            Mocker.GetMock<IMediaFileService>()
+                  .Setup(s => s.GetFilesBySeries(It.IsAny<int>()))
+                  .Returns(new List<EpisodeFile>());
         }
 
         private void GivenRootFolder(params string[] subfolders)
@@ -118,7 +122,7 @@ namespace NzbDrone.Core.Test.MediaFiles.DiskScanServiceTests
                   .Verify(v => v.Clean(It.IsAny<Series>(), It.IsAny<List<string>>()), Times.Never());
 
             Mocker.GetMock<IMakeImportDecision>()
-                  .Verify(v => v.GetImportDecisions(It.IsAny<List<string>>(), _series), Times.Never());
+                  .Verify(v => v.GetImportDecisions(It.IsAny<List<string>>(), _series, false), Times.Never());
         }
 
         [Test]
@@ -165,7 +169,7 @@ namespace NzbDrone.Core.Test.MediaFiles.DiskScanServiceTests
                   .Verify(v => v.Clean(It.IsAny<Series>(), It.IsAny<List<string>>()), Times.Once());
 
             Mocker.GetMock<IMakeImportDecision>()
-                  .Verify(v => v.GetImportDecisions(It.IsAny<List<string>>(), _series), Times.Never());
+                  .Verify(v => v.GetImportDecisions(It.IsAny<List<string>>(), _series, false), Times.Never());
         }
 
         [Test]
@@ -183,7 +187,7 @@ namespace NzbDrone.Core.Test.MediaFiles.DiskScanServiceTests
                   .Verify(v => v.Clean(It.IsAny<Series>(), It.IsAny<List<string>>()), Times.Once());
 
             Mocker.GetMock<IMakeImportDecision>()
-                  .Verify(v => v.GetImportDecisions(It.IsAny<List<string>>(), _series), Times.Never());
+                  .Verify(v => v.GetImportDecisions(It.IsAny<List<string>>(), _series, false), Times.Never());
         }
 
         [Test]
@@ -200,7 +204,7 @@ namespace NzbDrone.Core.Test.MediaFiles.DiskScanServiceTests
             Subject.Scan(_series);
 
             Mocker.GetMock<IMakeImportDecision>()
-                  .Verify(v => v.GetImportDecisions(It.Is<List<string>>(l => l.Count == 2), _series), Times.Once());
+                  .Verify(v => v.GetImportDecisions(It.Is<List<string>>(l => l.Count == 2), _series, false), Times.Once());
         }
 
         [Test]
@@ -223,7 +227,7 @@ namespace NzbDrone.Core.Test.MediaFiles.DiskScanServiceTests
                   .Verify(v => v.GetFiles(It.IsAny<string>(), It.IsAny<SearchOption>()), Times.Once());
 
             Mocker.GetMock<IMakeImportDecision>()
-                  .Verify(v => v.GetImportDecisions(It.Is<List<string>>(l => l.Count == 1), _series), Times.Once());
+                  .Verify(v => v.GetImportDecisions(It.Is<List<string>>(l => l.Count == 1), _series, false), Times.Once());
         }
 
         [Test]
@@ -241,7 +245,7 @@ namespace NzbDrone.Core.Test.MediaFiles.DiskScanServiceTests
             Subject.Scan(_series);
 
             Mocker.GetMock<IMakeImportDecision>()
-                  .Verify(v => v.GetImportDecisions(It.Is<List<string>>(l => l.Count == 1), _series), Times.Once());
+                  .Verify(v => v.GetImportDecisions(It.Is<List<string>>(l => l.Count == 1), _series, false), Times.Once());
         }
 
         [Test]
@@ -264,7 +268,7 @@ namespace NzbDrone.Core.Test.MediaFiles.DiskScanServiceTests
             Subject.Scan(_series);
 
             Mocker.GetMock<IMakeImportDecision>()
-                  .Verify(v => v.GetImportDecisions(It.Is<List<string>>(l => l.Count == 4), _series), Times.Once());
+                  .Verify(v => v.GetImportDecisions(It.Is<List<string>>(l => l.Count == 4), _series, false), Times.Once());
         }
 
         [Test]
@@ -283,7 +287,7 @@ namespace NzbDrone.Core.Test.MediaFiles.DiskScanServiceTests
             Subject.Scan(_series);
 
             Mocker.GetMock<IMakeImportDecision>()
-                  .Verify(v => v.GetImportDecisions(It.Is<List<string>>(l => l.Count == 1), _series), Times.Once());
+                  .Verify(v => v.GetImportDecisions(It.Is<List<string>>(l => l.Count == 1), _series, false), Times.Once());
         }
 
         [Test]
@@ -299,7 +303,7 @@ namespace NzbDrone.Core.Test.MediaFiles.DiskScanServiceTests
             Subject.Scan(_series);
 
             Mocker.GetMock<IMakeImportDecision>()
-                  .Verify(v => v.GetImportDecisions(It.Is<List<string>>(l => l.Count == 1), _series), Times.Once());
+                  .Verify(v => v.GetImportDecisions(It.Is<List<string>>(l => l.Count == 1), _series, false), Times.Once());
         }
 
         [Test]
@@ -319,7 +323,7 @@ namespace NzbDrone.Core.Test.MediaFiles.DiskScanServiceTests
             Subject.Scan(_series);
 
             Mocker.GetMock<IMakeImportDecision>()
-                  .Verify(v => v.GetImportDecisions(It.Is<List<string>>(l => l.Count == 1), _series), Times.Once());
+                  .Verify(v => v.GetImportDecisions(It.Is<List<string>>(l => l.Count == 1), _series, false), Times.Once());
         }
 
         [Test]
@@ -336,7 +340,7 @@ namespace NzbDrone.Core.Test.MediaFiles.DiskScanServiceTests
             Subject.Scan(_series);
 
             Mocker.GetMock<IMakeImportDecision>()
-                  .Verify(v => v.GetImportDecisions(It.Is<List<string>>(l => l.Count == 1), _series), Times.Once());
+                  .Verify(v => v.GetImportDecisions(It.Is<List<string>>(l => l.Count == 1), _series, false), Times.Once());
         }
 
         [Test]
@@ -353,7 +357,7 @@ namespace NzbDrone.Core.Test.MediaFiles.DiskScanServiceTests
             Subject.Scan(_series);
 
             Mocker.GetMock<IMakeImportDecision>()
-                  .Verify(v => v.GetImportDecisions(It.Is<List<string>>(l => l.Count == 1), _series), Times.Once());
+                  .Verify(v => v.GetImportDecisions(It.Is<List<string>>(l => l.Count == 1), _series, false), Times.Once());
         }
 
         [Test]
@@ -372,7 +376,7 @@ namespace NzbDrone.Core.Test.MediaFiles.DiskScanServiceTests
             Subject.Scan(_series);
 
             Mocker.GetMock<IMakeImportDecision>()
-                  .Verify(v => v.GetImportDecisions(It.Is<List<string>>(l => l.Count == 2), _series), Times.Once());
+                  .Verify(v => v.GetImportDecisions(It.Is<List<string>>(l => l.Count == 2), _series, false), Times.Once());
         }
 
         [Test]
@@ -389,7 +393,7 @@ namespace NzbDrone.Core.Test.MediaFiles.DiskScanServiceTests
             Subject.Scan(_series);
 
             Mocker.GetMock<IMakeImportDecision>()
-                  .Verify(v => v.GetImportDecisions(It.Is<List<string>>(l => l.Count == 1), _series), Times.Once());
+                  .Verify(v => v.GetImportDecisions(It.Is<List<string>>(l => l.Count == 1), _series, false), Times.Once());
         }
     }
 }

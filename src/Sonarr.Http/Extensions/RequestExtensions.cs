@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Net;
 using Microsoft.AspNetCore.Http;
-//using Nancy;
 using NzbDrone.Common.Extensions;
 
 namespace Sonarr.Http.Extensions
@@ -15,9 +14,12 @@ namespace Sonarr.Http.Extensions
         public static bool IsFeedRequest(this HttpRequest request)
             => request.Path.StartsWithSegments("/feed", StringComparison.InvariantCultureIgnoreCase);
         
+        public static bool IsPingRequest(this HttpRequest request)
+            => request.Path.StartsWithSegments("/ping", StringComparison.InvariantCultureIgnoreCase);
+
         public static bool IsSignalRRequest(this HttpRequest request)
             => request.Path.StartsWithSegments("/hubs", StringComparison.InvariantCultureIgnoreCase);
-
+        
         public static bool IsLocalRequest(this HttpRequest request)
         {
             var remoteIpAddress = request.HttpContext.Connection.RemoteIpAddress?.ToString();

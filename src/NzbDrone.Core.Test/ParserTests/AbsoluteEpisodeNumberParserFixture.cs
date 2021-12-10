@@ -107,6 +107,8 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("[Chihiro] Anime Title 300-nen, With Even More Title 02 [720p Hi10P AAC][031FA533]", "Anime Title 300-nen, With Even More Title", 2, 0, 0)]
         [TestCase("[BakeSubs] 86 - 01 [1080p][D40A9E55].mkv", "86", 1, 0, 0)]
         [TestCase("Anime Title the Final - 09 (2021) [SubsPlease] [WEBRip] [HD 1080p]", "Anime Title the Final", 9, 0, 0)]
+        [TestCase("Anime Title S21 999", "Anime Title S21", 999, 0, 0)]
+        [TestCase("Anime Title S21 1000", "Anime Title S21", 1000, 0, 0)]
         //[TestCase("", "", 0, 0, 0)]
         public void should_parse_absolute_numbers(string postTitle, string title, int absoluteEpisodeNumber, int seasonNumber, int episodeNumber)
         {
@@ -164,6 +166,9 @@ namespace NzbDrone.Core.Test.ParserTests
         }
 
         [TestCase("[Vivid] Some Anime Show S01 [Web][MKV][h264 10-bit][1080p][AAC 2.0]", "Some Anime Show", 1)]
+        [TestCase("Anime, Title? | Japanse Anime, Title? [Season 1 + EXTRA] [BD 1080p x265 HEVC OPUS] [Dual-Audio]", "Anime, Title | Japanse Anime, Title", 1)]
+        [TestCase("[Judas] Japanse Anime, Title (Anime, Title?) (Season 1) [1080p][HEVC x265 10bit][Multi-Subs] (Batch)", "Japanse Anime, Title (Anime, Title)", 1)]
+        [TestCase("[Judas] Japanse Anime, Title (Anime, Title?) (Season 1) [1080p][HEVC x265 10bit][Multi-Subs] (Batch)", "Japanse Anime, Title (Anime, Title)", 1)]
         public void should_parse_anime_season_packs(string postTitle, string title, int seasonNumber)
         {
             var result = Parser.Parser.ParseTitle(postTitle);
