@@ -27,14 +27,11 @@ namespace Sonarr.Api.V3.ManualImport
             [FromQuery] int? seriesId = null,
             [FromQuery] int? seasonNumber = null)
         {
-            var value = seriesId.HasValue 
-                ? _manualImportService.GetMediaFiles(seriesId.Value, seasonNumber).ToResource().Select(AddQualityWeight);
-                : _manualImportService.GetMediaFiles(folder, downloadId, seriesId, filterExistingFiles).ToResource().Select(AddQualityWeight);
+            var manualImportItems = seriesId.HasValue 
+                ? _manualImportService.GetMediaFiles(seriesId.Value, seasonNumber)
+                : _manualImportService.GetMediaFiles(folder, downloadId, seriesId, filterExistingFiles);
             
-            //TODO: Post Merge fix!
-            //var value = _manualImportService.GetMediaFiles(folder, downloadId, seriesId, filterExistingFiles)
-            //    .ToResource().Select(AddQualityWeight);
-            //return Ok(value);
+            return Ok(manualImportItems.ToResource().Select(AddQualityWeight));
         }
 
         [HttpPost]

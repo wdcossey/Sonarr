@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using Microsoft.AspNetCore.Http;
@@ -77,7 +78,7 @@ namespace Sonarr.Api.V3.EpisodeFiles
 
             return Ok(new object());
         }
-
+        
         [ProducesResponseType(typeof(EpisodeFileResource), StatusCodes.Status202Accepted)]
         [HttpPut]
         [HttpPut("{id:int?}")]
@@ -96,9 +97,10 @@ namespace Sonarr.Api.V3.EpisodeFiles
             return Accepted(_mediaFileService.Update(episodeFile).ToResource(series, _upgradableSpecification));
         }
 
+        [Obsolete("Deprecated: Use SetPropertiesBulk instead")]
         [ProducesResponseType(typeof(List<EpisodeFileResource>), StatusCodes.Status202Accepted)]
         [HttpPut("editor")]
-        public IActionResult EditAllAsync([FromBody] EpisodeFileListResource resource)
+        public IActionResult SetPropertiesEditor([FromBody] EpisodeFileListResource resource)
         {
             var episodeFiles = _mediaFileService
                 .GetFiles(resource.EpisodeFileIds)
@@ -125,9 +127,47 @@ namespace Sonarr.Api.V3.EpisodeFiles
 
             return Accepted(episodeFiles.ConvertAll(f => f.ToResource(series, _upgradableSpecification)));
         }
-
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        
+        [ProducesResponseType(typeof(List<EpisodeFileResource>), StatusCodes.Status202Accepted)]
         [HttpPut("bulk")]
+        public IActionResult SetPropertiesBulk(int? id, [FromBody] List<EpisodeFileResource> resource)
+        {
+            var episodeFiles = _mediaFileService.GetFiles(resource.Select(r => r.Id));
+
+            foreach (var episodeFile in episodeFiles)
+            {
+                var resourceEpisodeFile = resource.Single(r => r.Id == episodeFile.Id);
+
+                if (resourceEpisodeFile.Language != null)
+                {
+                    episodeFile.Language = resourceEpisodeFile.Language;
+                }
+
+                if (resourceEpisodeFile.Quality != null)
+                {
+                    episodeFile.Quality = resourceEpisodeFile.Quality;
+                }
+
+                if (resourceEpisodeFile.SceneName != null && SceneChecker.IsSceneTitle(resourceEpisodeFile.SceneName))
+                {
+                    episodeFile.SceneName = resourceEpisodeFile.SceneName;
+                }
+
+                if (resourceEpisodeFile.ReleaseGroup != null)
+                {
+                    episodeFile.ReleaseGroup = resourceEpisodeFile.ReleaseGroup;
+                }
+            }
+
+            _mediaFileService.Update(episodeFiles);
+
+            var series = _seriesService.GetSeries(episodeFiles.First().SeriesId);
+
+            return Accepted(episodeFiles.ConvertAll(f => f.ToResource(series, _upgradableSpecification)));
+        }
+        
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [HttpDelete("bulk")]
         public IActionResult DeleteAllAsync([FromBody] EpisodeFileListResource resource)
         {
             var episodeFiles = _mediaFileService.GetFiles(resource.EpisodeFileIds);

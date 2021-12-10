@@ -167,7 +167,7 @@ namespace NzbDrone.Core.MediaFiles
             }
 
             fileInfoStopwatch.Stop();
-            _logger.Trace("Reprocessing existing files complete for: {0} [{1}]", series, decisionsStopwatch.Elapsed);
+            _logger.LogTrace("Reprocessing existing files complete for: {Series} [{Elapsed}]", series, decisionsStopwatch.Elapsed);
 
             RemoveEmptySeriesFolder(series.Path);
             CompletedScanning(series);

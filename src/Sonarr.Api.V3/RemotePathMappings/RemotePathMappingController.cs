@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.RemotePathMappings;
 using NzbDrone.Core.Validation.Paths;
-using Sonarr.Api.V3;
 using Sonarr.Api.V3.RemotePathMappings;
 using Sonarr.Http.Attributes;
 
