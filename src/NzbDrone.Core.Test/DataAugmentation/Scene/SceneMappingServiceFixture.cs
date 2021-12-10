@@ -8,6 +8,7 @@ using NzbDrone.Core.DataAugmentation.Scene;
 using NzbDrone.Core.Test.Framework;
 using NzbDrone.Test.Common;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 
 namespace NzbDrone.Core.Test.DataAugmentation.Scene
@@ -76,7 +77,7 @@ namespace NzbDrone.Core.Test.DataAugmentation.Scene
 
             AssertNoUpdate();
 
-            ExceptionVerification.ExpectedErrors(1);
+            Mocker.GetMock<ILogger<SceneMappingService>>().ExpectedErrors(Times.Once);
         }
 
         [Test]
@@ -90,7 +91,7 @@ namespace NzbDrone.Core.Test.DataAugmentation.Scene
 
             AssertNoUpdate();
 
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger<SceneMappingService>>().ExpectedWarns(Times.Once);
         }
 
         [Test]
@@ -154,7 +155,7 @@ namespace NzbDrone.Core.Test.DataAugmentation.Scene
             Subject.Execute(new UpdateSceneMappingCommand());
 
             Mocker.GetMock<ISceneMappingRepository>().Verify(c => c.InsertMany(It.Is<IList<SceneMapping>>(m => !m.Any(s => s.Title.IsNullOrWhiteSpace()))), Times.Once());
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger<SceneMappingService>>().ExpectedWarns(Times.Once);
         }
 
         [Test]
@@ -175,7 +176,7 @@ namespace NzbDrone.Core.Test.DataAugmentation.Scene
             Subject.Execute(new UpdateSceneMappingCommand());
 
             Mocker.GetMock<ISceneMappingRepository>().Verify(c => c.InsertMany(It.Is<IList<SceneMapping>>(m => !m.Any(s => s. SearchTerm.IsNullOrWhiteSpace()))), Times.Once());
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger<SceneMappingService>>().ExpectedWarns(Times.Once);
         }
 
 

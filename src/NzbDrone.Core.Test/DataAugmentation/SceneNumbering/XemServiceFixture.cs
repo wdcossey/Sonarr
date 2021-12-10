@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using FizzWare.NBuilder;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using NzbDrone.Common.Extensions;
 using NzbDrone.Core.DataAugmentation.Xem;
 using NzbDrone.Core.DataAugmentation.Xem.Model;
 using NzbDrone.Core.Test.Framework;
@@ -145,7 +145,7 @@ namespace NzbDrone.Core.Test.DataAugmentation.SceneNumbering
             Mocker.GetMock<ISeriesService>()
                   .Verify(v => v.UpdateSeries(It.IsAny<Series>(), It.IsAny<bool>(), It.IsAny<bool>()), Times.Never());
 
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger<XemService>>().ExpectedWarns(Times.Once);
         }
 
         [Test]
@@ -162,7 +162,7 @@ namespace NzbDrone.Core.Test.DataAugmentation.SceneNumbering
             Mocker.GetMock<ISeriesService>()
                   .Verify(v => v.UpdateSeries(It.IsAny<Series>(), It.IsAny<bool>(), It.IsAny<bool>()), Times.Never());
 
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger<XemService>>().ExpectedWarns(Times.Once);
         }
 
         [Test]

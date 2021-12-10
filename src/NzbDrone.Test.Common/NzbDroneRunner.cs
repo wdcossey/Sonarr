@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Xml.Linq;
-using NLog;
+using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Processes;
@@ -22,9 +22,9 @@ namespace NzbDrone.Test.Common
         public string AppData { get; private set; }
         public string ApiKey { get; private set; }
 
-        public NzbDroneRunner(Logger logger, int port = 8989)
+        public NzbDroneRunner(ILoggerFactory loggerFactory, int port = 8989)
         {
-            _processProvider = new ProcessProvider(logger);
+            _processProvider = new ProcessProvider(loggerFactory);
             _restClient = new RestClient("http://localhost:8989/api");
         }
 

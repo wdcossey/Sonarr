@@ -32,7 +32,7 @@ namespace NzbDrone.Core.Test.IndexerTests.OmgwtfnzbsTests
         {
             var recentFeed = ReadAllText(@"Files/Indexers/Omgwtfnzbs/Omgwtfnzbs.xml");
 
-            Mocker.GetMock<IHttpClient>()
+            Mocker.GetMock<IHttpClient<Omgwtfnzbs>>()
                 .Setup(o => o.Execute(It.Is<HttpRequest>(v => v.Method == HttpMethod.GET)))
                 .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), recentFeed));
             

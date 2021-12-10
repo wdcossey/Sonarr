@@ -14,7 +14,6 @@ using NzbDrone.Core.Test.Framework;
 using NzbDrone.Core.Tv;
 using NzbDrone.Core.Languages;
 using NzbDrone.Core.Profiles.Languages;
-using NzbDrone.Core.Profiles.Releases;
 
 namespace NzbDrone.Core.Test.MediaFiles.EpisodeImport.Specifications
 {

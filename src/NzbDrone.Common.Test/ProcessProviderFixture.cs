@@ -5,6 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Model;
 using NzbDrone.Common.Processes;
@@ -51,7 +53,7 @@ namespace NzbDrone.Common.Test
         {
             Subject.GetProcessById(1234567).Should().BeNull();
 
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger>().ExpectedWarns(Times.Once);
         }
 
         [TestCase(0)]
@@ -61,7 +63,7 @@ namespace NzbDrone.Common.Test
         {
             Subject.GetProcessById(processId).Should().BeNull();
 
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger>().ExpectedWarns(Times.Once);
         }
 
         [Test]

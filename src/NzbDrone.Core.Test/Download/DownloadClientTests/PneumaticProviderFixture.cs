@@ -54,7 +54,7 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests
 
         private void WithFailedDownload()
         {
-            Mocker.GetMock<IHttpClient>().Setup(c => c.DownloadFile(It.IsAny<string>(), It.IsAny<string>())).Throws(new WebException());
+            Mocker.GetMock<IHttpClient<Pneumatic>>().Setup(c => c.DownloadFile(It.IsAny<string>(), It.IsAny<string>())).Throws(new WebException());
         }
 
         [Test]
@@ -62,7 +62,7 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests
         {
             Subject.Download(_remoteEpisode);
 
-            Mocker.GetMock<IHttpClient>().Verify(c => c.DownloadFile(_nzbUrl, _nzbPath), Times.Once());
+            Mocker.GetMock<IHttpClient<Pneumatic>>().Verify(c => c.DownloadFile(_nzbUrl, _nzbPath), Times.Once());
         }
 
         [Test]
@@ -97,7 +97,7 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests
 
             Subject.Download(_remoteEpisode);
 
-            Mocker.GetMock<IHttpClient>().Verify(c => c.DownloadFile(It.IsAny<string>(), expectedFilename), Times.Once());
+            Mocker.GetMock<IHttpClient<Pneumatic>>().Verify(c => c.DownloadFile(It.IsAny<string>(), expectedFilename), Times.Once());
         }
     }
 }

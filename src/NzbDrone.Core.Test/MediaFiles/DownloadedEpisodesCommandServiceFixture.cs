@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using FizzWare.NBuilder;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Disk;
@@ -120,7 +121,7 @@ namespace NzbDrone.Core.Test.MediaFiles
 
             Mocker.GetMock<IDownloadedEpisodesImportService>().Verify(c => c.ProcessPath(_downloadFolder, ImportMode.Auto, null, null), Times.Once());
 
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger<DownloadedEpisodesCommandService>>().ExpectedWarns(1);
         }
 
         [Test]
@@ -130,7 +131,7 @@ namespace NzbDrone.Core.Test.MediaFiles
 
             Mocker.GetMock<IDownloadedEpisodesImportService>().Verify(c => c.ProcessPath(It.IsAny<string>(), ImportMode.Auto, null, null), Times.Never());
 
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger<DownloadedEpisodesCommandService>>().ExpectedWarns(1);
         }
 
         [Test]

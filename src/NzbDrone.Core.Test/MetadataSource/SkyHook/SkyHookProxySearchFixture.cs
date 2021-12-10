@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using Moq;
 using NUnit.Framework;
 using NzbDrone.Core.MetadataSource.SkyHook;
 using NzbDrone.Core.Test.Framework;

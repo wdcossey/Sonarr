@@ -1,8 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Disk;
@@ -147,7 +147,7 @@ namespace NzbDrone.Common.Test.DiskTests
 
             Assert.Throws<IOException>(() => Subject.TransferFile(_sourcePath, targetPath, TransferMode.Move));
 
-            ExceptionVerification.ExpectedErrors(1);
+            Mocker.GetMock<ILogger<DiskTransferService>>().ExpectedErrors(Times.Once);
         }
 
         [Test]
@@ -301,8 +301,8 @@ namespace NzbDrone.Common.Test.DiskTests
                 .Throws(new IOException("Access Violation"));
 
             Assert.Throws<IOException>(() => Subject.TransferFile(_sourcePath, _targetPath, TransferMode.Copy));
-
-            ExceptionVerification.ExpectedErrors(1);
+            
+            Mocker.GetMock<ILogger<DiskTransferService>>().ExpectedErrors(Times.Once);
         }
 
         [Test]
@@ -333,7 +333,7 @@ namespace NzbDrone.Common.Test.DiskTests
             Mocker.GetMock<IDiskProvider>()
                 .Verify(v => v.DeleteFile(_targetPath), Times.Never());
 
-            ExceptionVerification.ExpectedErrors(1);
+            Mocker.GetMock<ILogger<DiskTransferService>>().ExpectedErrors(Times.Once);
         }
 
         [Test]
@@ -368,7 +368,7 @@ namespace NzbDrone.Common.Test.DiskTests
 
             Assert.Throws<IOException>(() => Subject.TransferFile(_sourcePath, _targetPath, TransferMode.Move));
 
-            ExceptionVerification.ExpectedErrors(1);
+            Mocker.GetMock<ILogger<DiskTransferService>>().ExpectedErrors(Times.Once);
         }
 
         [Test]

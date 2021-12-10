@@ -11,15 +11,12 @@ namespace NzbDrone.Core.Test.HealthCheck.Checks
     {
         private void GivenOutput(string version)
         {
-            WindowsOnly();
-
             Mocker.GetMock<IPlatformInfo>()
                   .SetupGet(s => s.Version)
                   .Returns(new Version(version));
         }
-
-        [TestCase("4.7.2")]
-        [TestCase("4.8")]
+        
+        [TestCase("6.0")]
         public void should_return_ok(string version)
         {
             GivenOutput(version);

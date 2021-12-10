@@ -1,6 +1,9 @@
 ﻿
 using System;
+using System.IO;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Http;
 using NzbDrone.Test.Common;
@@ -25,7 +28,8 @@ namespace NzbDrone.Common.Test
         {
             Action action = () => Subject.DownloadString(url);
             action.Should().Throw<Exception>();
-            ExceptionVerification.ExpectedWarns(1);
+            
+            Mocker.GetMock<ILogger<HttpProvider>>().ExpectedWarns(Times.Once);
         }
     }
 }

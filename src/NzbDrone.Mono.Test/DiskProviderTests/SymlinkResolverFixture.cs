@@ -14,7 +14,7 @@ using NzbDrone.Test.Common;
 namespace NzbDrone.Mono.Test.DiskProviderTests
 {
     [TestFixture]
-    [Platform("Mono")]
+    //[Platform("Mono")]
     public class SymbolicLinkResolverFixture : TestBase<SymbolicLinkResolver>
     {
         public SymbolicLinkResolverFixture()

@@ -7,7 +7,7 @@ using NzbDrone.Test.Common;
 namespace NzbDrone.Mono.Test.EnvironmentInfo
 {
     [TestFixture]
-    [Platform("Mono")]
+    //[Platform("Mono")]
     public class MonoPlatformInfoFixture : TestBase<PlatformInfo>
     {
         [Test]

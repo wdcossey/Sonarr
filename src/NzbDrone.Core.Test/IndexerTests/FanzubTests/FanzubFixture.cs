@@ -28,7 +28,7 @@ namespace NzbDrone.Core.Test.IndexerTests.FanzubTests
         {
             var recentFeed = ReadAllText(@"Files/Indexers/Fanzub/fanzub.xml");
 
-            Mocker.GetMock<IHttpClient>()
+            Mocker.GetMock<IHttpClient<Fanzub>>()
                 .Setup(o => o.Execute(It.Is<HttpRequest>(v => v.Method == HttpMethod.GET)))
                 .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), recentFeed));
             

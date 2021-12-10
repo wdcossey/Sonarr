@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Xml;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Http;
@@ -29,7 +30,7 @@ namespace NzbDrone.Core.Test.IndexerTests.NewznabTests
 
         private void GivenCapsResponse(string caps)
         {
-            Mocker.GetMock<IHttpClient>()
+            Mocker.GetMock<IHttpClient<NewznabCapabilitiesProvider>>()
                 .Setup(o => o.Get(It.IsAny<HttpRequest>()))
                 .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), caps));
         }
@@ -42,7 +43,7 @@ namespace NzbDrone.Core.Test.IndexerTests.NewznabTests
             Subject.GetCapabilities(_settings);
             Subject.GetCapabilities(_settings);
 
-            Mocker.GetMock<IHttpClient>()
+            Mocker.GetMock<IHttpClient<NewznabCapabilitiesProvider>>()
                 .Verify(o => o.Get(It.IsAny<HttpRequest>()), Times.Once());
         }
 
@@ -71,7 +72,7 @@ namespace NzbDrone.Core.Test.IndexerTests.NewznabTests
         [Test]
         public void should_throw_if_failed_to_get()
         {
-            Mocker.GetMock<IHttpClient>()
+            Mocker.GetMock<IHttpClient<NewznabCapabilitiesProvider>>()
                 .Setup(o => o.Get(It.IsAny<HttpRequest>()))
                 .Throws<Exception>();
 
@@ -95,7 +96,7 @@ namespace NzbDrone.Core.Test.IndexerTests.NewznabTests
 
             result.Should().NotBeNull();
 
-            ExceptionVerification.ExpectedErrors(1);
+            Mocker.GetMock<ILogger<NewznabCapabilitiesProvider>>().ExpectedErrors(Times.Once);
         }
 
         [Test]

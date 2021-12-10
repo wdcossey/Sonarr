@@ -1,5 +1,6 @@
 ﻿using System;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Core.Download.Clients;
@@ -68,7 +69,7 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.DownloadStationTests
         {
             Assert.Throws(Is.InstanceOf<Exception>(), () => Subject.GetSerialNumber(_settings));
 
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger<SerialNumberProvider>>().ExpectedWarns(Times.Once);
         }
     }
 }

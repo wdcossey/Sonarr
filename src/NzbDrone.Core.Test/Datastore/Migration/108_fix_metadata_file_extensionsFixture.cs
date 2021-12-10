@@ -3,7 +3,6 @@ using FluentAssertions;
 using NUnit.Framework;
 using NzbDrone.Core.Datastore.Migration;
 using NzbDrone.Core.Languages;
-using NzbDrone.Core.Parser;
 using NzbDrone.Core.Test.Framework;
 
 namespace NzbDrone.Core.Test.Datastore.Migration

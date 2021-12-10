@@ -11,7 +11,7 @@
     <PackageReference Include="FluentMigrator.Runner" Version="2.0.7" />
     <PackageReference Include="FluentMigrator.Runner.Core" Version="2.0.7" />
     <PackageReference Include="FluentMigrator.Runner.SQLite" Version="2.0.7" />
-    <PackageReference Include="FluentValidation" Version="8.4.0" />
+    <PackageReference Include="FluentValidation" Version="8.6.3" />
     <PackageReference Include="Kveer.XmlRPC" Version="1.2.0" />
     <PackageReference Include="MediaInfo.Wrapper.Core" Version="21.9.2" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />

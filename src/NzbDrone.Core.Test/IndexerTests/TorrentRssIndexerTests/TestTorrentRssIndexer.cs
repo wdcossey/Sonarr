@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using FluentValidation.Results;
+using Microsoft.Extensions.Logging;
 using NLog;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Configuration;
@@ -8,13 +9,14 @@ using NzbDrone.Core.Indexers.TorrentRss;
 using NzbDrone.Core.Parser;
 using NLog.Config;
 using NLog.Targets;
+using LogLevel = NLog.LogLevel;
 
 namespace NzbDrone.Core.Test.IndexerTests.TorrentRssIndexerTests
 {
     public class TestTorrentRssIndexer : TorrentRssIndexer
     {
-        public TestTorrentRssIndexer(ITorrentRssParserFactory torrentRssParserFactory, IHttpClient<TorrentRssIndexer> httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, Logger logger)
-            : base(torrentRssParserFactory, httpClient, indexerStatusService, configService, parsingService, logger)
+        public TestTorrentRssIndexer(ITorrentRssParserFactory torrentRssParserFactory, IHttpClient<TorrentRssIndexer> httpClient, IIndexerStatusService indexerStatusService, IConfigService configService, IParsingService parsingService, ILoggerFactory loggerFactory)
+            : base(torrentRssParserFactory, httpClient, indexerStatusService, configService, parsingService, loggerFactory)
         {
         }
 

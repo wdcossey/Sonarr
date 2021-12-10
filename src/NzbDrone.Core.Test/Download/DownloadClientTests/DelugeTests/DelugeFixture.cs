@@ -87,7 +87,7 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.DelugeTests
                   .Setup(s => s.GetHashFromTorrentFile(It.IsAny<byte[]>()))
                   .Returns("CBC2F069FE8BB2F544EAE707D75BCD3DE9DCF951");
 
-            Mocker.GetMock<IHttpClient>()
+            Mocker.GetMock<IHttpClient<Deluge>>()
                   .Setup(s => s.Get(It.IsAny<HttpRequest>()))
                   .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), new byte[0]));
         }
@@ -105,7 +105,7 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.DelugeTests
 
         protected void GivenSuccessfulDownload()
         {
-            Mocker.GetMock<IHttpClient>()
+            Mocker.GetMock<IHttpClient<Deluge>>()
                   .Setup(s => s.Get(It.IsAny<HttpRequest>()))
                   .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), new byte[1000]));
 

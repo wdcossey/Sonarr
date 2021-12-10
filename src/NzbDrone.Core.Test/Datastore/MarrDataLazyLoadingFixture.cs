@@ -1,6 +1,5 @@
 ﻿using FizzWare.NBuilder;
 using NUnit.Framework;
-using System.Linq;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Profiles.Qualities;
 using NzbDrone.Core.Test.Framework;

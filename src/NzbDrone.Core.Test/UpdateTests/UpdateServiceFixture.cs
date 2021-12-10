@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Common;
@@ -119,7 +120,7 @@ namespace NzbDrone.Core.Test.UpdateTests
 
             Subject.Execute(new ApplicationUpdateCommand());
 
-            Mocker.GetMock<IHttpClient>().Verify(c => c.DownloadFile(_updatePackage.Url, updateArchive));
+            Mocker.GetMock<IHttpClient<InstallUpdateService>>().Verify(c => c.DownloadFile(_updatePackage.Url, updateArchive));
         }
 
         [Test]
@@ -164,7 +165,7 @@ namespace NzbDrone.Core.Test.UpdateTests
             Mocker.GetMock<IProcessProvider>()
                 .Verify(c => c.Start(It.IsAny<string>(), It.IsAny<string>(), null, null, null), Times.Never());
 
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger<InstallUpdateService>>().ExpectedWarns(Times.Once);
         }
 
         [Test]
@@ -189,7 +190,7 @@ namespace NzbDrone.Core.Test.UpdateTests
         }
 
         [Test]
-        [Platform("Mono")]
+        //[Platform("Mono")]
         public void should_run_script_if_configured()
         {
             const string scriptPath = "/tmp/nzbdrone/update.sh";
@@ -202,7 +203,7 @@ namespace NzbDrone.Core.Test.UpdateTests
         }
 
         [Test]
-        [Platform("Mono")]
+        //[Platform("Mono")]
         public void should_throw_if_script_is_not_set()
         {
             const string scriptPath = "/tmp/nzbdrone/update.sh";
@@ -211,12 +212,12 @@ namespace NzbDrone.Core.Test.UpdateTests
 
             Assert.Throws<CommandFailedException>(() => Subject.Execute(new ApplicationUpdateCommand()));
 
-            ExceptionVerification.ExpectedErrors(1);
+            Mocker.GetMock<ILogger<InstallUpdateService>>().ExpectedErrors(Times.Once);
             Mocker.GetMock<IProcessProvider>().Verify(v => v.Start(scriptPath, It.IsAny<string>(), null, null, null), Times.Never());
         }
 
         [Test]
-        [Platform("Mono")]
+        //[Platform("Mono")]
         public void should_throw_if_script_is_null()
         {
             const string scriptPath = "/tmp/nzbdrone/update.sh";
@@ -225,12 +226,12 @@ namespace NzbDrone.Core.Test.UpdateTests
 
             Assert.Throws<CommandFailedException>(() => Subject.Execute(new ApplicationUpdateCommand()));
 
-            ExceptionVerification.ExpectedErrors(1);
+            Mocker.GetMock<ILogger<InstallUpdateService>>().ExpectedErrors(Times.Once);
             Mocker.GetMock<IProcessProvider>().Verify(v => v.Start(scriptPath, It.IsAny<string>(), null, null, null), Times.Never());
         }
 
         [Test]
-        [Platform("Mono")]
+        //[Platform("Mono")]
         public void should_throw_if_script_path_does_not_exist()
         {
             const string scriptPath = "/tmp/nzbdrone/update.sh";
@@ -243,7 +244,7 @@ namespace NzbDrone.Core.Test.UpdateTests
 
             Assert.Throws<CommandFailedException>(() => Subject.Execute(new ApplicationUpdateCommand()));
 
-            ExceptionVerification.ExpectedErrors(1);
+            Mocker.GetMock<ILogger<InstallUpdateService>>().ExpectedErrors(Times.Once);
             Mocker.GetMock<IProcessProvider>().Verify(v => v.Start(scriptPath, It.IsAny<string>(), null, null, null), Times.Never());
         }
 
@@ -276,7 +277,7 @@ namespace NzbDrone.Core.Test.UpdateTests
             Mocker.GetMock<IAppFolderInfo>().SetupGet(c => c.AppDataFolder).Returns(@"C:\NzbDrone\AppData".AsOsAgnostic);
 
             Assert.Throws<CommandFailedException>(() => Subject.Execute(new ApplicationUpdateCommand()));
-            ExceptionVerification.ExpectedErrors(1);
+            Mocker.GetMock<ILogger<InstallUpdateService>>().ExpectedErrors(Times.Once);
         }
 
         [Test]
@@ -286,7 +287,7 @@ namespace NzbDrone.Core.Test.UpdateTests
             Mocker.GetMock<IAppFolderInfo>().SetupGet(c => c.AppDataFolder).Returns(@"C:\NzbDrone".AsOsAgnostic);
 
             Assert.Throws<CommandFailedException>(() => Subject.Execute(new ApplicationUpdateCommand()));
-            ExceptionVerification.ExpectedErrors(1);
+            Mocker.GetMock<ILogger<InstallUpdateService>>().ExpectedErrors(Times.Once);
         }
 
         [Test]
@@ -301,7 +302,7 @@ namespace NzbDrone.Core.Test.UpdateTests
             Assert.Throws<CommandFailedException>(() => Subject.Execute(new ApplicationUpdateCommand()));
 
             Mocker.GetMock<IHttpClient>().Verify(c => c.DownloadFile(_updatePackage.Url, updateArchive), Times.Never());
-            ExceptionVerification.ExpectedErrors(1);
+            Mocker.GetMock<ILogger<InstallUpdateService>>().ExpectedErrors(Times.Once);
         }
 
         [Test]
@@ -316,7 +317,7 @@ namespace NzbDrone.Core.Test.UpdateTests
             Assert.Throws<CommandFailedException>(() => Subject.Execute(new ApplicationUpdateCommand()));
 
             Mocker.GetMock<IHttpClient>().Verify(c => c.DownloadFile(_updatePackage.Url, updateArchive), Times.Never());
-            ExceptionVerification.ExpectedErrors(1);
+            Mocker.GetMock<ILogger<InstallUpdateService>>().ExpectedErrors(Times.Once);
         }
 
         [Test]

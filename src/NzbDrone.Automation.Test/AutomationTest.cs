@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -19,7 +20,7 @@ namespace NzbDrone.Automation.Test
     public abstract class AutomationTest
     {
         private NzbDroneRunner _runner;
-        protected RemoteWebDriver driver;
+        protected WebDriver driver;
 
         public AutomationTest()
         {
@@ -36,7 +37,7 @@ namespace NzbDrone.Automation.Test
         {
             driver = new FirefoxDriver();
 
-            _runner = new NzbDroneRunner(LogManager.GetCurrentClassLogger());
+            _runner = new NzbDroneRunner(new LoggerFactory());
             _runner.KillAll();
             _runner.Start();
 

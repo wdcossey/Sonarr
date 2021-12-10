@@ -12,6 +12,7 @@ using NzbDrone.Core.Test.Framework;
 using NzbDrone.Core.Tv;
 using NzbDrone.Test.Common;
 using FizzWare.NBuilder;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.Download;
 using NzbDrone.Core.Languages;
 using NzbDrone.Core.MediaFiles.EpisodeImport.Aggregation;
@@ -181,7 +182,7 @@ namespace NzbDrone.Core.Test.MediaFiles.EpisodeImport
             Mocker.GetMock<IAggregationService>()
                   .Verify(c => c.Augment(It.IsAny<LocalEpisode>(), It.IsAny<DownloadClientItem>()), Times.Exactly(_videoFiles.Count));
 
-            ExceptionVerification.ExpectedErrors(3);
+            Mocker.GetMock<ILogger<ImportDecisionMaker>>().ExpectedErrors(3);
         }
 
         public void should_not_throw_if_episodes_are_not_found()
@@ -222,7 +223,7 @@ namespace NzbDrone.Core.Test.MediaFiles.EpisodeImport
 
             Subject.GetImportDecisions(_videoFiles, _series).Should().HaveCount(1);
 
-            ExceptionVerification.ExpectedErrors(1);
+            Mocker.GetMock<ILogger<ImportDecisionMaker>>().ExpectedErrors(1);
         }
     }
 }

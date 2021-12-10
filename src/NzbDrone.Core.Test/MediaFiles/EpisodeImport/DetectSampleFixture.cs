@@ -2,6 +2,7 @@
 using System.Linq;
 using FizzWare.NBuilder;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Core.MediaFiles.EpisodeImport;
@@ -143,7 +144,7 @@ namespace NzbDrone.Core.Test.MediaFiles.EpisodeImport
                              _localEpisode.Path,
                              _localEpisode.IsSpecial).Should().Be(DetectSampleResult.Indeterminate);
 
-            ExceptionVerification.ExpectedErrors(1);
+            Mocker.GetMock<ILogger<DetectSample>>().ExpectedErrors(1);
         }
 
         [Test]

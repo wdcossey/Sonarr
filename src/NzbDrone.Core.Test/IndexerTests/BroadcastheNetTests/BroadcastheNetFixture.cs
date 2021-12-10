@@ -9,6 +9,7 @@ using NzbDrone.Test.Common;
 using System;
 using System.Linq;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 
 namespace NzbDrone.Core.Test.IndexerTests.BroadcastheNetTests
 {
@@ -30,7 +31,7 @@ namespace NzbDrone.Core.Test.IndexerTests.BroadcastheNetTests
         {
             var recentFeed = ReadAllText(@"Files/Indexers/BroadcastheNet/RecentFeed.json");
 
-            Mocker.GetMock<IHttpClient>()
+            Mocker.GetMock<IHttpClient<BroadcastheNet>>()
                 .Setup(o => o.Execute(It.Is<HttpRequest>(v => v.Method == HttpMethod.POST)))
                 .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), recentFeed));
 
@@ -73,7 +74,7 @@ namespace NzbDrone.Core.Test.IndexerTests.BroadcastheNetTests
         [Test]
         public void should_back_off_on_bad_request()
         {
-            Mocker.GetMock<IHttpClient>()
+            Mocker.GetMock<IHttpClient<BroadcastheNet>>()
                 .Setup(v => v.Execute(It.IsAny<HttpRequest>()))
                 .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), new byte[0], System.Net.HttpStatusCode.BadRequest));
 
@@ -83,13 +84,13 @@ namespace NzbDrone.Core.Test.IndexerTests.BroadcastheNetTests
 
             VerifyBackOff();
 
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger>().ExpectedWarns(Times.Once);
         }
 
         [Test]
         public void should_back_off_and_report_api_key_invalid()
         {
-            Mocker.GetMock<IHttpClient>()
+            Mocker.GetMock<IHttpClient<BroadcastheNet>>()
                 .Setup(v => v.Execute(It.IsAny<HttpRequest>()))
                 .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), new byte[0], System.Net.HttpStatusCode.Unauthorized));
 
@@ -99,13 +100,13 @@ namespace NzbDrone.Core.Test.IndexerTests.BroadcastheNetTests
 
             VerifyBackOff();
 
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger>().ExpectedWarns(Times.Once);
         }
 
         [Test]
         public void should_back_off_on_unknown_method()
         {
-            Mocker.GetMock<IHttpClient>()
+            Mocker.GetMock<IHttpClient<BroadcastheNet>>()
                 .Setup(v => v.Execute(It.IsAny<HttpRequest>()))
                 .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), new byte[0], System.Net.HttpStatusCode.NotFound));
 
@@ -115,13 +116,13 @@ namespace NzbDrone.Core.Test.IndexerTests.BroadcastheNetTests
 
             VerifyBackOff();
 
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger>().ExpectedWarns(Times.Once);
         }
 
         [Test]
         public void should_back_off_api_limit_reached()
         {
-            Mocker.GetMock<IHttpClient>()
+            Mocker.GetMock<IHttpClient<BroadcastheNet>>()
                 .Setup(v => v.Execute(It.IsAny<HttpRequest>()))
                 .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), new byte[0], System.Net.HttpStatusCode.ServiceUnavailable));
 
@@ -131,7 +132,7 @@ namespace NzbDrone.Core.Test.IndexerTests.BroadcastheNetTests
 
             VerifyBackOff();
 
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger>().ExpectedWarns(Times.Once);
         }
 
         [Test]
@@ -143,7 +144,7 @@ namespace NzbDrone.Core.Test.IndexerTests.BroadcastheNetTests
 
             recentFeed = recentFeed.Replace("http:", "https:");
 
-            Mocker.GetMock<IHttpClient>()
+            Mocker.GetMock<IHttpClient<BroadcastheNet>>()
                 .Setup(o => o.Execute(It.Is<HttpRequest>(v => v.Method == HttpMethod.POST)))
                 .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), recentFeed));
 

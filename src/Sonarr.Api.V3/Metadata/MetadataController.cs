@@ -11,9 +11,7 @@ namespace Sonarr.Api.V3.Metadata
         public static readonly MetadataResourceMapper ResourceMapper = new();
 
         public MetadataController(IMetadataFactory metadataFactory)
-            : base(metadataFactory, ResourceMapper)
-        {
-        }
+            : base(metadataFactory, ResourceMapper) { }
 
         protected override void Validate(MetadataDefinition definition, bool includeWarnings)
         {

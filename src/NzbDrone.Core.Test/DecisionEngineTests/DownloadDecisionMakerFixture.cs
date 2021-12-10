@@ -11,6 +11,7 @@ using NzbDrone.Core.Test.Framework;
 using NzbDrone.Core.Tv;
 using NzbDrone.Test.Common;
 using FizzWare.NBuilder;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Core.DataAugmentation.Scene;
 using NzbDrone.Core.DecisionEngine.Specifications;
 
@@ -225,7 +226,7 @@ namespace NzbDrone.Core.Test.DecisionEngineTests
 
             Mocker.GetMock<IParsingService>().Verify(c => c.Map(It.IsAny<ParsedEpisodeInfo>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<SearchCriteriaBase>()), Times.Exactly(_reports.Count));
 
-            ExceptionVerification.ExpectedErrors(3);
+            Mocker.GetMock<ILogger<DownloadDecisionMaker>>().ExpectedErrors(3);
         }
 
         [Test]
@@ -327,7 +328,7 @@ namespace NzbDrone.Core.Test.DecisionEngineTests
 
             Subject.GetRssDecision(_reports).Should().HaveCount(1);
 
-            ExceptionVerification.ExpectedErrors(1);
+            Mocker.GetMock<ILogger<DownloadDecisionMaker>>().ExpectedErrors(Times.Once);
         }
 
         [Test]

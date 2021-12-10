@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NLog;
 using NUnit.Framework;
@@ -11,6 +12,7 @@ using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Messaging;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Test.Common.AutoMoq;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace NzbDrone.Test.Common
 {
@@ -56,7 +58,14 @@ namespace NzbDrone.Test.Common
                 {
                     _mocker = new AutoMoqer();
                     _mocker.SetConstant<ICacheManager>(new CacheManager());
-                    _mocker.SetConstant<IStartupContext>(new StartupContext(new string[0]));
+                    _mocker.SetConstant<IStartupContext>(new StartupContext(Array.Empty<string>()));
+                    _mocker.GetMock<ILoggerFactory>().Setup(factory => factory.CreateLogger(It.IsAny<string>()))
+                        .Returns<string>((name) =>
+                        {
+                            var logger = _mocker.GetMock<ILogger>();
+                            logger.Name = name;
+                            return logger.Object;
+                        });
                     _mocker.SetConstant(TestLogger);
                 }
 
@@ -162,7 +171,7 @@ namespace NzbDrone.Test.Common
 
         protected void MonoOnly()
         {
-            if (!PlatformInfo.IsMono)
+            if (OsInfo.IsWindows)
             {
                 throw new IgnoreException("mono specific test");
             }

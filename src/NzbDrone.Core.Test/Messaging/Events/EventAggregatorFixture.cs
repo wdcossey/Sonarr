@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using NzbDrone.Common;
 using NzbDrone.Common.Messaging;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Test.Common;
+using IServiceProvider = System.IServiceProvider;
 
 namespace NzbDrone.Core.Test.Messaging.Events
 {
@@ -31,14 +32,21 @@ namespace NzbDrone.Core.Test.Messaging.Events
 
             AsyncHandlerA1 = new Mock<IHandleAsync<EventA>>();
 
-            Mocker.GetMock<IServiceFactory>()
-                  .Setup(c => c.BuildAll<IHandle<EventA>>())
+            Mocker.GetMock<IServiceProvider>()
+                  .Setup(c => c.GetService(typeof(IEnumerable<IHandle<EventA>>)))
                   .Returns(new List<IHandle<EventA>> { HandlerA1.Object, HandlerA2.Object });
 
-            Mocker.GetMock<IServiceFactory>()
-                  .Setup(c => c.BuildAll<IHandle<EventB>>())
-                  .Returns(new List<IHandle<EventB>> { HandlerB1.Object, HandlerB2.Object });
+            Mocker.GetMock<IServiceProvider>()
+                  .Setup(c => c.GetService(typeof(IEnumerable<IHandleAsync<IEvent>>)))
+                  .Returns(new List<IHandleAsync<IEvent>>());
 
+            Mocker.GetMock<IServiceProvider>()
+                  .Setup(c => c.GetService(typeof(IEnumerable<IHandleAsync<EventA>>)))
+                  .Returns(new List<IHandleAsync<EventA>>());
+
+            Mocker.GetMock<IServiceProvider>()
+                  .Setup(c => c.GetService(typeof(IEnumerable<IHandle<EventB>>)))
+                  .Returns(new List<IHandle<EventB>> { HandlerB1.Object, HandlerB2.Object });
         }
 
         [Test]
@@ -81,8 +89,8 @@ namespace NzbDrone.Core.Test.Messaging.Events
 
             HandlerA1.Verify(c => c.Handle(eventA), Times.Once());
             HandlerA2.Verify(c => c.Handle(eventA), Times.Once());
-
-            ExceptionVerification.ExpectedErrors(1);
+            
+            Mocker.GetMock<ILogger<EventAggregator>>().ExpectedErrors(1);
         }
 
 

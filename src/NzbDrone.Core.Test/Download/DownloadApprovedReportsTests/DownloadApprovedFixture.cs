@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using FizzWare.NBuilder;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Core.DecisionEngine;
@@ -175,7 +176,7 @@ namespace NzbDrone.Core.Test.Download.DownloadApprovedReportsTests
 
             Mocker.GetMock<IDownloadService>().Setup(s => s.DownloadReport(It.IsAny<RemoteEpisode>())).Throws(new Exception());
             Subject.ProcessDecisions(decisions).Grabbed.Should().BeEmpty();
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger<ProcessDownloadDecisions>>().ExpectedWarns(Times.Once);
         }
 
         [Test]
@@ -283,7 +284,7 @@ namespace NzbDrone.Core.Test.Download.DownloadApprovedReportsTests
             result.Grabbed.Should().BeEmpty();
             result.Rejected.Should().NotBeEmpty();
 
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger<ProcessDownloadDecisions>>().ExpectedWarns(Times.Once);
         }
     }
 }
