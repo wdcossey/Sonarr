@@ -11,10 +11,10 @@ namespace NzbDrone.Core.MediaFiles.MediaInfo
 {
     public interface IUpdateMediaInfo
     {
-        void Update(EpisodeFile episodeFile, Series series);
+        bool Update(EpisodeFile episodeFile, Series series);
     }
 
-    public class UpdateMediaInfoService : IHandle<SeriesScannedEvent>, IUpdateMediaInfo
+    public class UpdateMediaInfoService : IUpdateMediaInfo, IHandle<SeriesScannedEvent>
     {
         private readonly IDiskProvider _diskProvider;
         private readonly IMediaFileService _mediaFileService;
@@ -54,34 +54,37 @@ namespace NzbDrone.Core.MediaFiles.MediaInfo
             }
         }
 
-        public void Update(EpisodeFile episodeFile, Series series)
+        public bool Update(EpisodeFile episodeFile, Series series)
         {
             if (!_configService.EnableMediaInfo)
             {
                 _logger.LogDebug("MediaInfo is disabled");
-                return;
+                return false;
             }
-            UpdateMediaInfo(episodeFile, series);
+
+            return UpdateMediaInfo(episodeFile, series);
         }
 
-        private void UpdateMediaInfo(EpisodeFile episodeFile, Series series)
+        private bool UpdateMediaInfo(EpisodeFile episodeFile, Series series)
         {
             var path = Path.Combine(series.Path, episodeFile.RelativePath);
 
             if (!_diskProvider.FileExists(path))
             {
                 _logger.LogDebug("Can't update MediaInfo because '{Path}' does not exist", path);
-                return;
+                return false;
             }
 
             var updatedMediaInfo = _videoFileInfoReader.GetMediaInfo(path);
 
-            if (updatedMediaInfo != null)
-            {
-                episodeFile.MediaInfo = updatedMediaInfo;
-                _mediaFileService.Update(episodeFile);
-                _logger.LogDebug("Updated MediaInfo for '{Path}'", path);
-            }
+            if (updatedMediaInfo == null) return false;
+
+            episodeFile.MediaInfo = updatedMediaInfo;
+            _mediaFileService.Update(episodeFile);
+            _logger.LogDebug("Updated MediaInfo for '{Path}'", path);
+
+            return true;
+
         }
     }
 }

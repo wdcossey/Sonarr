@@ -108,6 +108,12 @@ namespace NzbDrone.Core.Download
                 return;
             }
 
+            if (trackedDownload.RemoteEpisode == null)
+            {
+                trackedDownload.Warn("Unable to parse download, automatic import is not possible.");
+                return;
+            }
+
             trackedDownload.State = TrackedDownloadState.Importing;
 
             var outputPath = trackedDownload.ImportItem.OutputPath.FullPath;

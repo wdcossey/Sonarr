@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Net;
 using Microsoft.AspNetCore.Http;
-//using Nancy;
+//using Nancy; //TODO: Remove!
 using NzbDrone.Common.Extensions;
 
 namespace Sonarr.Http.Extensions
@@ -14,9 +14,15 @@ namespace Sonarr.Http.Extensions
 
         public static bool IsFeedRequest(this HttpRequest request)
             => request.Path.StartsWithSegments("/feed", StringComparison.InvariantCultureIgnoreCase);
-        
+
         public static bool IsSignalRRequest(this HttpRequest request)
             => request.Path.StartsWithSegments("/hubs", StringComparison.InvariantCultureIgnoreCase);
+
+        public static bool IsPingRequest(this HttpRequest request)
+            => request.Path.StartsWithSegments("/ping", StringComparison.InvariantCultureIgnoreCase);
+
+        public static bool IsSignalRRequest(this HttpRequest request)
+            => request.Path.StartsWithSegments("/signalr", StringComparison.InvariantCultureIgnoreCase);
 
         public static bool IsLocalRequest(this HttpRequest request)
         {
@@ -27,6 +33,7 @@ namespace Sonarr.Http.Extensions
                    remoteIpAddress?.Equals("::1") == true;
         }
 
+        //TODO
         /*public static bool IsLoginRequest(this Request request)
         {
             return request.Path.Equals("/login", StringComparison.InvariantCultureIgnoreCase);
@@ -47,8 +54,8 @@ namespace Sonarr.Http.Extensions
             return request.Path.StartsWithSegments("/MediaCover", StringComparison.InvariantCultureIgnoreCase) ||
                    request.Path.StartsWithSegments("/Content/Images", StringComparison.InvariantCultureIgnoreCase);
         }
-        
 
+        //TODO
         /*public static bool GetBooleanQueryParameter(this Request request, string parameter, bool defaultValue = false)
         {
             var parameterValue = request.Query[parameter];
@@ -61,6 +68,7 @@ namespace Sonarr.Http.Extensions
             return defaultValue;
         }*/
 
+        //TODO
         /*public static int GetIntegerQueryParameter(this Request request, string parameter, int defaultValue = 0)
         {
             var parameterValue = request.Query[parameter];
@@ -73,6 +81,7 @@ namespace Sonarr.Http.Extensions
             return defaultValue;
         }*/
 
+        //TODO
         /*public static int? GetNullableIntegerQueryParameter(this Request request, string parameter, int? defaultValue = null)
         {
             var parameterValue = request.Query[parameter];

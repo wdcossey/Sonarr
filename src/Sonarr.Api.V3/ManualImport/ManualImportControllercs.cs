@@ -24,11 +24,13 @@ namespace Sonarr.Api.V3.ManualImport
             [FromQuery] string folder,
             [FromQuery] string downloadId,
             [FromQuery] bool filterExistingFiles = true,
-            [FromQuery] int? seriesId = null)
+            [FromQuery] int? seriesId = null,
+            [FromQuery] int? seasonNumber = null)
         {
-            var value = _manualImportService.GetMediaFiles(folder, downloadId, seriesId, filterExistingFiles)
-                .ToResource().Select(AddQualityWeight);
-            return Ok(value);
+            if (seriesId.HasValue)
+                return Ok(_manualImportService.GetMediaFiles(seriesId.Value, seasonNumber).ToResource().Select(AddQualityWeight));
+
+            return Ok(_manualImportService.GetMediaFiles(folder, downloadId, seriesId, filterExistingFiles).ToResource().Select(AddQualityWeight));
         }
 
         [HttpPost]

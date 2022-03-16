@@ -7,6 +7,7 @@ import selectAll from 'Utilities/Table/selectAll';
 import toggleSelected from 'Utilities/Table/toggleSelected';
 import { align, icons, kinds, scrollDirections } from 'Helpers/Props';
 import Button from 'Components/Link/Button';
+import SpinnerButton from 'Components/Link/SpinnerButton';
 import Icon from 'Components/Icon';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import SelectInput from 'Components/Form/SelectInput';
@@ -14,6 +15,7 @@ import Menu from 'Components/Menu/Menu';
 import MenuButton from 'Components/Menu/MenuButton';
 import MenuContent from 'Components/Menu/MenuContent';
 import SelectedMenuItem from 'Components/Menu/SelectedMenuItem';
+import ConfirmModal from 'Components/Modal/ConfirmModal';
 import ModalContent from 'Components/Modal/ModalContent';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import ModalBody from 'Components/Modal/ModalBody';
@@ -112,14 +114,35 @@ class InteractiveImportModalContent extends Component {
   constructor(props, context) {
     super(props, context);
 
+    const instanceColumns = _.cloneDeep(columns);
+
+    if (!props.showSeries) {
+      instanceColumns.find((c) => c.name === 'series').isVisible = false;
+    }
+
     this.state = {
       allSelected: false,
       allUnselected: false,
       lastToggled: null,
       selectedState: {},
       invalidRowsSelected: [],
-      selectModalOpen: null
+      withoutEpisodeFileIdRowsSelected: [],
+      selectModalOpen: null,
+      columns: instanceColumns,
+      isConfirmDeleteModalOpen: false
     };
+  }
+
+  componentDidUpdate(prevProps) {
+    const {
+      isDeleting,
+      deleteError,
+      onModalClose
+    } = this.props;
+
+    if (!isDeleting && prevProps.isDeleting && !deleteError) {
+      onModalClose();
+    }
   }
 
   //
@@ -136,9 +159,14 @@ class InteractiveImportModalContent extends Component {
     this.setState(selectAll(this.state.selectedState, value));
   }
 
-  onSelectedChange = ({ id, value, shiftKey = false }) => {
+  onSelectedChange = ({ id, value, hasEpisodeFileId, shiftKey = false }) => {
     this.setState((state) => {
-      return toggleSelected(state, this.props.items, id, value, shiftKey);
+      return {
+        ...toggleSelected(state, this.props.items, id, value, shiftKey),
+        withoutEpisodeFileIdRowsSelected: hasEpisodeFileId || !value ?
+          _.without(state.withoutEpisodeFileIdRowsSelected, id) :
+          [...state.withoutEpisodeFileIdRowsSelected, id]
+      };
     });
   }
 
@@ -154,6 +182,19 @@ class InteractiveImportModalContent extends Component {
         invalidRowsSelected: [...state.invalidRowsSelected, id]
       };
     });
+  }
+
+  onDeleteSelectedPress = () => {
+    this.setState({ isConfirmDeleteModalOpen: true });
+  }
+
+  onConfirmDelete = () => {
+    this.setState({ isConfirmDeleteModalOpen: false });
+    this.props.onDeleteSelectedPress(this.getSelectedIds());
+  }
+
+  onConfirmDeleteModalClose = () => {
+    this.setState({ isConfirmDeleteModalOpen: false });
   }
 
   onImportSelectedPress = () => {
@@ -193,7 +234,9 @@ class InteractiveImportModalContent extends Component {
     const {
       downloadId,
       allowSeriesChange,
+      autoSelectRow,
       showFilterExistingFiles,
+      showDelete,
       showImportMode,
       filterExistingFiles,
       title,
@@ -206,6 +249,7 @@ class InteractiveImportModalContent extends Component {
       sortDirection,
       importMode,
       interactiveImportErrorMessage,
+      isDeleting,
       onSortPress,
       onModalClose
     } = this.props;
@@ -215,7 +259,9 @@ class InteractiveImportModalContent extends Component {
       allUnselected,
       selectedState,
       invalidRowsSelected,
-      selectModalOpen
+      withoutEpisodeFileIdRowsSelected,
+      selectModalOpen,
+      isConfirmDeleteModalOpen
     } = this.state;
 
     const selectedIds = this.getSelectedIds();
@@ -308,7 +354,7 @@ class InteractiveImportModalContent extends Component {
           {
             isPopulated && !!items.length && !isFetching && !isFetching &&
               <Table
-                columns={columns}
+                columns={this.state.columns}
                 horizontalScroll={true}
                 selectAll={true}
                 allSelected={allSelected}
@@ -327,6 +373,8 @@ class InteractiveImportModalContent extends Component {
                           isSelected={selectedState[item.id]}
                           {...item}
                           allowSeriesChange={allowSeriesChange}
+                          autoSelectRow={autoSelectRow}
+                          columns={this.state.columns}
                           onSelectedChange={this.onSelectedChange}
                           onValidRowChange={this.onValidRowChange}
                         />
@@ -345,6 +393,20 @@ class InteractiveImportModalContent extends Component {
 
         <ModalFooter className={styles.footer}>
           <div className={styles.leftButtons}>
+            {
+              showDelete ?
+                <SpinnerButton
+                  className={styles.deleteButton}
+                  kind={kinds.DANGER}
+                  isSpinning={isDeleting}
+                  isDisabled={!selectedIds.length || !!withoutEpisodeFileIdRowsSelected.length}
+                  onPress={this.onDeleteSelectedPress}
+                >
+                  Delete
+                </SpinnerButton> :
+                null
+            }
+
             {
               !downloadId && showImportMode ?
                 <SelectInput
@@ -430,6 +492,16 @@ class InteractiveImportModalContent extends Component {
           real={false}
           onModalClose={this.onSelectModalClose}
         />
+
+        <ConfirmModal
+          isOpen={isConfirmDeleteModalOpen}
+          kind={kinds.DANGER}
+          title="Delete Selected Episode Files"
+          message={'Are you sure you want to delete the selected episode files?'}
+          confirmLabel="Delete"
+          onConfirm={this.onConfirmDelete}
+          onCancel={this.onConfirmDeleteModalClose}
+        />
       </ModalContent>
     );
   }
@@ -437,7 +509,10 @@ class InteractiveImportModalContent extends Component {
 
 InteractiveImportModalContent.propTypes = {
   downloadId: PropTypes.string,
+  showSeries: PropTypes.bool.isRequired,
   allowSeriesChange: PropTypes.bool.isRequired,
+  autoSelectRow: PropTypes.bool.isRequired,
+  showDelete: PropTypes.bool.isRequired,
   showImportMode: PropTypes.bool.isRequired,
   showFilterExistingFiles: PropTypes.bool.isRequired,
   filterExistingFiles: PropTypes.bool.isRequired,
@@ -451,16 +526,22 @@ InteractiveImportModalContent.propTypes = {
   sortKey: PropTypes.string,
   sortDirection: PropTypes.string,
   interactiveImportErrorMessage: PropTypes.string,
+  isDeleting: PropTypes.bool.isRequired,
+  deleteError: PropTypes.object,
   onSortPress: PropTypes.func.isRequired,
   onFilterExistingFilesChange: PropTypes.func.isRequired,
   onImportModeChange: PropTypes.func.isRequired,
+  onDeleteSelectedPress: PropTypes.func.isRequired,
   onImportSelectedPress: PropTypes.func.isRequired,
   onModalClose: PropTypes.func.isRequired
 };
 
 InteractiveImportModalContent.defaultProps = {
+  showSeries: true,
   allowSeriesChange: true,
+  autoSelectRow: true,
   showFilterExistingFiles: false,
+  showDelete: false,
   showImportMode: true,
   importMode: 'move'
 };

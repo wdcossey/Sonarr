@@ -8,6 +8,7 @@ using FluentValidation.Results;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Tv;
+using NzbDrone.Core.Validation;
 
 namespace NzbDrone.Core.Notifications.Plex.Server
 {
@@ -191,15 +192,23 @@ namespace NzbDrone.Core.Notifications.Plex.Server
                     return new ValidationFailure("Host", "At least one TV library is required");
                 }
             }
-            catch(PlexAuthenticationException ex)
+            catch (PlexAuthenticationException ex)
             {
-                _logger.LogError(ex, "Unable to connect to Plex Server");
+                _logger.LogError(ex, "Unable to connect to Plex Media Server");
                 return new ValidationFailure("AuthToken", "Invalid authentication token");
+            }
+            catch (PlexException ex)
+            {
+                return new NzbDroneValidationFailure("Host", ex.Message);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unable to connect to Plex Server");
-                return new ValidationFailure("Host", "Unable to connect to Plex Server");
+                _logger.LogError(ex, "Unable to connect to Plex Media Server");
+
+                return new NzbDroneValidationFailure("Host", "Unable to connect to Plex Media Server")
+                       {
+                           DetailedDescription = ex.Message
+                       };
             }
 
             return null;
