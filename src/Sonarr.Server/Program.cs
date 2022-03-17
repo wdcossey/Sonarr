@@ -66,7 +66,6 @@ namespace Sonarr.Server
                 {
                     logging.ClearProviders();
                     logging.SetMinimumLevel(LogLevel.Trace);
-                    logging.AddNLog(LogManager.Configuration);
                 })
                 .UseNLog();
         }

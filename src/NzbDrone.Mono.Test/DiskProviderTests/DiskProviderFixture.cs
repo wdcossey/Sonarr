@@ -14,7 +14,7 @@ using NzbDrone.Mono.Disk;
 namespace NzbDrone.Mono.Test.DiskProviderTests
 {
     [TestFixture]
-    [Platform("Mono")]
+    //[Platform("Mono")]
     public class DiskProviderFixture : DiskProviderFixtureBase<DiskProvider>
     {
         private string _tempPath;

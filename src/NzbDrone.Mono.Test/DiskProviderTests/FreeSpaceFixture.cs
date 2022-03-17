@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Disk;
@@ -10,7 +11,7 @@ using NzbDrone.Mono.Disk;
 namespace NzbDrone.Mono.Test.DiskProviderTests
 {
     [TestFixture]
-    [Platform("Mono")]
+    //[Platform("Mono")]
     public class FreeSpaceFixture : FreeSpaceFixtureBase<DiskProvider>
     {
         public FreeSpaceFixture()
@@ -21,7 +22,7 @@ namespace NzbDrone.Mono.Test.DiskProviderTests
         [SetUp]
         public void Setup()
         {
-            Mocker.SetConstant<IProcMountProvider>(new ProcMountProvider(TestLogger));
+            Mocker.SetConstant<IProcMountProvider>(new ProcMountProvider(Mocker.GetMock<ILogger<ProcMountProvider>>().Object));
             Mocker.GetMock<ISymbolicLinkResolver>()
                   .Setup(v => v.GetCompleteRealPath(It.IsAny<string>()))
                   .Returns<string>(s => s);

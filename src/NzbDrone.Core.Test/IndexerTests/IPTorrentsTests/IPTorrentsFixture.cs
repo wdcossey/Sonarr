@@ -87,7 +87,7 @@ namespace NzbDrone.Core.Test.IndexerTests.IPTorrentsTests
         {
             var recentFeed = ReadAllText(@"Files/Indexers/IPTorrents/IPTorrents.xml");
 
-            Mocker.GetMock<IHttpClient>()
+            Mocker.GetMock<IHttpClient<IPTorrents>>()
                 .Setup(o => o.Execute(It.Is<HttpRequest>(v => v.Method == HttpMethod.GET)))
                 .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), recentFeed));
 

@@ -48,7 +48,7 @@ namespace NzbDrone.Libraries.Test.JsonTests
             }
             catch (Exception ex)
             {
-                ex.Message.Should().Contain("snippet ' \"b\": \"c\", asdfl <--error-->kasjd fsdfs derers v'");
+                ex.Message.Should().Contain("snippet ' \"b\": \"c\", <--error-->asdfl kasjd fsdfs de'");
             }
         }
     }

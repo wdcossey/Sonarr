@@ -41,7 +41,7 @@ namespace NzbDrone.Core.Test.IndexerTests.TorznabTests
         {
             var recentFeed = ReadAllText(@"Files/Indexers/Torznab/torznab_hdaccess_net.xml");
 
-            Mocker.GetMock<IHttpClient>()
+            Mocker.GetMock<IHttpClient<Torznab>>()
                 .Setup(o => o.Execute(It.Is<HttpRequest>(v => v.Method == HttpMethod.GET)))
                 .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), recentFeed));
 
@@ -72,7 +72,7 @@ namespace NzbDrone.Core.Test.IndexerTests.TorznabTests
         {
             var recentFeed = ReadAllText(@"Files/Indexers/Torznab/torznab_tpb.xml");
 
-            Mocker.GetMock<IHttpClient>()
+            Mocker.GetMock<IHttpClient<Torznab>>()
                 .Setup(o => o.Execute(It.Is<HttpRequest>(v => v.Method == HttpMethod.GET)))
                 .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), recentFeed));
 
@@ -102,7 +102,7 @@ namespace NzbDrone.Core.Test.IndexerTests.TorznabTests
         {
             var recentFeed = ReadAllText(@"Files/Indexers/Torznab/torznab_animetosho.xml");
 
-            Mocker.GetMock<IHttpClient>()
+            Mocker.GetMock<IHttpClient<Torznab>>()
                 .Setup(o => o.Execute(It.Is<HttpRequest>(v => v.Method == HttpMethod.GET)))
                 .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), recentFeed));
 

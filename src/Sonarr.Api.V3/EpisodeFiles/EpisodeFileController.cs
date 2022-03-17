@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -96,9 +97,10 @@ namespace Sonarr.Api.V3.EpisodeFiles
             return Accepted(_mediaFileService.Update(episodeFile).ToResource(series, _upgradableSpecification));
         }
 
+        [Obsolete("Deprecated: Use SetPropertiesBulk instead")]
         [ProducesResponseType(typeof(List<EpisodeFileResource>), StatusCodes.Status202Accepted)]
         [HttpPut("editor")]
-        public IActionResult EditAll([FromBody] EpisodeFileListResource resource)
+        public IActionResult SetPropertiesEditor([FromBody] EpisodeFileListResource resource)
         {
             var episodeFiles = _mediaFileService
                 .GetFiles(resource.EpisodeFileIds)

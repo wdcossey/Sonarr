@@ -1,8 +1,8 @@
 using System;
 using System.Linq;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
-using NLog;
 using NUnit.Framework;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Core.Messaging.Events;
@@ -26,7 +26,7 @@ namespace NzbDrone.Core.Test.ThingiProviderTests
 
     public class MockProviderStatusService : ProviderStatusServiceBase<IMockProvider, MockProviderStatus>
     {
-        public MockProviderStatusService(IMockProviderStatusRepository providerStatusRepository, IEventAggregator eventAggregator, IRuntimeInfo runtimeInfo, Logger logger)
+        public MockProviderStatusService(IMockProviderStatusRepository providerStatusRepository, IEventAggregator eventAggregator, IRuntimeInfo runtimeInfo, ILogger<MockProviderStatusService> logger)
             : base(providerStatusRepository, eventAggregator, runtimeInfo, logger)
         {
 

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FizzWare.NBuilder;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Disk;
@@ -90,7 +91,7 @@ namespace NzbDrone.Core.Test.MediaFiles.DiskScanServiceTests
         {
             Subject.Scan(_series);
 
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger<DiskScanService>>().ExpectedWarns(1);
 
             Mocker.GetMock<IDiskProvider>()
                   .Verify(v => v.GetFiles(_series.Path, SearchOption.AllDirectories), Times.Never());
@@ -109,7 +110,7 @@ namespace NzbDrone.Core.Test.MediaFiles.DiskScanServiceTests
 
             Subject.Scan(_series);
 
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger<DiskScanService>>().ExpectedWarns(1);
 
             Mocker.GetMock<IDiskProvider>()
                   .Verify(v => v.GetFiles(_series.Path, SearchOption.AllDirectories), Times.Never());

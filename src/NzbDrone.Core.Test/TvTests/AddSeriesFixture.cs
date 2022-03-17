@@ -5,6 +5,7 @@ using FizzWare.NBuilder;
 using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Core.Exceptions;
@@ -12,7 +13,6 @@ using NzbDrone.Core.MetadataSource;
 using NzbDrone.Core.Organizer;
 using NzbDrone.Core.Tv;
 using NzbDrone.Core.Test.Framework;
-using NzbDrone.Core.Tv.Events;
 using NzbDrone.Test.Common;
 
 namespace NzbDrone.Core.Test.TvTests
@@ -126,7 +126,7 @@ namespace NzbDrone.Core.Test.TvTests
 
             Assert.Throws<ValidationException>(() => Subject.AddSeries(newSeries));
 
-            ExceptionVerification.ExpectedErrors(1);
+            Mocker.GetMock<ILogger<AddSeriesService>>().ExpectedErrors(Times.Once);
         }
     }
 }

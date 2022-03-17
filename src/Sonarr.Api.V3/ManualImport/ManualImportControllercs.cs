@@ -27,10 +27,11 @@ namespace Sonarr.Api.V3.ManualImport
             [FromQuery] int? seriesId = null,
             [FromQuery] int? seasonNumber = null)
         {
-            if (seriesId.HasValue)
-                return Ok(_manualImportService.GetMediaFiles(seriesId.Value, seasonNumber).ToResource().Select(AddQualityWeight));
+            var manualImportItems = seriesId.HasValue
+                ? _manualImportService.GetMediaFiles(seriesId.Value, seasonNumber)
+                : _manualImportService.GetMediaFiles(folder, downloadId, seriesId, filterExistingFiles);
 
-            return Ok(_manualImportService.GetMediaFiles(folder, downloadId, seriesId, filterExistingFiles).ToResource().Select(AddQualityWeight));
+            return Ok(manualImportItems.ToResource().Select(AddQualityWeight));
         }
 
         [HttpPost]

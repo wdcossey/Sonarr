@@ -2,6 +2,7 @@
 using System.Linq;
 using FizzWare.NBuilder;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Disk;
@@ -64,7 +65,7 @@ namespace NzbDrone.Core.Test.MediaFiles.EpisodeImport.Specifications
             GivenFreeSpace(80.Megabytes());
 
             Subject.IsSatisfiedBy(_localEpisode, null).Accepted.Should().BeFalse();
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger<FreeSpaceSpecification>>().ExpectedWarns(1);
         }
 
         [Test]
@@ -77,7 +78,7 @@ namespace NzbDrone.Core.Test.MediaFiles.EpisodeImport.Specifications
             GivenFreeSpace(150.Megabytes());
 
             Subject.IsSatisfiedBy(_localEpisode, null).Accepted.Should().BeFalse();
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger<FreeSpaceSpecification>>().ExpectedWarns(1);
         }
 
         [Test]
@@ -120,7 +121,7 @@ namespace NzbDrone.Core.Test.MediaFiles.EpisodeImport.Specifications
                   .Throws(new TestException());
 
             Subject.IsSatisfiedBy(_localEpisode, null).Accepted.Should().BeTrue();
-            ExceptionVerification.ExpectedErrors(1);
+            Mocker.GetMock<ILogger<FreeSpaceSpecification>>().ExpectedErrors(1);
         }
 
         [Test]

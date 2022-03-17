@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 using NzbDrone.Core.Profiles.Releases;
 using Sonarr.Http.REST;
 
@@ -85,14 +84,14 @@ namespace Sonarr.Api.V3.Profiles.Release
                 return list;
             }
 
-            if (resource is JArray jarray)
+            if (resource is JsonElement { ValueKind: JsonValueKind.Array } jsonArrayElement)
             {
-                return jarray.ToObject<List<string>>();
+                return jsonArrayElement.Deserialize<List<string>>();
             }
 
-            if (resource is string str)
+            if (resource is JsonElement { ValueKind: JsonValueKind.String } jsonStringElement)
             {
-                return str.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                return jsonStringElement.GetString()?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
             }
 
             throw new BadRequestException($"Invalid field {title}, should be string or string array");

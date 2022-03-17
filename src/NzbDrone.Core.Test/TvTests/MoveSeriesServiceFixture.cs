@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FizzWare.NBuilder;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Disk;
@@ -70,7 +71,7 @@ namespace NzbDrone.Core.Test.TvTests
 
             Subject.Execute(_command);
 
-            ExceptionVerification.ExpectedErrors(1);
+            Mocker.GetMock<ILogger<MoveSeriesService>>().ExpectedErrors(Times.Once);
         }
 
         [Test]
@@ -80,7 +81,7 @@ namespace NzbDrone.Core.Test.TvTests
 
             Subject.Execute(_command);
 
-            ExceptionVerification.ExpectedErrors(1);
+            Mocker.GetMock<ILogger<MoveSeriesService>>().ExpectedErrors(Times.Once);
 
             Mocker.GetMock<ISeriesService>()
                   .Verify(v => v.UpdateSeries(It.IsAny<Series>(), It.IsAny<bool>(), It.IsAny<bool>()), Times.Once());

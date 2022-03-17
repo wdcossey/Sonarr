@@ -84,7 +84,6 @@ namespace NzbDrone.Core.MediaFiles.MediaInfo
             _logger.LogDebug("Updated MediaInfo for '{Path}'", path);
 
             return true;
-
         }
     }
 }

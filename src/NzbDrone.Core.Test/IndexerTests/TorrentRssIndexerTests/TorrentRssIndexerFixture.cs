@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Indexers;
-using NzbDrone.Core.Indexers.Exceptions;
 using NzbDrone.Core.Indexers.TorrentRss;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Test.Framework;
@@ -24,7 +24,7 @@ namespace NzbDrone.Core.Test.IndexerTests.TorrentRssIndexerTests
         {
             Mocker.SetConstant<ITorrentRssSettingsDetector>(Mocker.Resolve<TorrentRssSettingsDetector>());
             Mocker.SetConstant<ITorrentRssParserFactory>(Mocker.Resolve<TorrentRssParserFactory>());
-
+            
             Subject.Definition = new IndexerDefinition()
             {
                 Name = "TorrentRssIndexer",
@@ -36,7 +36,11 @@ namespace NzbDrone.Core.Test.IndexerTests.TorrentRssIndexerTests
         {
             var recentFeed = ReadAllText(@"Files/Indexers/" + rssXmlFile);
 
-            Mocker.GetMock<IHttpClient>()
+            Mocker.GetMock<IHttpClient<TorrentRssSettingsDetector>>()
+                .Setup(o => o.Execute(It.IsAny<HttpRequest>()))
+                .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), recentFeed));
+
+            Mocker.GetMock<IHttpClient<TorrentRssIndexer>>()
                 .Setup(o => o.Execute(It.IsAny<HttpRequest>()))
                 .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), recentFeed));
         }
@@ -298,7 +302,7 @@ namespace NzbDrone.Core.Test.IndexerTests.TorrentRssIndexerTests
             Mocker.GetMock<IIndexerStatusService>()
                   .Verify(v => v.RecordFailure(It.IsAny<int>(), TimeSpan.Zero), Times.Once());
 
-            ExceptionVerification.ExpectedErrors(1);
+            Mocker.GetMock<ILogger>().ExpectedErrors(1);
         }
     }
 }

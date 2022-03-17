@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Http;
@@ -34,7 +35,7 @@ namespace NzbDrone.Core.Test.IndexerTests.RarbgTests
         {
             var recentFeed = ReadAllText(@"Files/Indexers/Rarbg/RecentFeed_v2.json");
 
-            Mocker.GetMock<IHttpClient>()
+            Mocker.GetMock<IHttpClient<Rarbg>>()
                 .Setup(o => o.Execute(It.Is<HttpRequest>(v => v.Method == HttpMethod.GET)))
                 .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), recentFeed));
 
@@ -75,7 +76,7 @@ namespace NzbDrone.Core.Test.IndexerTests.RarbgTests
         [Test]
         public void should_warn_on_unknown_error()
         {
-            Mocker.GetMock<IHttpClient>()
+            Mocker.GetMock<IHttpClient<Rarbg>>()
                    .Setup(o => o.Execute(It.Is<HttpRequest>(v => v.Method == HttpMethod.GET)))
                    .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), "{ error_code: 25, error: \"some message\" }"));
 
@@ -83,7 +84,7 @@ namespace NzbDrone.Core.Test.IndexerTests.RarbgTests
 
             releases.Should().HaveCount(0);
 
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger>().ExpectedWarns(Times.Once);
         }
     }
 }

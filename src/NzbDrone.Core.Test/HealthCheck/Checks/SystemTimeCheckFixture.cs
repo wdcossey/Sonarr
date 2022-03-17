@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Cloud;
@@ -24,7 +25,7 @@ namespace NzbDrone.Core.Test.HealthCheck.Checks
         {
             var json = new ServiceTimeResponse {DateTimeUtc = dateTime}.ToJson();
 
-            Mocker.GetMock<IHttpClient>()
+            Mocker.GetMock<IHttpClient<SystemTimeCheck>>()
                   .Setup(s => s.Execute(It.IsAny<HttpRequest>()))
                   .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), Encoding.ASCII.GetBytes(json)));
         }
@@ -43,7 +44,7 @@ namespace NzbDrone.Core.Test.HealthCheck.Checks
             GivenServerTime(DateTime.UtcNow.AddDays(2));
 
             Subject.Check().ShouldBeError();
-            ExceptionVerification.ExpectedErrors(1);
+            Mocker.GetMock<ILogger<SystemTimeCheck>>().ExpectedErrors(Times.Once);
         }
     }
 }

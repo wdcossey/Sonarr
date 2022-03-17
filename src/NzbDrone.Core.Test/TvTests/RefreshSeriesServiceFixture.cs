@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FizzWare.NBuilder;
-using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Extensions;
@@ -139,7 +139,7 @@ namespace NzbDrone.Core.Test.TvTests
             Mocker.GetMock<ISeriesService>()
                 .Verify(v => v.UpdateSeries(It.Is<Series>(s => s.Status == SeriesStatusType.Deleted), It.IsAny<bool>(), It.IsAny<bool>()), Times.Once());
 
-            ExceptionVerification.ExpectedErrors(1);
+            Mocker.GetMock<ILogger<RefreshSeriesService>>().ExpectedErrors(Times.Once);
         }
 
         [Test]
@@ -150,7 +150,7 @@ namespace NzbDrone.Core.Test.TvTests
             Mocker.GetMock<ISeriesService>()
                 .Verify(v => v.UpdateSeries(It.Is<Series>(s => s.Status == SeriesStatusType.Deleted), It.IsAny<bool>(), It.IsAny<bool>()), Times.Once());
 
-            ExceptionVerification.ExpectedErrors(1);
+            Mocker.GetMock<ILogger<RefreshSeriesService>>().ExpectedErrors(Times.Once);
         }
 
         [Test]
@@ -163,7 +163,7 @@ namespace NzbDrone.Core.Test.TvTests
             Mocker.GetMock<ISeriesService>()
                 .Verify(v => v.UpdateSeries(It.IsAny<Series>(), It.IsAny<bool>(), It.IsAny<bool>()), Times.Never());
 
-            ExceptionVerification.ExpectedErrors(1);
+            Mocker.GetMock<ILogger<RefreshSeriesService>>().ExpectedErrors(Times.Once);
         }
 
         [Test]
@@ -179,7 +179,7 @@ namespace NzbDrone.Core.Test.TvTests
             Mocker.GetMock<ISeriesService>()
                 .Verify(v => v.UpdateSeries(It.Is<Series>(s => s.TvdbId == newSeriesInfo.TvdbId), It.IsAny<bool>(), It.IsAny<bool>()));
 
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger<RefreshSeriesService>>().ExpectedWarns(Times.Once);
         }
 
         [Test]
@@ -239,7 +239,7 @@ namespace NzbDrone.Core.Test.TvTests
             Mocker.GetMock<IDiskScanService>()
                   .Verify(v => v.Scan(_series), Times.Once());
 
-            ExceptionVerification.ExpectedErrors(1);
+            Mocker.GetMock<ILogger<RefreshSeriesService>>().ExpectedErrors(Times.Once);
         }
 
         [Test]
@@ -254,7 +254,7 @@ namespace NzbDrone.Core.Test.TvTests
             Mocker.GetMock<IDiskScanService>()
                   .Verify(v => v.Scan(_series), Times.Never());
 
-            ExceptionVerification.ExpectedErrors(1);
+            Mocker.GetMock<ILogger<RefreshSeriesService>>().ExpectedErrors(Times.Once);
         }
     }
 }

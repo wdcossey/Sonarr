@@ -3,9 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using FizzWare.NBuilder;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using NzbDrone.Common.Cache;
 using NzbDrone.Common.Extensions;
+using NzbDrone.Common.Http;
+using NzbDrone.Common.Http.Dispatchers;
+using NzbDrone.Common.TPL;
 using NzbDrone.Core.MetadataSource.SkyHook;
 using NzbDrone.Core.Tv;
 using NzbDrone.Core.Test.Framework;
@@ -26,6 +31,8 @@ namespace NzbDrone.Core.Test.TvTests
         {
             UseRealHttp();
 
+            Mocker.SetConstant<IHttpClient<SkyHookProxy>>(new HttpClient<SkyHookProxy>(Array.Empty<IHttpRequestInterceptor>(), Mocker.Resolve<CacheManager>(), Mocker.Resolve<RateLimitService>(), Mocker.Resolve<IHttpDispatcher>(), Mocker.Resolve<UserAgentBuilder>(), Mocker.GetMock<ILoggerFactory>().Object));
+            
             _gameOfThrones = Mocker.Resolve<SkyHookProxy>().GetSeriesInfo(121361);//Game of thrones
 
             // Remove specials.
@@ -85,7 +92,7 @@ namespace NzbDrone.Core.Test.TvTests
             _updatedEpisodes.Should().BeEmpty();
             _deletedEpisodes.Should().BeEmpty();
 
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger<RefreshEpisodeService>>().ExpectedWarns(Times.Once);
         }
 
         [Test]
@@ -177,7 +184,7 @@ namespace NzbDrone.Core.Test.TvTests
             _insertedEpisodes[2].Monitored.Should().Be(true);
             _insertedEpisodes[3].Monitored.Should().Be(true);
 
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger<RefreshEpisodeService>>().ExpectedWarns(Times.Once);
         }
 
         [Test]
@@ -205,7 +212,7 @@ namespace NzbDrone.Core.Test.TvTests
             _insertedEpisodes[2].Monitored.Should().Be(false);
             _insertedEpisodes[3].Monitored.Should().Be(true);
 
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger<RefreshEpisodeService>>().ExpectedWarns(Times.Once);
         }
 
         [Test]

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Disk;
@@ -530,7 +531,7 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.QBittorrentTests
 
             id.Should().NotBeNullOrEmpty();
 
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger<QBittorrent>>().ExpectedWarns(Times.Once);
         }
 
         [Test]

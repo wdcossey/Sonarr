@@ -30,7 +30,7 @@ namespace NzbDrone.Common.Http
     {
         private const int MaxRedirects = 5;
 
-        private readonly ILogger<HttpClient<TService>> _logger;
+        private readonly ILogger _logger;
         private readonly IRateLimitService _rateLimitService;
         private readonly ICached<CookieContainer> _cookieContainerCache;
         private readonly List<IHttpRequestInterceptor> _requestInterceptors;
@@ -42,13 +42,13 @@ namespace NzbDrone.Common.Http
             IRateLimitService rateLimitService,
             IHttpDispatcher httpDispatcher,
             IUserAgentBuilder userAgentBuilder,
-            ILogger<HttpClient<TService>> logger)
+            ILoggerFactory loggerFactory)
         {
             _requestInterceptors = requestInterceptors.ToList();
             _rateLimitService = rateLimitService;
             _httpDispatcher = httpDispatcher;
             _userAgentBuilder = userAgentBuilder;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger($"{nameof(HttpClient<TService>)}<{typeof(TService)}>"); //<HttpClient<TService>>
             
             ServicePointManager.DefaultConnectionLimit = 12;
             _cookieContainerCache = cacheManager.GetCache<CookieContainer>(typeof(HttpClient<TService>));

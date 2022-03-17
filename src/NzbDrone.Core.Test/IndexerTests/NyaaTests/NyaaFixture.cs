@@ -29,7 +29,7 @@ namespace NzbDrone.Core.Test.IndexerTests.NyaaTests
         {
             var recentFeed = ReadAllText(@"Files/Indexers/Nyaa/Nyaa.xml");
 
-            Mocker.GetMock<IHttpClient>()
+            Mocker.GetMock<IHttpClient<Nyaa>>()
                 .Setup(o => o.Execute(It.Is<HttpRequest>(v => v.Method == HttpMethod.GET)))
                 .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), recentFeed));
 

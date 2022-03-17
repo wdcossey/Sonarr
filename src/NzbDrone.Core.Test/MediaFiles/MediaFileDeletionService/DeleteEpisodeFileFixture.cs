@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using FizzWare.NBuilder;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Disk;
@@ -64,7 +65,7 @@ namespace NzbDrone.Core.Test.MediaFiles.MediaFileDeletionService
         public void should_throw_if_root_folder_does_not_exist()
         {
             Assert.Throws<NzbDroneClientException>(() => Subject.DeleteEpisodeFile(_series, _episodeFile));
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger<Core.MediaFiles.MediaFileDeletionService>>().ExpectedWarns(1);
         }
 
         [Test]
@@ -73,7 +74,7 @@ namespace NzbDrone.Core.Test.MediaFiles.MediaFileDeletionService
             GivenRootFolderExists();
 
             Assert.Throws<NzbDroneClientException>(() => Subject.DeleteEpisodeFile(_series, _episodeFile));
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger<Core.MediaFiles.MediaFileDeletionService>>().ExpectedWarns(1);
         }
 
         [Test]
@@ -135,7 +136,7 @@ namespace NzbDrone.Core.Test.MediaFiles.MediaFileDeletionService
 
             Assert.Throws<NzbDroneClientException>(() => Subject.DeleteEpisodeFile(_series, _episodeFile));
 
-            ExceptionVerification.ExpectedErrors(1);
+            Mocker.GetMock<ILogger<Core.MediaFiles.MediaFileDeletionService>>().ExpectedErrors(1);
             Mocker.GetMock<IRecycleBinProvider>().Verify(v => v.DeleteFile(_episodeFile.Path, "Series Title"), Times.Once());
             Mocker.GetMock<IMediaFileService>().Verify(v => v.Delete(_episodeFile, DeleteMediaFileReason.Manual), Times.Never());
         }

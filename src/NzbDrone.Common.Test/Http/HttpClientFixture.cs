@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NLog;
 using NUnit.Framework;
@@ -23,7 +24,7 @@ namespace NzbDrone.Common.Test.Http
     [Ignore("httpbin is bugged")]
     [IntegrationTest]
     [TestFixture(typeof(ManagedHttpDispatcher))]
-    public class HttpClientFixture<TDispatcher> : TestBase<HttpClient> where TDispatcher : IHttpDispatcher
+    public class HttpClientFixture<TDispatcher> : TestBase<HttpClient<HttpClientFixture<TDispatcher>>> where TDispatcher : IHttpDispatcher
     {
         private string[] _httpBinHosts;
         private int _httpBinSleep;
@@ -250,7 +251,7 @@ namespace NzbDrone.Common.Test.Http
         [Test]
         public void should_follow_redirects_to_https()
         {
-            if (typeof(TDispatcher) == typeof(ManagedHttpDispatcher) && PlatformInfo.IsMono)
+            if (typeof(TDispatcher) == typeof(ManagedHttpDispatcher) /*&& PlatformInfo.IsMono*/) //TODO: && PlatformInfo.IsMono
             {
                 Assert.Ignore("Will fail on tls1.2 via managed dispatcher, ignore.");
             }
@@ -384,7 +385,7 @@ namespace NzbDrone.Common.Test.Http
             var oldRequest = new HttpRequest($"http://{_httpBinHost2}/get");
             oldRequest.Cookies["my"] = "cookie";
 
-            var oldClient = new HttpClient(new IHttpRequestInterceptor[0], Mocker.Resolve<ICacheManager>(), Mocker.Resolve<IRateLimitService>(), Mocker.Resolve<IHttpDispatcher>(), Mocker.GetMock<IUserAgentBuilder>().Object, Mocker.Resolve<Logger>());
+            var oldClient = new HttpClient<HttpClientFixture<TDispatcher>>(new IHttpRequestInterceptor[0], Mocker.Resolve<ICacheManager>(), Mocker.Resolve<IRateLimitService>(), Mocker.Resolve<IHttpDispatcher>(), Mocker.GetMock<IUserAgentBuilder>().Object, Mocker.Resolve<ILoggerFactory>());
 
             oldClient.Should().NotBeSameAs(Subject);
 

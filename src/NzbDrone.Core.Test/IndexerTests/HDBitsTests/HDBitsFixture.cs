@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Http;
@@ -33,7 +34,7 @@ namespace NzbDrone.Core.Test.IndexerTests.HDBitsTests
         {
             var responseJson = ReadAllText(fileName);
 
-            Mocker.GetMock<IHttpClient>()
+            Mocker.GetMock<IHttpClient<HDBits>>()
                 .Setup(o => o.Execute(It.Is<HttpRequest>(v => v.Method == HttpMethod.POST)))
                 .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), responseJson));
 
@@ -62,7 +63,7 @@ namespace NzbDrone.Core.Test.IndexerTests.HDBitsTests
         {
             var responseJson = new { status = 5, message = "Invalid authentication credentials" }.ToJson();
 
-            Mocker.GetMock<IHttpClient>()
+            Mocker.GetMock<IHttpClient<HDBits>>()
                 .Setup(v => v.Execute(It.IsAny<HttpRequest>()))
                 .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(),
                     Encoding.UTF8.GetBytes(responseJson)));
@@ -71,7 +72,7 @@ namespace NzbDrone.Core.Test.IndexerTests.HDBitsTests
 
             torrents.Should().BeEmpty();
 
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger>().ExpectedWarns(Times.Once);
         }
     }
 }

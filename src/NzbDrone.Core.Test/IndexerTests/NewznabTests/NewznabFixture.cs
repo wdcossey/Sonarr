@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Http;
@@ -43,7 +44,7 @@ namespace NzbDrone.Core.Test.IndexerTests.NewznabTests
         {
             var recentFeed = ReadAllText(@"Files/Indexers/Newznab/newznab_nzb_su.xml");
 
-            Mocker.GetMock<IHttpClient>()
+            Mocker.GetMock<IHttpClient<Newznab>>()
                 .Setup(o => o.Execute(It.Is<HttpRequest>(v => v.Method == HttpMethod.GET)))
                 .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), recentFeed));
 
@@ -70,7 +71,7 @@ namespace NzbDrone.Core.Test.IndexerTests.NewznabTests
         {
             var recentFeed = ReadAllText(@"Files/Indexers/Torznab/torznab_animetosho.xml");
 
-            Mocker.GetMock<IHttpClient>()
+            Mocker.GetMock<IHttpClient<Newznab>>()
                 .Setup(o => o.Execute(It.Is<HttpRequest>(v => v.Method == HttpMethod.GET)))
                 .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), recentFeed));
 
@@ -121,7 +122,7 @@ namespace NzbDrone.Core.Test.IndexerTests.NewznabTests
             Mocker.GetMock<IIndexerStatusService>()
                   .Verify(v => v.RecordFailure(It.IsAny<int>(), TimeSpan.FromMinutes(5.0)), Times.Once());
 
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger>().ExpectedWarns(Times.Once);
         }
     }
 }

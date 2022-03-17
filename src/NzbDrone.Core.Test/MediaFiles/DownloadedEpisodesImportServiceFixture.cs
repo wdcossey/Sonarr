@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using FizzWare.NBuilder;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Disk;
@@ -12,7 +13,6 @@ using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.MediaFiles.EpisodeImport;
 using NzbDrone.Core.Parser;
 using NzbDrone.Core.Parser.Model;
-using NzbDrone.Core.Qualities;
 using NzbDrone.Core.Test.Framework;
 using NzbDrone.Core.Tv;
 using NzbDrone.Test.Common;
@@ -148,7 +148,7 @@ namespace NzbDrone.Core.Test.MediaFiles
             Mocker.GetMock<IDiskScanService>()
                   .Verify(v => v.GetVideoFiles(It.IsAny<string>(), true), Times.Never());
 
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger<DownloadedEpisodesImportService>>().ExpectedWarns(1);
         }
 
         [Test]
@@ -187,7 +187,7 @@ namespace NzbDrone.Core.Test.MediaFiles
             Mocker.GetMock<IDiskProvider>()
                   .Verify(v => v.DeleteFolder(It.IsAny<string>(), true), Times.Never());
 
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger<DownloadedEpisodesImportService>>().ExpectedWarns(1);
         }
 
         [Test]
@@ -297,7 +297,7 @@ namespace NzbDrone.Core.Test.MediaFiles
             Mocker.GetMock<IDiskProvider>()
                   .Verify(v => v.DeleteFolder(It.IsAny<string>(), true), Times.Never());
 
-            ExceptionVerification.ExpectedWarns(1);
+            Mocker.GetMock<ILogger<DownloadedEpisodesImportService>>().ExpectedWarns(1);
         }
 
         [Test]
@@ -366,7 +366,7 @@ namespace NzbDrone.Core.Test.MediaFiles
             Mocker.GetMock<IParsingService>()
                 .Verify(v => v.GetSeries(It.IsAny<string>()), Times.Never());
 
-            ExceptionVerification.ExpectedErrors(1);
+            Mocker.GetMock<ILogger<DownloadedEpisodesImportService>>().ExpectedErrors(1);
         }
 
         [Test]

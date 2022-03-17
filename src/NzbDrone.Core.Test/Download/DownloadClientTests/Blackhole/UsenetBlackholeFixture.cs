@@ -58,7 +58,7 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.Blackhole
 
         protected void GivenFailedDownload()
         {
-            Mocker.GetMock<IHttpClient>()
+            Mocker.GetMock<IHttpClient<UsenetBlackhole>>()
                 .Setup(c => c.Get(It.IsAny<HttpRequest>()))
                 .Throws(new WebException());
         }
@@ -124,9 +124,9 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.Blackhole
 
             Subject.Download(remoteEpisode);
 
-            Mocker.GetMock<IHttpClient>().Verify(c => c.Get(It.Is<HttpRequest>(v => v.Url.FullUri == _downloadUrl)), Times.Once());
+            Mocker.GetMock<IHttpClient<UsenetBlackhole>>().Verify(c => c.Get(It.Is<HttpRequest>(v => v.Url.FullUri == _downloadUrl)), Times.Once());
             Mocker.GetMock<IDiskProvider>().Verify(c => c.OpenWriteStream(_filePath), Times.Once());
-            Mocker.GetMock<IHttpClient>().Verify(c => c.DownloadFile(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+            Mocker.GetMock<IHttpClient<UsenetBlackhole>>().Verify(c => c.DownloadFile(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
         }
 
         [Test]
@@ -140,9 +140,9 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.Blackhole
 
             Subject.Download(remoteEpisode);
 
-            Mocker.GetMock<IHttpClient>().Verify(c => c.Get(It.Is<HttpRequest>(v => v.Url.FullUri == _downloadUrl)), Times.Once());
+            Mocker.GetMock<IHttpClient<UsenetBlackhole>>().Verify(c => c.Get(It.Is<HttpRequest>(v => v.Url.FullUri == _downloadUrl)), Times.Once());
             Mocker.GetMock<IDiskProvider>().Verify(c => c.OpenWriteStream(expectedFilename), Times.Once());
-            Mocker.GetMock<IHttpClient>().Verify(c => c.DownloadFile(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+            Mocker.GetMock<IHttpClient<UsenetBlackhole>>().Verify(c => c.DownloadFile(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
         }
 
         [Test]

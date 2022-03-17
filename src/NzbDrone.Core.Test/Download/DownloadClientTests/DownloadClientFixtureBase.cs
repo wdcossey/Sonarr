@@ -33,7 +33,7 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests
                 .Setup(s => s.Map(It.IsAny<ParsedEpisodeInfo>(), It.IsAny<int>(), It.IsAny<int>(), (SearchCriteriaBase)null))
                 .Returns(() => CreateRemoteEpisode());
 
-            Mocker.GetMock<IHttpClient>()
+            Mocker.GetMock<IHttpClient<TSubject>>()
                   .Setup(s => s.Get(It.IsAny<HttpRequest>()))
                   .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), new byte[0]));
 

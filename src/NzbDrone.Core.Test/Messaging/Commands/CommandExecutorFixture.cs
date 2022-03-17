@@ -1,14 +1,13 @@
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Threading;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using NzbDrone.Common;
 using NzbDrone.Core.Lifecycle;
 using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Test.Common;
+using IServiceProvider = System.IServiceProvider;
 
 namespace NzbDrone.Core.Test.Messaging.Commands
 {
@@ -25,12 +24,12 @@ namespace NzbDrone.Core.Test.Messaging.Commands
             _executorA = new Mock<IExecute<CommandA>>();
             _executorB = new Mock<IExecute<CommandB>>();
 
-            Mocker.GetMock<IServiceFactory>()
-                  .Setup(c => c.Build(typeof(IExecute<CommandA>)))
+            Mocker.GetMock<IServiceProvider>()
+                  .Setup(c => c.GetService(typeof(IExecute<CommandA>)))
                   .Returns(_executorA.Object);
 
-            Mocker.GetMock<IServiceFactory>()
-                  .Setup(c => c.Build(typeof(IExecute<CommandB>)))
+            Mocker.GetMock<IServiceProvider>()
+                  .Setup(c => c.GetService(typeof(IExecute<CommandB>)))
                   .Returns(_executorB.Object);
         }
 
@@ -145,7 +144,7 @@ namespace NzbDrone.Core.Test.Messaging.Commands
 
             VerifyEventPublished<CommandExecutedEvent>();
 
-            ExceptionVerification.WaitForErrors(1, 500);
+            Mocker.GetMock<ILogger<CommandExecutor>>().ExpectedErrors(1); //TODO: Check Exception Type?
         }
 
         [Test]

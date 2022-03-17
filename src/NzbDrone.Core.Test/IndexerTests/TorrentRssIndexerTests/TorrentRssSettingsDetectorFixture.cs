@@ -5,7 +5,6 @@ using NzbDrone.Common.Http;
 using NzbDrone.Core.Indexers.Exceptions;
 using NzbDrone.Core.Indexers.TorrentRss;
 using NzbDrone.Core.Test.Framework;
-using NzbDrone.Test.Common;
 
 namespace NzbDrone.Core.Test.IndexerTests.TorrentRssIndexerTests
 {
@@ -25,7 +24,7 @@ namespace NzbDrone.Core.Test.IndexerTests.TorrentRssIndexerTests
         {
             var recentFeed = ReadAllText(@"Files/Indexers/" + rssXmlFile);
 
-            Mocker.GetMock<IHttpClient>()
+            Mocker.GetMock<IHttpClient<TorrentRssSettingsDetector>>()
                 .Setup(o => o.Execute(It.IsAny<HttpRequest>()))
                 .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), recentFeed));
         }
