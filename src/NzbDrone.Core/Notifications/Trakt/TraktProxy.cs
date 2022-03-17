@@ -1,4 +1,4 @@
-using NLog;
+using Microsoft.Extensions.Logging;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 using NzbDrone.Common.Serializer;
@@ -24,10 +24,10 @@ namespace NzbDrone.Core.Notifications.Trakt
         private const string RenewUri = "https://auth.servarr.com/v1/trakt_sonarr/renew";
         private const string ClientId = "d44ba57cab40c31eb3f797dcfccd203500796539125b333883ec1d94aa62ed4c";
 
-        private readonly IHttpClient _httpClient;
-        private readonly Logger _logger;
+        private readonly IHttpClient<TraktProxy> _httpClient;
+        private readonly ILogger<TraktProxy> _logger;
 
-        public TraktProxy(IHttpClient httpClient, Logger logger)
+        public TraktProxy(IHttpClient<TraktProxy> httpClient, ILogger<TraktProxy> logger)
         {
             _httpClient = httpClient;
             _logger = logger;
@@ -39,14 +39,14 @@ namespace NzbDrone.Core.Notifications.Trakt
 
             request.Headers.ContentType = "application/json";
             request.SetContent(payload.ToJson());
-             
+
             try
             {
                 _httpClient.Execute(request);
             }
             catch (HttpException ex)
             {
-                _logger.Error(ex, "Unable to post payload {0}", payload);
+                _logger.LogError(ex, "Unable to post payload {Payload}", payload.ToJson());
                 throw new TraktException("Unable to post payload", ex);
             }
         }
@@ -65,7 +65,7 @@ namespace NzbDrone.Core.Notifications.Trakt
             }
             catch (HttpException ex)
             {
-                _logger.Error(ex, "Unable to post payload {0}", payload);
+                _logger.LogError(ex, "Unable to post payload {Payload}", payload.ToJson());
                 throw new TraktException("Unable to post payload", ex);
             }
         }
@@ -85,7 +85,7 @@ namespace NzbDrone.Core.Notifications.Trakt
             }
             catch (HttpException)
             {
-                _logger.Warn($"Error refreshing trakt access token");
+                _logger.LogWarning($"Error refreshing trakt access token");
             }
 
             return null;
@@ -115,7 +115,7 @@ namespace NzbDrone.Core.Notifications.Trakt
             var request = new HttpRequestBuilder(URL).Resource(resource).Build();
             request.Method = method;
 
-            request.Headers.Accept = HttpAccept.Json.Value;            
+            request.Headers.Accept = HttpAccept.Json.Value;
             request.Headers.Add("trakt-api-version", "2");
             request.Headers.Add("trakt-api-key", ClientId);
 

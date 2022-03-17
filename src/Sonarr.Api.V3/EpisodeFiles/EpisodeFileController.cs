@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using Microsoft.AspNetCore.Http;
@@ -98,7 +98,7 @@ namespace Sonarr.Api.V3.EpisodeFiles
 
         [ProducesResponseType(typeof(List<EpisodeFileResource>), StatusCodes.Status202Accepted)]
         [HttpPut("editor")]
-        public IActionResult EditAllAsync([FromBody] EpisodeFileListResource resource)
+        public IActionResult EditAll([FromBody] EpisodeFileListResource resource)
         {
             var episodeFiles = _mediaFileService
                 .GetFiles(resource.EpisodeFileIds)
@@ -126,9 +126,47 @@ namespace Sonarr.Api.V3.EpisodeFiles
             return Accepted(episodeFiles.ConvertAll(f => f.ToResource(series, _upgradableSpecification)));
         }
 
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(List<EpisodeFileResource>), StatusCodes.Status202Accepted)]
         [HttpPut("bulk")]
-        public IActionResult DeleteAllAsync([FromBody] EpisodeFileListResource resource)
+        public IActionResult SetPropertiesBulk([FromBody] List<EpisodeFileResource> resource)
+        {
+            var episodeFiles = _mediaFileService.GetFiles(resource.Select(r => r.Id));
+
+            foreach (var episodeFile in episodeFiles)
+            {
+                var resourceEpisodeFile = resource.Single(r => r.Id == episodeFile.Id);
+
+                if (resourceEpisodeFile.Language != null)
+                {
+                    episodeFile.Language = resourceEpisodeFile.Language;
+                }
+
+                if (resourceEpisodeFile.Quality != null)
+                {
+                    episodeFile.Quality = resourceEpisodeFile.Quality;
+                }
+
+                if (resourceEpisodeFile.SceneName != null && SceneChecker.IsSceneTitle(resourceEpisodeFile.SceneName))
+                {
+                    episodeFile.SceneName = resourceEpisodeFile.SceneName;
+                }
+
+                if (resourceEpisodeFile.ReleaseGroup != null)
+                {
+                    episodeFile.ReleaseGroup = resourceEpisodeFile.ReleaseGroup;
+                }
+            }
+
+            _mediaFileService.Update(episodeFiles);
+
+            var series = _seriesService.GetSeries(episodeFiles.First().SeriesId);
+
+            return Accepted(episodeFiles.ConvertAll(f => f.ToResource(series, _upgradableSpecification)));
+        }
+
+        [ProducesResponseType(StatusCodes.Status202Accepted)]
+        [HttpDelete("bulk")]
+        public IActionResult DeleteEpisodeFiles([FromBody] EpisodeFileListResource resource)
         {
             var episodeFiles = _mediaFileService.GetFiles(resource.EpisodeFileIds);
             var series = _seriesService.GetSeries(episodeFiles.First().SeriesId);

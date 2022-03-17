@@ -16,13 +16,10 @@ namespace Sonarr.Http.Extensions
             => request.Path.StartsWithSegments("/feed", StringComparison.InvariantCultureIgnoreCase);
 
         public static bool IsSignalRRequest(this HttpRequest request)
-            => request.Path.StartsWithSegments("/hubs", StringComparison.InvariantCultureIgnoreCase);
+            => request.Path.StartsWithSegments("/signalr", StringComparison.InvariantCultureIgnoreCase);
 
         public static bool IsPingRequest(this HttpRequest request)
             => request.Path.StartsWithSegments("/ping", StringComparison.InvariantCultureIgnoreCase);
-
-        public static bool IsSignalRRequest(this HttpRequest request)
-            => request.Path.StartsWithSegments("/signalr", StringComparison.InvariantCultureIgnoreCase);
 
         public static bool IsLocalRequest(this HttpRequest request)
         {

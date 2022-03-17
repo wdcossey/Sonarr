@@ -6,6 +6,7 @@ using NzbDrone.Core.Download.Pending;
 using NzbDrone.Core.Download.TrackedDownloads;
 using NzbDrone.Core.Queue;
 using Sonarr.Http.Attributes;
+using Sonarr.Http.ModelBinders;
 using Sonarr.Http.REST;
 
 namespace Sonarr.Api.V3.Queue
@@ -121,7 +122,7 @@ namespace Sonarr.Api.V3.Queue
         [HttpDelete("bulk")]
         [Consumes("application/x-www-form-urlencoded")] //TODO: some UI (ajax) requests are broken?!?
         public IActionResult RemoveFromForm(
-            [FromForm] QueueBulkResource resource,
+            [FromForm] [ModelBinder(typeof(FormEncodedBodyModelBinder))] QueueBulkResource resource,
             [FromQuery] bool removeFromClient = true,
             [FromQuery] bool? blocklist = false,
             [FromQuery] bool? blacklist = false)
